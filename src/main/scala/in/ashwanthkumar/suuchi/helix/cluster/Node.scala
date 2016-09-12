@@ -1,4 +1,4 @@
-package in.ashwanthkumar.suuchi.cluster
+package in.ashwanthkumar.suuchi.helix.cluster
 
 import org.apache.helix.api.id.StateModelDefId
 import org.apache.helix.api.{StateTransitionHandlerFactory, TransitionHandler}

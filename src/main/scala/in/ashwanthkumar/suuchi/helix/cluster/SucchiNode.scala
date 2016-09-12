@@ -1,6 +1,6 @@
-package in.ashwanthkumar.suuchi.cluster
+package in.ashwanthkumar.suuchi.helix.cluster
 
-import in.ashwanthkumar.suuchi.cluster.fsm.{DummyFSM, SucchiFSM}
+import in.ashwanthkumar.suuchi.helix.cluster.fsm.{DummyFSM, SucchiFSM}
 import org.apache.helix.api.id.PartitionId
 import org.apache.helix.api.{StateTransitionHandlerFactory, TransitionHandler}
 import org.apache.helix.model.Message

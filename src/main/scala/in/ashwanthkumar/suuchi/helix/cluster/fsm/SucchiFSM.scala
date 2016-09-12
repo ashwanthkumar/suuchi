@@ -1,6 +1,6 @@
-package in.ashwanthkumar.suuchi.cluster.fsm
+package in.ashwanthkumar.suuchi.helix.cluster.fsm
 
-import in.ashwanthkumar.suuchi.cluster.Logging
+import in.ashwanthkumar.suuchi.helix.cluster.Logging
 import org.apache.helix.NotificationContext
 import org.apache.helix.model.Message
 import org.slf4j.LoggerFactory
