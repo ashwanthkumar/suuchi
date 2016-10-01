@@ -26,7 +26,7 @@ trait Bootstrapper {
    */
   def nodes: List[MemberAddress]
 }
-
+case class InMemoryBootstrapper(override val nodes: List[MemberAddress]) extends Bootstrapper
 
 abstract class Membership(host: String, port: Int) {
   def bootstrap(bootstrapper: Bootstrapper): Membership
@@ -104,23 +104,4 @@ class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifi
   override def stop(): Unit = {
     me.leave().join()
   }
-}
-
-case class InMemoryBootstrapper(override val nodes: List[MemberAddress]) extends Bootstrapper
-
-object TestMembership extends App {
-  val port = args(0).toInt
-
-  val bootstrapper = {
-    if (port != 50001) {
-      InMemoryBootstrapper(List(MemberAddress("localhost", 50001)))
-    } else {
-      InMemoryBootstrapper(List())
-    }
-  }
-
-  val membership = new AtomixMembership("localhost", port, "/tmp/suuchi-raft", "succhi-test-group")
-    .bootstrap(bootstrapper)
-    .start()
-
 }

@@ -6,7 +6,7 @@ import org.apache.commons.io.FileUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.Matchers.{convertToAnyShouldWrapper, be, have, size}
 
-class MembershipIntegrationTest extends FlatSpec with BeforeAndAfter {
+class MembershipIntegrationSpec extends FlatSpec with BeforeAndAfter {
 
   val BASE_PORT = 60000
   val raftDir = Files.createTempDirectory("suuchi-membership-it")
