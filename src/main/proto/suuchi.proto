@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option java_package = "in.ashwanthkumar.suuchi.rpc";
+option java_outer_classname = "SuuchiRPC";
+
+// The Ping service definition.
+service PingService {
+    rpc Ping (PingRequest) returns (PingResponse);
+}
+
+message PingRequest {}
+message PingResponse {
+    bool status = 1;
+}
