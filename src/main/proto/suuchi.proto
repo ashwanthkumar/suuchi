@@ -7,8 +7,21 @@ option java_outer_classname = "SuuchiRPC";
 service PingService {
     rpc Ping (PingRequest) returns (PingResponse);
 }
-
-message PingRequest {}
+message PingRequest {
+}
 message PingResponse {
     bool status = 1;
+}
+
+// SuuchiRead service which can be used for serving read-only datasets
+service SuuchiRead {
+    rpc Get (GetRequest) returns (GetResponse);
+    // TODO - Add scan method to this service
+}
+message GetRequest {
+    bytes key = 1;
+}
+message GetResponse {
+    bytes key = 1;
+    bytes value = 2;
 }
