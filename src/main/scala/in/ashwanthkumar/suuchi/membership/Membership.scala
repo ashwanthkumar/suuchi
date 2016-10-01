@@ -12,6 +12,7 @@ import io.atomix.catalyst.transport.netty.NettyTransport
 import io.atomix.copycat.server.storage.{StorageLevel, Storage}
 import io.atomix.group.{DistributedGroup, LocalMember, GroupMember}
 import io.atomix.variables.DistributedValue
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
@@ -42,6 +43,7 @@ abstract class Membership(host: String, port: Int) {
 }
 
 class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifier: String) extends Membership(host, port) {
+  private val log = LoggerFactory.getLogger(classOf[AtomixMembership])
 
   var atomix = AtomixReplica.builder(new Address(host, port))
     .withTransport(NettyTransport.builder().build())
@@ -69,8 +71,7 @@ class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifi
 
   override def start(): AtomixMembership = {
     val group = atomix.getGroup(clusterIdentifier).join()
-    me = group.join(s"$host:$port").join()
-//    atomix.getValue(s"nodes/${me.id()}").join().getAndSet(s"$host:$port").join()
+    me = group.join().join()
     // register a shutdown hook right away
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run(): Unit = {
@@ -90,16 +91,10 @@ class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifi
   }
 
   override def onJoin: (Member) => Unit = (m: Member) => {
-//    atomix.getValue[String](s"nodes/${m.id}").thenAccept(new Consumer[DistributedValue[String]] {
-//      override def accept(hostPort: DistributedValue[String]): Unit = {
-//        println(s"$m ($hostPort) has joined")
-//        println(s"Total Members - ${nodes.mkString("\n")}")
-//      }
-//    }).join()
+    log.info(s"$m has joined")
   }
   override def onLeave: (Member) => Unit = (m: Member) => {
-    println(s"$m has left")
-    println(s"Total Members - ${nodes.mkString("\n")}")
+    log.info(s"$m has left")
   }
 
   override def nodes: Iterable[Member] = {

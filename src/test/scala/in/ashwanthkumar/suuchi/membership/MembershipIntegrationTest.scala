@@ -33,7 +33,7 @@ class MembershipIntegrationTest extends FlatSpec with BeforeAndAfter {
 
   "Membership" should "launch 5 nodes and say they have 5 nodes" in {
     members.foreach(_.start())
-    Thread.sleep(10 * 1000) // wait for all the nodes to come up
+//    Thread.sleep(10 * 1000) // wait for all the nodes to come up
 
     members.map(m => (m.nodes, m.me)).foreach(println)
     val totalNodes = members.head.nodes
