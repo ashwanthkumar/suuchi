@@ -18,12 +18,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.helix</groupId>
-            <artifactId>helix-core</artifactId>
-            <version>0.7.1</version>
-        </dependency>
-
-        <dependency>
             <groupId>io.atomix</groupId>
             <artifactId>atomix-all</artifactId>
             <version>1.0.0-rc9</version>
@@ -36,28 +30,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.10</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.rocksdb</groupId>
             <artifactId>rocksdbjni</artifactId>
             <version>4.9.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-remote_2.10</artifactId>
-            <version>${akka.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-testkit_2.10</artifactId>
-            <version>${akka.version}</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
