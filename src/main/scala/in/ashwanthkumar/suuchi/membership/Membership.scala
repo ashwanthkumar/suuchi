@@ -8,8 +8,11 @@ import java.util.function.Consumer
 import io.atomix.AtomixReplica
 import io.atomix.catalyst.transport
 import io.atomix.catalyst.transport.Address
+import io.atomix.catalyst.transport.netty.NettyTransport
 import io.atomix.copycat.server.storage.{StorageLevel, Storage}
 import io.atomix.group.{DistributedGroup, LocalMember, GroupMember}
+import io.atomix.variables.DistributedValue
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
@@ -30,36 +33,45 @@ abstract class Membership(host: String, port: Int) {
 
   def start(): Membership
 
+  def stop(): Unit
+
   def onJoin: Member => Unit
 
   def onLeave: Member => Unit
+
+  def nodes: Iterable[Member]
 }
 
 class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifier: String) extends Membership(host, port) {
+  private val log = LoggerFactory.getLogger(classOf[AtomixMembership])
 
-  val replica = AtomixReplica.builder(new Address(host, port))
+  var atomix = AtomixReplica.builder(new Address(host, port))
+    .withTransport(NettyTransport.builder().build())
     .withStorage(
       Storage.builder()
         .withDirectory(new File(workDir, host + "_" + port))
         .withStorageLevel(StorageLevel.DISK)
         .withMinorCompactionInterval(Duration.ofSeconds(30))
         .withMajorCompactionInterval(Duration.ofMinutes(10))
+        .withFlushOnCommit()
         .build()
     )
     .build()
 
-  var group: DistributedGroup = _
   var me: LocalMember = _
 
   override def bootstrap(bootstrapper: Bootstrapper): AtomixMembership = {
-    replica.bootstrap(bootstrapper.nodes.map(m => new Address(m.host, m.port))).join()
+    if(bootstrapper.nodes.isEmpty) {
+      atomix = atomix.bootstrap(bootstrapper.nodes.map(m => new Address(m.host, m.port))).join()
+    } else {
+      atomix = atomix.join(bootstrapper.nodes.map(m => new Address(m.host, m.port))).join()
+    }
     this
   }
 
   override def start(): AtomixMembership = {
-    group = replica.getGroup(clusterIdentifier).join()
+    val group = atomix.getGroup(clusterIdentifier).join()
     me = group.join().join()
-    replica.getValue(s"nodes/${me.id()}").join().getAndSet(s"$host:$port").join()
     // register a shutdown hook right away
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run(): Unit = {
@@ -79,13 +91,18 @@ class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifi
   }
 
   override def onJoin: (Member) => Unit = (m: Member) => {
-    val hostPort = replica.getValue[String](s"nodes/${m.id}").join().get().join()
-    println(s"$m ($hostPort) has joined")
-    println(s"Total Members - ${group.members().mkString("\n")}")
+    log.info(s"$m has joined")
   }
   override def onLeave: (Member) => Unit = (m: Member) => {
-    println(s"$m has left")
-    println(s"Total Members - ${group.members().mkString("\n")}")
+    log.info(s"$m has left")
+  }
+
+  override def nodes: Iterable[Member] = {
+    atomix.getGroup(clusterIdentifier).get().members().map(t => Member(t.id))
+  }
+
+  override def stop(): Unit = {
+    me.leave().join()
   }
 }
 

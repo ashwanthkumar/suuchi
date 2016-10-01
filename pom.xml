@@ -8,6 +8,8 @@
     <properties>
         <scala.version>2.10.4</scala.version>
         <akka.version>2.3.14</akka.version>
+        <atomix.version>1.0.0-rc9</atomix.version>
+        <catalyst.version>1.1.1</catalyst.version>
     </properties>
 
     <dependencies>
@@ -19,8 +21,23 @@
 
         <dependency>
             <groupId>io.atomix</groupId>
-            <artifactId>atomix-all</artifactId>
-            <version>1.0.0-rc9</version>
+            <artifactId>atomix</artifactId>
+            <version>${atomix.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.atomix</groupId>
+            <artifactId>atomix-resource</artifactId>
+            <version>${atomix.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.atomix.catalyst</groupId>
+            <artifactId>catalyst-transport</artifactId>
+            <version>${catalyst.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.atomix.catalyst</groupId>
+            <artifactId>catalyst-netty</artifactId>
+            <version>${catalyst.version}</version>
         </dependency>
 
         <dependency>
