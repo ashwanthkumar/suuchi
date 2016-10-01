@@ -1,5 +1,6 @@
 package in.ashwanthkumar.suuchi.rpc
 
+import in.ashwanthkumar.suuchi.store.InMemoryStore
 import io.grpc.{BindableService, ServerBuilder, Server}
 import io.grpc.netty.NettyServerBuilder
 import org.slf4j.LoggerFactory
@@ -40,7 +41,8 @@ class SuuchiServer(port: Int, services: List[BindableService] = Nil) {
 }
 
 object SuuchiServer extends App {
-  val server = new SuuchiServer(5051)
+  val store = new InMemoryStore
+  val server = new SuuchiServer(5051, List(new SuuchiReadService(store), new SuuchiPutService(store)))
   server.start()
   server.blockUntilShutdown()
 }
