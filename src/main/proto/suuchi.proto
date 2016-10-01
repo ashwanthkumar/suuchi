@@ -25,3 +25,15 @@ message GetResponse {
     bytes key = 1;
     bytes value = 2;
 }
+
+// SuuchiPut service which can be used for taking in writes
+service SuuchiPut {
+    rpc Put (PutRequest) returns (PutResponse);
+}
+message PutRequest {
+    bytes key = 1;
+    bytes value = 2;
+}
+message PutResponse {
+    bool status = 1;
+}
