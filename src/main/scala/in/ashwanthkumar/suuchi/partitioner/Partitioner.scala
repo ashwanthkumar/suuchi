@@ -12,7 +12,14 @@ trait Partitioner {
 }
 
 class ConsistentHashPartitioner(hashRing: ConsistentHashRing) extends Partitioner {
-  override def find(key: Array[Byte], replicaCount: Int): List[VNode] = List(hashRing.find(key)).filter(_.isDefined).map(_.get)
+  override def find(key: Array[Byte], replicaCount: Int): List[VNode] = {
+    // FIXME: Doesn't take into account key's replica information
+    // We will come to that when we do replication
+    List(hashRing.find(key))
+      .filter(_.isDefined)
+      .take(replicaCount)
+      .map(_.get)
+  }
 }
 
 trait Hash {
