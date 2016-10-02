@@ -16,18 +16,6 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
-case class MemberAddress(host: String, port: Int)
-case class Member(id: String)
-
-trait Bootstrapper {
-  /**
-   * Returns a list of host
-   * @return
-   */
-  def nodes: List[MemberAddress]
-}
-case class InMemoryBootstrapper(override val nodes: List[MemberAddress]) extends Bootstrapper
-
 abstract class Membership(host: String, port: Int) {
   def bootstrap(bootstrapper: Bootstrapper): Membership
 
@@ -61,7 +49,7 @@ class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifi
   var me: LocalMember = _
 
   override def bootstrap(bootstrapper: Bootstrapper): AtomixMembership = {
-    if(bootstrapper.nodes.isEmpty) {
+    if (bootstrapper.nodes.isEmpty) {
       atomix = atomix.bootstrap().join()
     } else {
       atomix = atomix.join(bootstrapper.nodes.map(m => new Address(m.host, m.port))).join()
