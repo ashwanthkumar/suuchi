@@ -8,7 +8,7 @@ import scala.util.hashing.MurmurHash3
 
 trait Partitioner {
   def find(key: Array[Byte], replicaCount: Int): List[VNode]
-  def find(key: Array[Byte]) = find(key, 1)
+  def find(key: Array[Byte]) : List[VNode] = find(key, 1)
 }
 
 class ConsistentHashPartitioner(hashRing: ConsistentHashRing) extends Partitioner {
@@ -16,21 +16,21 @@ class ConsistentHashPartitioner(hashRing: ConsistentHashRing) extends Partitione
 }
 
 trait Hash {
-  def hash[T](instance: T): Integer
+  def hash(bytes: Array[Byte]): Integer
 }
 
 object SuuchiHash extends Hash {
-  override def hash[T](instance: T): Integer = MurmurHash3.stringHash(instance.toString)
+  override def hash(bytes: Array[Byte]): Integer = MurmurHash3.arrayHash(bytes)
 }
 
-class ConsistentHashRing(hash: Hash, vnodeFactor: Int = 3) {
+class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
   val sortedMap = new util.TreeMap[Integer, VNode]()
 
   def init(nodes: List[Node]): Unit = {
       nodes.foreach(add)
   }
 
-  private def hash(vnode: VNode) = hash.hash(vnode.key)
+  private def hash(vnode: VNode): Int = hashFn.hash(vnode.key.getBytes)
 
   def add(node: Node) = {
     (1 to vnodeFactor).map(i => VNode(node, i)).foreach { vnode =>
@@ -47,7 +47,7 @@ class ConsistentHashRing(hash: Hash, vnodeFactor: Int = 3) {
   def find(key: Array[Byte]): Option[VNode] = {
     if (sortedMap.isEmpty) return None
     else {
-      val hashIdx = hash.hash(key)
+      val hashIdx = hashFn.hash(key)
       if(!sortedMap.containsKey(hashIdx)) {
         val newHashIdx = if(sortedMap.tailMap(hashIdx).isEmpty) sortedMap.firstKey() else sortedMap.tailMap(hashIdx).firstKey()
         Some(sortedMap.get(newHashIdx))
@@ -56,4 +56,7 @@ class ConsistentHashRing(hash: Hash, vnodeFactor: Int = 3) {
       }
     }
   }
+
+  // USED ONLY FOR TESTS
+  private[partitioner] def nodes = sortedMap.values()
 }
