@@ -43,7 +43,7 @@ class SuuchiClient(host: String, port: Int) {
     if (response.getValue.isEmpty) {
       None
     } else {
-      Some(response.getKey.concat(response.getValue).toByteArray)
+      Some(response.getValue.toByteArray)
     }
   }
 }
@@ -52,13 +52,13 @@ object SuuchiClient extends App {
   private val log = LoggerFactory.getLogger(getClass)
   val client = new SuuchiClient("localhost", 5051)
 
-  (1 to 26).foreach { index =>
-    val status = client.put(Array((59 + index).toByte), Array((65 + index).toByte))
+  (0 until 26).foreach { index =>
+    val status = client.put(Array((65 + index).toByte), Array((65 + index).toByte))
     log.info("Put Status={}", status)
   }
 
-  (1 to 26).foreach { index =>
-    val value = client.get(Array((59 + index).toByte))
+  (0 until 26).foreach { index =>
+    val value = client.get(Array((65 + index).toByte))
     log.info("Got value={}", new String(value.get))
   }
 
