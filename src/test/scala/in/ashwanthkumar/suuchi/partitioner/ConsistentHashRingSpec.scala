@@ -35,4 +35,14 @@ class ConsistentHashRingSpec extends FlatSpec {
     ring.remove(MemberAddress("host4", 4))
     ring.nodes.size should be(0)
   }
+
+  it should "return None when no nodes are present in the ring" in {
+    val ring = ConsistentHashRing()
+    ring.find("1".getBytes) should be(None)
+  }
+
+  it should "return the only node on find when only 1 node is present in the ring" in {
+    val ring = ConsistentHashRing(1).add(MemberAddress("host1", 1))
+    ring.find("1".getBytes) should be(Some(VNode(MemberAddress("host1", 1), 1)))
+  }
 }
