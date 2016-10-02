@@ -46,7 +46,7 @@ object SuuchiServer extends App {
   val store = new InMemoryStore
   val server1 = new SuuchiServer(5051,
     List(new SuuchiPutService(store)),
-    List(ServerInterceptors.intercept(new SuuchiReadService(store), new RequestForwarder(new AlwaysForwardTo(MemberAddress("localhost", 5052)))))
+    List(ServerInterceptors.intercept(new SuuchiReadService(store), new Router(new AlwaysRouteTo(MemberAddress("localhost", 5052)))))
   )
   server1.start()
 

@@ -7,11 +7,12 @@ import io.grpc.stub.ClientCalls
 import org.slf4j.LoggerFactory
 
 /**
- * RequestForwarder decides to forward the incoming request to right node in the cluster as defined
- * by the [[ForwardStrategy]].
- * @param forwardStrategy
+ * Router decides to route the incoming request to right node in the cluster as defined
+ * by the [[RoutingStrategy]].
+ *
+ * @param routingStrategy
  */
-class RequestForwarder(forwardStrategy: ForwardStrategy) extends ServerInterceptor {
+class Router(routingStrategy: RoutingStrategy) extends ServerInterceptor {
   private val log = LoggerFactory.getLogger(getClass)
 
   override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
@@ -22,7 +23,7 @@ class RequestForwarder(forwardStrategy: ForwardStrategy) extends ServerIntercept
       override def onReady(): Unit = delegate.onReady()
       override def onMessage(incomingRequest: ReqT): Unit = {
         // TODO - Handle forwarding loop here
-        forwardStrategy shouldForward incomingRequest match {
+        routingStrategy route incomingRequest match {
           case Some(node) =>
             log.debug(s"Forwarding request to $node")
             val forwarderChannel = NettyChannelBuilder.forAddress(node.host, node.port).usePlaintext(true).build()
