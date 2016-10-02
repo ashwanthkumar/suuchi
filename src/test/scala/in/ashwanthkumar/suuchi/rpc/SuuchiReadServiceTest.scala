@@ -21,7 +21,6 @@ class SuuchiReadServiceTest extends FlatSpec {
     service.get(request, observer)
 
     verify(observer, times(1)).onCompleted()
-
     val captor = ArgumentCaptor.forClass(classOf[GetResponse])
     verify(observer, times(1)).onNext(captor.capture())
     val response = captor.getValue
