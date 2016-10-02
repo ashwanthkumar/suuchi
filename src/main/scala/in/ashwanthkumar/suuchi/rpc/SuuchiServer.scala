@@ -1,10 +1,9 @@
 package in.ashwanthkumar.suuchi.rpc
 
+import in.ashwanthkumar.suuchi.membership.MemberAddress
 import in.ashwanthkumar.suuchi.store.InMemoryStore
-import io.grpc.ServerCall.Listener
 import io.grpc._
-import io.grpc.netty.{NettyChannelBuilder, NettyServerBuilder}
-import io.grpc.stub.ClientCalls
+import io.grpc.netty.NettyServerBuilder
 import org.slf4j.LoggerFactory
 
 class SuuchiServer(port: Int, services: List[BindableService] = Nil, serviceSpecs: List[ServerServiceDefinition] = Nil) {
@@ -45,7 +44,10 @@ class SuuchiServer(port: Int, services: List[BindableService] = Nil, serviceSpec
 
 object SuuchiServer extends App {
   val store = new InMemoryStore
-  val server1 = new SuuchiServer(5051, List(new SuuchiPutService(store)), List(ServerInterceptors.intercept(new SuuchiReadService(store), new RequestForwarder(5052))))
+  val server1 = new SuuchiServer(5051,
+    List(new SuuchiPutService(store)),
+    List(ServerInterceptors.intercept(new SuuchiReadService(store), new RequestForwarder(new AlwaysForwardTo(MemberAddress("localhost", 5052)))))
+  )
   server1.start()
 
   val server2 = new SuuchiServer(5052, List(new SuuchiReadService(store), new SuuchiPutService(store)))
@@ -55,37 +57,3 @@ object SuuchiServer extends App {
   server2.blockUntilShutdown()
 }
 
-class RequestForwarder(port: Int) extends ServerInterceptor {
-  private val log = LoggerFactory.getLogger(getClass)
-
-  override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
-    log.debug("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method")
-    new Listener[ReqT] {
-      val delegate = next.startCall(serverCall, headers)
-
-      override def onReady(): Unit = delegate.onReady()
-      override def onMessage(incomingRequest: ReqT): Unit = {
-        // TODO - Make the shouldForward pluggable
-        val shouldForward = true
-        log.info("Should forward? - " + shouldForward)
-        if (shouldForward) {
-          val forwarderChannel = NettyChannelBuilder.forAddress("localhost", port).usePlaintext(true).build()
-          val clientResponse = ClientCalls.blockingUnaryCall(forwarderChannel, serverCall.getMethodDescriptor, CallOptions.DEFAULT, incomingRequest)
-          forwarderChannel.shutdown()
-          // sendHeaders is very important and should be called before sendMessage
-          // else client wouldn't receive any data at all
-          serverCall.sendHeaders(headers)
-          serverCall.sendMessage(clientResponse)
-        } else {
-          log.debug("Calling delegate's onMessage")
-          // handle the call internally
-          delegate.onMessage(incomingRequest)
-        }
-      }
-
-      override def onHalfClose(): Unit = delegate.onHalfClose()
-      override def onCancel(): Unit = delegate.onCancel()
-      override def onComplete(): Unit = delegate.onComplete()
-    }
-  }
-}
