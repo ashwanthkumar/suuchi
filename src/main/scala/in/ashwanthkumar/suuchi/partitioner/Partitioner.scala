@@ -4,17 +4,23 @@ import java.nio.ByteBuffer
 import java.util
 import java.util.concurrent.ConcurrentMap
 
+import scala.util.hashing.MurmurHash3
+
 trait Partitioner {
   def find(key: Array[Byte], replicaCount: Int): List[VNode]
   def find(key: Array[Byte]) = find(key, 1)
 }
 
 class ConsistentHashPartitioner(hashRing: ConsistentHashRing) extends Partitioner {
-  override def find(key: Array[Byte], replicaCount: Int): List[VNode] = List(hashRing.find(key))
+  override def find(key: Array[Byte], replicaCount: Int): List[VNode] = List(hashRing.find(key)).filter(_.isDefined).map(_.get)
 }
 
 trait Hash {
   def hash[T](instance: T): Integer
+}
+
+object SuuchiHash extends Hash {
+  override def hash[T](instance: T): Integer = MurmurHash3.stringHash(instance.toString)
 }
 
 class ConsistentHashRing(hash: Hash, vnodeFactor: Int = 3) {
