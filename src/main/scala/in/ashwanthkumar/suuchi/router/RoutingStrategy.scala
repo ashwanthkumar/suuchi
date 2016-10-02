@@ -1,4 +1,4 @@
-package in.ashwanthkumar.suuchi.rpc
+package in.ashwanthkumar.suuchi.router
 
 import com.google.protobuf.ByteString
 import in.ashwanthkumar.suuchi.membership.MemberAddress
@@ -20,7 +20,7 @@ object RoutingStrategy {
 }
 
 /**
- * Consistently forward the requests to a node - useful in tests or while debugging
+ * Always forward the requests to a given node - useful in tests or while debugging
  * @param memberAddress
  */
 class AlwaysRouteTo(memberAddress: MemberAddress) extends RoutingStrategy {
@@ -34,14 +34,11 @@ class AlwaysRouteTo(memberAddress: MemberAddress) extends RoutingStrategy {
   }
 }
 
+/**
+* Uses a ConsistentHash based Partitioner to find the right node for the incoming message.
+* @param partitioner - which is an implementation of ConsistentHashPartitioner
+* */
 class ConsistentHashingRouter(partitioner: ConsistentHashPartitioner) extends RoutingStrategy {
-  /**
-   * Uses a ConsistentHash based Partitioner to find the right node for the incoming message.
-   *
-   * @tparam ReqT Type of the input Message
-   * @return Some(MemberAddress) - if the request is meant to be forwarded
-   *         <p> None - if the request can be handled by the current node itself
-   */
   override def route[ReqT]: PartialFunction[ReqT, Option[MemberAddress]] = {
     case msg: RoutingStrategy.WithKey => partitioner.find(msg.getKey.toByteArray).map(vnode => MemberAddress(vnode.node.host, 0)).headOption
   }

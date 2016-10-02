@@ -1,5 +1,6 @@
-package in.ashwanthkumar.suuchi.rpc
+package in.ashwanthkumar.suuchi.router
 
+import in.ashwanthkumar.suuchi.membership.MemberAddress
 import io.grpc.ServerCall.Listener
 import io.grpc._
 import io.grpc.netty.NettyChannelBuilder
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory
  *
  * @param routingStrategy
  */
-class Router(routingStrategy: RoutingStrategy) extends ServerInterceptor {
+class Router(routingStrategy: RoutingStrategy, self: MemberAddress) extends ServerInterceptor {
   private val log = LoggerFactory.getLogger(getClass)
 
   override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
@@ -26,7 +27,7 @@ class Router(routingStrategy: RoutingStrategy) extends ServerInterceptor {
         // TODO - Handle forwarding loop here
         if(routingStrategy.route.isDefinedAt(incomingRequest)) {
           routingStrategy route incomingRequest match {
-            case Some(node) =>
+            case Some(node) if !node.equals(self) =>
               log.debug(s"Forwarding request to $node")
               val forwarderChannel = NettyChannelBuilder.forAddress(node.host, node.port).usePlaintext(true).build()
               val clientResponse = ClientCalls.blockingUnaryCall(forwarderChannel, serverCall.getMethodDescriptor, CallOptions.DEFAULT, incomingRequest)
@@ -36,7 +37,7 @@ class Router(routingStrategy: RoutingStrategy) extends ServerInterceptor {
               serverCall.sendHeaders(headers)
               serverCall.sendMessage(clientResponse)
               forwarded = true
-            case None =>
+            case _ =>
               log.debug("Calling delegate's onMessage")
               delegate.onMessage(incomingRequest)
           }

@@ -1,6 +1,7 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.router.{AlwaysRouteTo, Router}
 import in.ashwanthkumar.suuchi.store.InMemoryStore
 import io.grpc._
 import io.grpc.netty.NettyServerBuilder
