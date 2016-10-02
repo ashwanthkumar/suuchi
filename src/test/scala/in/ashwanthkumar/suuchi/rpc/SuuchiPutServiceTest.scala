@@ -13,7 +13,7 @@ class SuuchiPutServiceTest extends FlatSpec {
   val store = new InMemoryStore
   val service = new SuuchiPutService(store)
 
-  "SuuchiReadService" should "support put for a Key-Value to the store" in {
+  "SuuchiPutService" should "support put for a Key-Value to the store" in {
     val request = PutRequest.newBuilder()
       .setKey(ByteString.copyFrom("1".getBytes))
       .setValue(ByteString.copyFrom("2".getBytes))
