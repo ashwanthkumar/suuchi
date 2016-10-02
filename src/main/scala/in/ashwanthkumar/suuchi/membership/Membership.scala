@@ -62,7 +62,7 @@ class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifi
 
   override def bootstrap(bootstrapper: Bootstrapper): AtomixMembership = {
     if(bootstrapper.nodes.isEmpty) {
-      atomix = atomix.bootstrap(bootstrapper.nodes.map(m => new Address(m.host, m.port))).join()
+      atomix = atomix.bootstrap().join()
     } else {
       atomix = atomix.join(bootstrapper.nodes.map(m => new Address(m.host, m.port))).join()
     }
