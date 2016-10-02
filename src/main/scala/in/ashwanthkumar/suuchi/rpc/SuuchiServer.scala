@@ -63,4 +63,3 @@ object SuuchiServer extends App {
   server1.blockUntilShutdown()
   server2.blockUntilShutdown()
 }
-
