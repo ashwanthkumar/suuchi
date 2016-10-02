@@ -73,7 +73,7 @@ class RequestForwarder(port: Int) extends ServerInterceptor {
           val clientResponse = ClientCalls.blockingUnaryCall(forwarderChannel, serverCall.getMethodDescriptor, CallOptions.DEFAULT, incomingRequest)
           forwarderChannel.shutdown()
           // sendHeaders is very important and should be called before sendMessage
-          // else client wouldn't recieve any data at all
+          // else client wouldn't receive any data at all
           serverCall.sendHeaders(headers)
           serverCall.sendMessage(clientResponse)
         } else {
