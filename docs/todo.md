@@ -1,26 +1,25 @@
 # Suuchi Release 0.1
 What you get?
-- Ability for nodes to join a cluster
-- Ability to route traffic to different nodes based on CH strategy
-- ability to write data and read data from the cluster
+- [x] Ability for nodes to join a cluster
+- [ ] Ability to route traffic to different nodes based on CH strategy
+- [ ] Ability to write data and read data from the cluster
 
 - Membership
- - Tests with members going up & down
- - Ability to query any node and check for the available members
+ - [x] Tests with members going up & down
+ - [x] Ability to query any node and check for the available members
 
 - Partitioner
- - Publish Partitioner trait
- - Implement CH Partitioner
- - forwardOrHandle based on Partitioner trait
+ - [ ] Publish Partitioner trait
+ - [ ] Implement CH Partitioner
+ - [ ] forwardOrHandle based on Partitioner trait
 
 - Node Service
- - gRPC <-> HTTP
- - GET
- - PUT
- - HEALTH
- - SHARD_INFO (Good to have)
+ - [x] gRPC <-> HTTP
+ - [x] GET
+ - [x] PUT
+ - [x] HEALTH
+ - [ ] SHARD_INFO (Good to have)
   - what shards (key space)
 
-- Inmemory store
+- [x] InMemoryStore
  - Implement an in-memory store that support get and put
-
