@@ -1,11 +1,11 @@
 package in.ashwanthkumar.suuchi.partitioner
 
-import java.util.TreeMap
+import java.util
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
 
 class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
-  val sortedMap = new TreeMap[Integer, VNode]()
+  val sortedMap = new util.TreeMap[Integer, VNode]()
 
   def init(nodes: List[MemberAddress]): Unit = {
       nodes.foreach(add)
@@ -26,7 +26,7 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
   }
 
   def find(key: Array[Byte]): Option[VNode] = {
-    if (sortedMap.isEmpty) return None
+    if (sortedMap.isEmpty) None
     else {
       val hashIdx = hashFn.hash(key)
       if(!sortedMap.containsKey(hashIdx)) {
@@ -40,4 +40,14 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
 
   // USED ONLY FOR TESTS
   private[partitioner] def nodes = sortedMap.values()
+}
+
+object ConsistentHashRing {
+  def apply(hashFn: Hash): ConsistentHashRing = new ConsistentHashRing(hashFn)
+
+  def apply(): ConsistentHashRing = apply(SuuchiHash)
+
+  def apply(replication: Int): ConsistentHashRing = apply(SuuchiHash, replication)
+
+  def apply(hashFn: Hash, replication: Int): ConsistentHashRing = new ConsistentHashRing(hashFn, replication)
 }
