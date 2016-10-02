@@ -29,9 +29,7 @@ class Router(routingStrategy: RoutingStrategy, self: MemberAddress) extends Serv
           routingStrategy route incomingRequest match {
             case Some(node) if !node.equals(self) =>
               log.debug(s"Forwarding request to $node")
-              val forwarderChannel = NettyChannelBuilder.forAddress(node.host, node.port).usePlaintext(true).build()
-              val clientResponse = ClientCalls.blockingUnaryCall(forwarderChannel, serverCall.getMethodDescriptor, CallOptions.DEFAULT, incomingRequest)
-              forwarderChannel.shutdown()
+              val clientResponse: RespT = forward(serverCall, incomingRequest, node)
               // sendHeaders is very important and should be called before sendMessage
               // else client wouldn't receive any data at all
               serverCall.sendHeaders(headers)
@@ -55,5 +53,12 @@ class Router(routingStrategy: RoutingStrategy, self: MemberAddress) extends Serv
       override def onCancel(): Unit = delegate.onCancel()
       override def onComplete(): Unit = delegate.onComplete()
     }
+  }
+
+  def forward[RespT, ReqT](serverCall: ServerCall[ReqT, RespT], incomingRequest: ReqT, node: MemberAddress): RespT = {
+    val forwarderChannel = NettyChannelBuilder.forAddress(node.host, node.port).usePlaintext(true).build()
+    val clientResponse = ClientCalls.blockingUnaryCall(forwarderChannel, serverCall.getMethodDescriptor, CallOptions.DEFAULT, incomingRequest)
+    forwarderChannel.shutdown()
+    clientResponse
   }
 }
