@@ -51,8 +51,8 @@ object SuuchiServer extends App {
   val server1 = new SuuchiServer(5051,
     List(),
     List(
-      ServerInterceptors.intercept(new SuuchiReadService(store), localRouter),
-      ServerInterceptors.intercept(new SuuchiPutService(store), localRouter)
+      ServerInterceptors.interceptForward(new SuuchiReadService(store), localRouter),
+      ServerInterceptors.interceptForward(new SuuchiPutService(store), localRouter)
     )
   )
   server1.start()
