@@ -21,6 +21,7 @@ class RequestForwarder(forwardStrategy: ForwardStrategy) extends ServerIntercept
 
       override def onReady(): Unit = delegate.onReady()
       override def onMessage(incomingRequest: ReqT): Unit = {
+        // TODO - Handle forwarding loop here
         forwardStrategy shouldForward incomingRequest match {
           case Some(node) =>
             log.debug(s"Forwarding request to $node")
