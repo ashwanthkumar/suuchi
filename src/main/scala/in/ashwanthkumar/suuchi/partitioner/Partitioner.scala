@@ -21,6 +21,9 @@ class ConsistentHashPartitioner(hashRing: ConsistentHashRing) extends Partitione
       .map(_.get)
   }
 }
+object ConsistentHashPartitioner {
+  def apply() = new ConsistentHashPartitioner(new ConsistentHashRing(SuuchiHash))
+}
 
 trait Hash {
   def hash(bytes: Array[Byte]): Integer

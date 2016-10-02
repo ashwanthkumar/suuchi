@@ -2,22 +2,24 @@ package in.ashwanthkumar.suuchi.partitioner
 
 import java.util.TreeMap
 
+import in.ashwanthkumar.suuchi.membership.MemberAddress
+
 class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
   val sortedMap = new TreeMap[Integer, VNode]()
 
-  def init(nodes: List[Node]): Unit = {
+  def init(nodes: List[MemberAddress]): Unit = {
       nodes.foreach(add)
   }
 
   private def hash(vnode: VNode): Int = hashFn.hash(vnode.key.getBytes)
 
-  def add(node: Node) = {
+  def add(node: MemberAddress) = {
     (1 to vnodeFactor).map(i => VNode(node, i)).foreach { vnode =>
       sortedMap.put(hash(vnode), vnode)
     }
   }
 
-  def remove(node: Node) = {
+  def remove(node: MemberAddress) = {
     (1 to vnodeFactor).map(i => VNode(node, i)).foreach { vnode =>
       sortedMap.remove(hash(vnode))
     }

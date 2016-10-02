@@ -2,7 +2,7 @@ package in.ashwanthkumar.suuchi.router
 
 import com.google.protobuf.ByteString
 import in.ashwanthkumar.suuchi.membership.MemberAddress
-import in.ashwanthkumar.suuchi.partitioner.ConsistentHashPartitioner
+import in.ashwanthkumar.suuchi.partitioner.{ConsistentHashPartitioner, ConsistentHashRing, SuuchiHash}
 import org.slf4j.LoggerFactory
 
 trait RoutingStrategy {
@@ -40,6 +40,10 @@ class AlwaysRouteTo(memberAddress: MemberAddress) extends RoutingStrategy {
 * */
 class ConsistentHashingRouter(partitioner: ConsistentHashPartitioner) extends RoutingStrategy {
   override def route[ReqT]: PartialFunction[ReqT, Option[MemberAddress]] = {
-    case msg: RoutingStrategy.WithKey => partitioner.find(msg.getKey.toByteArray).map(vnode => MemberAddress(vnode.node.host, 0)).headOption
+    case msg: RoutingStrategy.WithKey => partitioner.find(msg.getKey.toByteArray).map(vnode => vnode.node).headOption
   }
+}
+
+object ConsistentHashingRouter {
+  def apply() = new ConsistentHashingRouter(ConsistentHashPartitioner())
 }

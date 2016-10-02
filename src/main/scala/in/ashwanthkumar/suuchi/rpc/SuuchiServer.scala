@@ -1,7 +1,7 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
-import in.ashwanthkumar.suuchi.router.{AlwaysRouteTo, Router}
+import in.ashwanthkumar.suuchi.router.{AlwaysRouteTo, ConsistentHashingRouter, Router}
 import in.ashwanthkumar.suuchi.store.InMemoryStore
 import io.grpc._
 import io.grpc.netty.NettyServerBuilder
@@ -45,11 +45,14 @@ class SuuchiServer(port: Int, services: List[BindableService] = Nil, serviceSpec
 
 object SuuchiServer extends App {
   val store = new InMemoryStore
+  val localRouter = new Router(new AlwaysRouteTo(MemberAddress("localhost", 5052)), MemberAddress("localhost", 5051))
+  val chrRouter = new Router(ConsistentHashingRouter(), MemberAddress("localhost", 5052))
+
   val server1 = new SuuchiServer(5051,
-    List(new SuuchiPutService(store)),
+    List(),
     List(
-      ServerInterceptors.intercept(new SuuchiReadService(store),
-        new Router(new AlwaysRouteTo(MemberAddress("localhost", 5052)), MemberAddress("localhost", 5052)))
+      ServerInterceptors.intercept(new SuuchiReadService(store), localRouter),
+      ServerInterceptors.intercept(new SuuchiPutService(store), localRouter)
     )
   )
   server1.start()

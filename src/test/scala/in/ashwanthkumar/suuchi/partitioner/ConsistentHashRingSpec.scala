@@ -1,5 +1,6 @@
 package in.ashwanthkumar.suuchi.partitioner
 
+import in.ashwanthkumar.suuchi.membership.MemberAddress
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 
@@ -10,28 +11,28 @@ object IdentityHash extends Hash {
 class ConsistentHashRingSpec extends FlatSpec {
   "ConsistentHashRing" should "pin nodes into the ring accounting for virtual nodes" in {
     val ring = new ConsistentHashRing(SuuchiHash, 3)
-    ring.init(List(Node(1, "host1"), Node(2, "host2"), Node(3, "host3")))
+    ring.init(List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3)))
 
     ring.nodes.size() should be(9)
 
-    ring.add(Node(100, "host100"))
+    ring.add(MemberAddress("host100", 100))
     ring.nodes.size() should be(12)
   }
 
   it should "remove nodes & its replica nodes on remove" in {
     val ring = new ConsistentHashRing(SuuchiHash, 3)
-    ring.init(List(Node(1, "host1"), Node(2, "host2"), Node(3, "host3")))
+    ring.init(List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3)))
 
-    ring.remove(Node(1, "host1"))
+    ring.remove(MemberAddress("host1", 1))
     ring.nodes.size should be(6)
 
-    ring.remove(Node(2, "host2"))
+    ring.remove(MemberAddress("host2", 2))
     ring.nodes.size should be(3)
 
-    ring.remove(Node(3, "host3"))
+    ring.remove(MemberAddress("host3", 3))
     ring.nodes.size should be(0)
 
-    ring.remove(Node(4, "host4"))
+    ring.remove(MemberAddress("host4", 4))
     ring.nodes.size should be(0)
   }
 }
