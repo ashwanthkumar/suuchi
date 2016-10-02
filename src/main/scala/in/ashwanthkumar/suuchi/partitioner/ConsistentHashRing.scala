@@ -1,7 +1,9 @@
 package in.ashwanthkumar.suuchi.partitioner
 
+import java.util.TreeMap
+
 class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
-  val sortedMap = new util.TreeMap[Integer, VNode]()
+  val sortedMap = new TreeMap[Integer, VNode]()
 
   def init(nodes: List[Node]): Unit = {
       nodes.foreach(add)
