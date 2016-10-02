@@ -52,11 +52,15 @@ object SuuchiClient extends App {
   private val log = LoggerFactory.getLogger(getClass)
   val client = new SuuchiClient("localhost", 5051)
 
-  val status = client.put(Array(59.toByte), Array(65.toByte))
-  log.info("Put Status={}", status)
+  (1 to 26).foreach { index =>
+    val status = client.put(Array((59 + index).toByte), Array((65 + index).toByte))
+    log.info("Put Status={}", status)
+  }
 
-  val value = client.get(Array(59.toByte))
-  log.info("Got value={}", new String(value.get))
+  (1 to 26).foreach { index =>
+    val value = client.get(Array((59 + index).toByte))
+    log.info("Got value={}", new String(value.get))
+  }
 
   client.shutdown()
 }

@@ -17,12 +17,14 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
     (1 to vnodeFactor).map(i => VNode(node, i)).foreach { vnode =>
       sortedMap.put(hash(vnode), vnode)
     }
+    this
   }
 
   def remove(node: MemberAddress) = {
     (1 to vnodeFactor).map(i => VNode(node, i)).foreach { vnode =>
       sortedMap.remove(hash(vnode))
     }
+    this
   }
 
   def find(key: Array[Byte]): Option[VNode] = {

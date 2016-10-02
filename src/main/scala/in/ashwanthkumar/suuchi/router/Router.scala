@@ -17,7 +17,7 @@ class Router(routingStrategy: RoutingStrategy, self: MemberAddress) extends Serv
   private val log = LoggerFactory.getLogger(getClass)
 
   override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
-    log.debug("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method")
+    log.debug("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self)
     new Listener[ReqT] {
       val delegate = next.startCall(serverCall, headers)
       var forwarded = false

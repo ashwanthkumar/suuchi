@@ -1,6 +1,7 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.partitioner.{SuuchiHash, ConsistentHashRing, ConsistentHashPartitioner}
 import in.ashwanthkumar.suuchi.router.{AlwaysRouteTo, ConsistentHashingRouter, Router}
 import in.ashwanthkumar.suuchi.store.InMemoryStore
 import io.grpc._
@@ -46,18 +47,27 @@ class SuuchiServer(port: Int, services: List[BindableService] = Nil, serviceSpec
 object SuuchiServer extends App {
   val store = new InMemoryStore
   val localRouter = new Router(new AlwaysRouteTo(MemberAddress("localhost", 5052)), MemberAddress("localhost", 5051))
-  val chrRouter = new Router(ConsistentHashingRouter(), MemberAddress("localhost", 5052))
+  val ring = new ConsistentHashRing(SuuchiHash).add(MemberAddress("localhost", 5051)).add(MemberAddress("localhost", 5052))
+
+  val server1Router = new Router(new ConsistentHashingRouter(new ConsistentHashPartitioner(ring)), MemberAddress("localhost", 5051))
+  val server2Router = new Router(new ConsistentHashingRouter(new ConsistentHashPartitioner(ring)), MemberAddress("localhost", 5052))
 
   val server1 = new SuuchiServer(5051,
     List(),
     List(
-      ServerInterceptors.interceptForward(new SuuchiReadService(store), localRouter),
-      ServerInterceptors.interceptForward(new SuuchiPutService(store), localRouter)
+      ServerInterceptors.interceptForward(new SuuchiReadService(store), server1Router),
+      ServerInterceptors.interceptForward(new SuuchiPutService(store), server1Router)
     )
   )
   server1.start()
 
-  val server2 = new SuuchiServer(5052, List(new SuuchiReadService(store), new SuuchiPutService(store)))
+  val server2 = new SuuchiServer(5052,
+    List(),
+    List(
+      ServerInterceptors.interceptForward(new SuuchiReadService(store), server2Router),
+      ServerInterceptors.interceptForward(new SuuchiPutService(store), server2Router)
+    )
+  )
   server2.start()
 
   server1.blockUntilShutdown()
