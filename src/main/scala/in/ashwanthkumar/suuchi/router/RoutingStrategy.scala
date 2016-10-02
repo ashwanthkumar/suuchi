@@ -2,8 +2,10 @@ package in.ashwanthkumar.suuchi.router
 
 import com.google.protobuf.ByteString
 import in.ashwanthkumar.suuchi.membership.MemberAddress
-import in.ashwanthkumar.suuchi.partitioner.{ConsistentHashPartitioner, ConsistentHashRing, SuuchiHash}
+import in.ashwanthkumar.suuchi.partitioner.ConsistentHashPartitioner
 import org.slf4j.LoggerFactory
+
+import scala.language.reflectiveCalls
 
 trait RoutingStrategy {
   /**
@@ -35,9 +37,9 @@ class AlwaysRouteTo(memberAddress: MemberAddress) extends RoutingStrategy {
 }
 
 /**
-* Uses a ConsistentHash based Partitioner to find the right node for the incoming message.
-* @param partitioner - which is an implementation of ConsistentHashPartitioner
-* */
+ * Uses a ConsistentHash based Partitioner to find the right node for the incoming message.
+ * @param partitioner - which is an implementation of ConsistentHashPartitioner
+ **/
 class ConsistentHashingRouter(partitioner: ConsistentHashPartitioner) extends RoutingStrategy {
   override def route[ReqT]: PartialFunction[ReqT, Option[MemberAddress]] = {
     case msg: RoutingStrategy.WithKey => partitioner.find(msg.getKey.toByteArray).map(vnode => vnode.node).headOption
