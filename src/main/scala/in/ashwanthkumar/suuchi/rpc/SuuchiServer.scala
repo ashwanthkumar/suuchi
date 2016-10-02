@@ -46,7 +46,6 @@ class SuuchiServer(port: Int, services: List[BindableService] = Nil, serviceSpec
 
 object SuuchiServer extends App {
   val store = new InMemoryStore
-  val localRouter = new Router(new AlwaysRouteTo(MemberAddress("localhost", 5052)), MemberAddress("localhost", 5051))
   val ring = new ConsistentHashRing(SuuchiHash).add(MemberAddress("localhost", 5051)).add(MemberAddress("localhost", 5052))
 
   val server1Router = new Router(new ConsistentHashingRouter(new ConsistentHashPartitioner(ring)), MemberAddress("localhost", 5051))
