@@ -23,6 +23,7 @@ class ConsistentHashPartitioner(hashRing: ConsistentHashRing) extends Partitione
 }
 object ConsistentHashPartitioner {
   def apply() = new ConsistentHashPartitioner(new ConsistentHashRing(SuuchiHash))
+  def apply(ring: ConsistentHashRing) = new ConsistentHashPartitioner(ring)
 }
 
 trait Hash {
