@@ -1,6 +1,7 @@
 package in.ashwanthkumar.suuchi.example
 
 import java.io.File
+import java.nio.file.Files
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
 import in.ashwanthkumar.suuchi.router.ConsistentHashingRouting
@@ -12,11 +13,11 @@ import io.grpc.netty.NettyServerBuilder
 import org.apache.commons.io.FileUtils
 
 object DistributedRocksDb extends App {
-  FileUtils.forceMkdir(new File("/tmp/distributed-rocksdb/1"))
-  FileUtils.forceMkdir(new File("/tmp/distributed-rocksdb/2"))
+  val path1 = Files.createTempDirectory("distributed-rocksdb").toFile
+  val path2 = Files.createTempDirectory("distributed-rocksdb").toFile
 
-  val store1 = new RocksDbStore(RocksDbConfiguration("/tmp/distributed-rocksdb/1"))
-  val store2 = new RocksDbStore(RocksDbConfiguration("/tmp/distributed-rocksdb/2"))
+  val store1 = new RocksDbStore(RocksDbConfiguration(path1.getAbsolutePath))
+  val store2 = new RocksDbStore(RocksDbConfiguration(path2.getAbsolutePath))
 
   val routingStrategy = ConsistentHashingRouting(whoami(5051), whoami(5052))
 
@@ -33,6 +34,7 @@ object DistributedRocksDb extends App {
   server1.blockUntilShutdown()
   server2.blockUntilShutdown()
 
-  FileUtils.deleteQuietly(new File("/tmp/distributed-rocksdb"))
+  path1.delete()
+  path2.delete()
 
 }
