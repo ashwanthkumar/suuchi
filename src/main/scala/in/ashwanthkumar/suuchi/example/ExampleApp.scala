@@ -10,14 +10,14 @@ import io.grpc.netty.NettyServerBuilder
 object ExampleApp extends App {
   val store = new InMemoryStore
 
-  val routingStrategy = ConsistentHashingRouting(MemberAddress("localhost", 5051), MemberAddress("localhost", 5052))
+  val routingStrategy = ConsistentHashingRouting(whoami(5051), whoami(5052))
 
   val server1 = Server(NettyServerBuilder.forPort(5051), whoami(5051))
     .routeUsing(new SuuchiReadService(store), routingStrategy)
     .routeUsing(new SuuchiPutService(store), routingStrategy)
   server1.start()
 
-  val server2 = Server(NettyServerBuilder.forPort(5051), whoami(5051))
+  val server2 = Server(NettyServerBuilder.forPort(5052), whoami(5052))
     .routeUsing(new SuuchiReadService(store), routingStrategy)
     .routeUsing(new SuuchiPutService(store), routingStrategy)
   server2.start()
