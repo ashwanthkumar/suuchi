@@ -1,11 +1,14 @@
 package in.ashwanthkumar.suuchi.rpc
 
+import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.partitioner.{SuuchiHash, ConsistentHashRing, ConsistentHashPartitioner}
+import in.ashwanthkumar.suuchi.router.{AlwaysRouteTo, ConsistentHashingRouter, Router}
 import in.ashwanthkumar.suuchi.store.InMemoryStore
-import io.grpc.{BindableService, ServerBuilder, Server}
+import io.grpc._
 import io.grpc.netty.NettyServerBuilder
 import org.slf4j.LoggerFactory
 
-class SuuchiServer(port: Int, services: List[BindableService] = Nil) {
+class SuuchiServer(port: Int, services: List[BindableService] = Nil, serviceSpecs: List[ServerServiceDefinition] = Nil) {
   private val log = LoggerFactory.getLogger(classOf[SuuchiServer])
 
   private var server: Server = _
@@ -13,6 +16,7 @@ class SuuchiServer(port: Int, services: List[BindableService] = Nil) {
 
   def start() = {
     services.foreach(serverBuilder.addService)
+    serviceSpecs.foreach(serverBuilder.addService)
     server = serverBuilder
       .build()
       .start()
@@ -42,7 +46,29 @@ class SuuchiServer(port: Int, services: List[BindableService] = Nil) {
 
 object SuuchiServer extends App {
   val store = new InMemoryStore
-  val server = new SuuchiServer(5051, List(new SuuchiReadService(store), new SuuchiPutService(store)))
-  server.start()
-  server.blockUntilShutdown()
+  val ring = new ConsistentHashRing(SuuchiHash).add(MemberAddress("localhost", 5051)).add(MemberAddress("localhost", 5052))
+
+  val server1Router = new Router(new ConsistentHashingRouter(new ConsistentHashPartitioner(ring)), MemberAddress("localhost", 5051))
+  val server2Router = new Router(new ConsistentHashingRouter(new ConsistentHashPartitioner(ring)), MemberAddress("localhost", 5052))
+
+  val server1 = new SuuchiServer(5051,
+    List(),
+    List(
+      ServerInterceptors.interceptForward(new SuuchiReadService(store), server1Router),
+      ServerInterceptors.interceptForward(new SuuchiPutService(store), server1Router)
+    )
+  )
+  server1.start()
+
+  val server2 = new SuuchiServer(5052,
+    List(),
+    List(
+      ServerInterceptors.interceptForward(new SuuchiReadService(store), server2Router),
+      ServerInterceptors.interceptForward(new SuuchiPutService(store), server2Router)
+    )
+  )
+  server2.start()
+
+  server1.blockUntilShutdown()
+  server2.blockUntilShutdown()
 }
