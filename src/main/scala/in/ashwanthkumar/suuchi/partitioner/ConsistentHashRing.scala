@@ -7,8 +7,9 @@ import in.ashwanthkumar.suuchi.membership.MemberAddress
 class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
   val sortedMap = new util.TreeMap[Integer, VNode]()
 
-  def init(nodes: List[MemberAddress]): Unit = {
-      nodes.foreach(add)
+  def init(nodes: List[MemberAddress]) = {
+    nodes.foreach(add)
+    this
   }
 
   private def hash(vnode: VNode): Int = hashFn.hash(vnode.key.getBytes)
@@ -31,8 +32,8 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
     if (sortedMap.isEmpty) None
     else {
       val hashIdx = hashFn.hash(key)
-      if(!sortedMap.containsKey(hashIdx)) {
-        val newHashIdx = if(sortedMap.tailMap(hashIdx).isEmpty) sortedMap.firstKey() else sortedMap.tailMap(hashIdx).firstKey()
+      if (!sortedMap.containsKey(hashIdx)) {
+        val newHashIdx = if (sortedMap.tailMap(hashIdx).isEmpty) sortedMap.firstKey() else sortedMap.tailMap(hashIdx).firstKey()
         Some(sortedMap.get(newHashIdx))
       } else {
         Some(sortedMap.get(hashIdx))
@@ -48,6 +49,8 @@ object ConsistentHashRing {
   def apply(hashFn: Hash): ConsistentHashRing = new ConsistentHashRing(hashFn)
 
   def apply(): ConsistentHashRing = apply(SuuchiHash)
+
+  def apply(nodes: List[MemberAddress]): ConsistentHashRing = apply(SuuchiHash).init(nodes)
 
   def apply(replication: Int): ConsistentHashRing = apply(SuuchiHash, replication)
 
