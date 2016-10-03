@@ -6,8 +6,8 @@ import org.scalatest.Matchers.{convertToAnyShouldWrapper, be}
 
 class ConsistentHashPartitionerTest extends FlatSpec {
 
-  "ConsistentHashPartitioner" should "not return anything when underlying CHR is not initialized" in {
-    val partitioner = ConsistentHashPartitioner()
+  "ConsistentHashPartitioner" should "not return anything when underlying CHR has 0 nodes" in {
+    val partitioner = ConsistentHashPartitioner(Nil)
     partitioner.find("1".getBytes) should be(Nil)
   }
 

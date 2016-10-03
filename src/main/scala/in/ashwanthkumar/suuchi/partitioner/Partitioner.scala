@@ -4,6 +4,8 @@ import java.nio.ByteBuffer
 import java.util
 import java.util.concurrent.ConcurrentMap
 
+import in.ashwanthkumar.suuchi.membership.MemberAddress
+
 import scala.util.hashing.MurmurHash3
 
 trait Partitioner {
@@ -22,7 +24,7 @@ class ConsistentHashPartitioner(hashRing: ConsistentHashRing) extends Partitione
   }
 }
 object ConsistentHashPartitioner {
-  def apply() = new ConsistentHashPartitioner(new ConsistentHashRing(SuuchiHash))
+  def apply(nodes: List[MemberAddress]) = new ConsistentHashPartitioner(ConsistentHashRing(nodes))
   def apply(ring: ConsistentHashRing) = new ConsistentHashPartitioner(ring)
 }
 
