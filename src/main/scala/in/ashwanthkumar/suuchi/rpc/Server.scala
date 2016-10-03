@@ -3,10 +3,7 @@ package in.ashwanthkumar.suuchi.rpc
 import java.net.InetAddress
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
-import in.ashwanthkumar.suuchi.router.{ConsistentHashingRouting, Router, RoutingStrategy}
-import in.ashwanthkumar.suuchi.rpc.Server.whoami
-import in.ashwanthkumar.suuchi.store.InMemoryStore
-import io.grpc.netty.NettyServerBuilder
+import in.ashwanthkumar.suuchi.router.{Router, RoutingStrategy}
 import io.grpc.{BindableService, Server => GServer, ServerBuilder, ServerInterceptors, ServerServiceDefinition}
 import org.slf4j.LoggerFactory
 
@@ -63,21 +60,4 @@ object Server {
   def whoami(port: Int) = MemberAddress(InetAddress.getLocalHost.getCanonicalHostName, port)
 }
 
-object ExampleApp extends App {
-  val store = new InMemoryStore
 
-  val routingStrategy = ConsistentHashingRouting(MemberAddress("localhost", 5051), MemberAddress("localhost", 5052))
-
-  val server1 = Server(NettyServerBuilder.forPort(5051), whoami(5051))
-    .routeUsing(new SuuchiReadService(store), routingStrategy)
-    .routeUsing(new SuuchiPutService(store), routingStrategy)
-  server1.start()
-
-  val server2 = Server(NettyServerBuilder.forPort(5051), whoami(5051))
-    .routeUsing(new SuuchiReadService(store), routingStrategy)
-    .routeUsing(new SuuchiPutService(store), routingStrategy)
-  server2.start()
-
-  server1.blockUntilShutdown()
-  server2.blockUntilShutdown()
-}
