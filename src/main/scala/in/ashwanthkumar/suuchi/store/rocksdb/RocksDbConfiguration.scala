@@ -12,7 +12,14 @@ case class RocksDbConfiguration(location:String,
                                 maxBackgroundCompactions: Int) {
   val perFileSizeAtBase = maxBytesForBaseLevel / numFilesAtBase
   def baseOptions = new Options().setCreateIfMissing(true)
-  def toOptions = baseOptions
+  def toOptions = {
+    baseOptions
+    .setMaxBytesForLevelBase(maxBytesForBaseLevel)
+    .setTargetFileSizeBase(perFileSizeAtBase)
+    .setWriteBufferSize(memTableSize)
+    .setMaxWriteBufferNumber(maxWriteBufferNumber)
+    .setMaxBackgroundCompactions(maxBackgroundCompactions)
+  }
 
   def asDBOptions = {
     new DBOptions().setCreateIfMissing(true)
