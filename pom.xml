@@ -4,6 +4,34 @@
     <groupId>in.ashwanthkumar</groupId>
     <artifactId>suuchi</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <name>Suuchi</name>
+    <description>Toolkit to build distributed Data Systems</description>
+
+    <url>https://github.com/ashwanthkumar/suuchi</url>
+    <licenses>
+        <license>
+            <name>Apache2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/ashwanthkumar/suuchi</url>
+        <connection>scm:git:git@github.com:ashwanthkumar/suuchi.git</connection>
+    </scm>
+
+    <developers>
+        <developer>
+            <email>ashwanthkumar@googlemail.com</email>
+            <name>Ashwanth Kumar</name>
+            <url>https://ashwanthkumar.in/</url>
+            <id>ashwanthkumar</id>
+        </developer>
+        <developer>
+            <email>sri.rams85@gmail.com</email>
+            <name>Sriram Ramachandrasekaran</name>
+            <id>brewkode</id>
+        </developer>
+    </developers>
 
     <properties>
         <java.version>1.8</java.version>
@@ -142,6 +170,17 @@
         </repository>
     </repositories>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <extensions>
             <extension>
@@ -221,39 +260,6 @@
                 </executions>
             </plugin>
 
-
-            <!-- Maven assembly plugin for FAT jars -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>1.4</version>
-                <configuration>
-                    <createDependencyReducedPom>true</createDependencyReducedPom>
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>META-INF/*.SF</exclude>
-                                <exclude>META-INF/*.DSA</exclude>
-                                <exclude>META-INF/*.RSA</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- ScalaTest -->
             <plugin>
                 <groupId>org.scalatest</groupId>
@@ -288,6 +294,64 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
+
+    <!-- only run the signing steps when actually deploying to Central -->
+    <!-- add -DperformRelease to the mvn deploy command -->
+    <profiles>
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.4</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.3</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
