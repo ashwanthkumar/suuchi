@@ -17,7 +17,7 @@ class Router(routingStrategy: RoutingStrategy, self: MemberAddress) extends Serv
   private val log = LoggerFactory.getLogger(getClass)
 
   override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
-    log.debug("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self)
+    log.trace("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self)
     new Listener[ReqT] {
       val delegate = next.startCall(serverCall, headers)
       var forwarded = false
@@ -28,7 +28,7 @@ class Router(routingStrategy: RoutingStrategy, self: MemberAddress) extends Serv
         if(routingStrategy.route.isDefinedAt(incomingRequest)) {
           routingStrategy route incomingRequest match {
             case Some(node) if !node.equals(self) =>
-              log.debug(s"Forwarding request to $node")
+              log.trace(s"Forwarding request to $node")
               val clientResponse: RespT = forward(serverCall, incomingRequest, node)
               // sendHeaders is very important and should be called before sendMessage
               // else client wouldn't receive any data at all
@@ -36,11 +36,11 @@ class Router(routingStrategy: RoutingStrategy, self: MemberAddress) extends Serv
               serverCall.sendMessage(clientResponse)
               forwarded = true
             case _ =>
-              log.debug("Calling delegate's onMessage")
+              log.trace("Calling delegate's onMessage")
               delegate.onMessage(incomingRequest)
           }
         } else {
-          log.debug("Calling delegate's onMessage since router can't understand this message")
+          log.trace("Calling delegate's onMessage since router can't understand this message")
           delegate.onMessage(incomingRequest)
         }
       }
