@@ -17,7 +17,7 @@ class RocksDbStoreSpec extends FlatSpec with BeforeAndAfter {
   }
 
   "RocksDb" should "store & retrieve results properly" in {
-    val db = new RocksDbStore(RocksDbConfiguration.apply("/tmp/suuchi-rocks-test"))
+    val db = new RocksDbStore(RocksDbConfiguration.apply(ROCKSDB_TEST_LOCATION))
     (1 to 100).foreach { i =>
       db.put(Array(i toByte), Array(i*2 toByte))
     }
