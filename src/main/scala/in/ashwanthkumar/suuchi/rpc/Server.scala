@@ -3,7 +3,7 @@ package in.ashwanthkumar.suuchi.rpc
 import java.net.InetAddress
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
-import in.ashwanthkumar.suuchi.router.{Router, RoutingStrategy}
+import in.ashwanthkumar.suuchi.router.{HandleOrForwardRouter, RoutingStrategy}
 import io.grpc.{BindableService, Server => GServer, ServerBuilder, ServerInterceptors, ServerServiceDefinition}
 import org.slf4j.LoggerFactory
 
@@ -30,7 +30,7 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
   def routeUsing(service: BindableService, strategy: RoutingStrategy): Server[T] = routeUsing(service.bindService(), strategy)
 
   def routeUsing(service: ServerServiceDefinition, strategy: RoutingStrategy) = {
-    val router = new Router(strategy, whoami)
+    val router = new HandleOrForwardRouter(strategy, whoami)
     serverBuilder.addService(ServerInterceptors.interceptForward(service, router))
     this
   }

@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
  *
  * @param routingStrategy
  */
-class Router(routingStrategy: RoutingStrategy, self: MemberAddress) extends ServerInterceptor {
+class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddress) extends ServerInterceptor {
   private val log = LoggerFactory.getLogger(getClass)
 
   override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
@@ -27,17 +27,21 @@ class Router(routingStrategy: RoutingStrategy, self: MemberAddress) extends Serv
         // TODO - Handle forwarding loop here
         if(routingStrategy.route.isDefinedAt(incomingRequest)) {
           routingStrategy route incomingRequest match {
-            case Some(node) if !node.equals(self) =>
-              log.trace(s"Forwarding request to $node")
+            case items if items.nonEmpty && !items.exists(_.equals(self)) =>
+              val node = items.head
+              log.trace(s"Forwarding request to ${node}")
               val clientResponse: RespT = forward(serverCall, incomingRequest, node)
               // sendHeaders is very important and should be called before sendMessage
               // else client wouldn't receive any data at all
               serverCall.sendHeaders(headers)
               serverCall.sendMessage(clientResponse)
               forwarded = true
-            case _ =>
+            case items if items.nonEmpty && items.exists(_.equals(self)) =>
               log.trace("Calling delegate's onMessage")
               delegate.onMessage(incomingRequest)
+            case Nil =>
+              log.trace("Couldn't locate the right node for this request. Returning a NOT_FOUND response")
+              serverCall.close(Status.NOT_FOUND, headers)
           }
         } else {
           log.trace("Calling delegate's onMessage since router can't understand this message")

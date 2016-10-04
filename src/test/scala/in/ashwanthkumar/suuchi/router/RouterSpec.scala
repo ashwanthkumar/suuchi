@@ -11,29 +11,29 @@ class NeverRoute extends RoutingStrategy {
   /**
    * @inheritdoc
    */
-  override def route[ReqT]: PartialFunction[ReqT, Option[MemberAddress]] = PartialFunction.empty
+  override def route[ReqT]: PartialFunction[ReqT, List[MemberAddress]] = PartialFunction.empty
 }
 
-class RouterTest extends FlatSpec {
+class RouterSpec extends FlatSpec {
   "Router" should "not forward messages if routing strategy doesn't say so" in {
-    val router = new Router(new NeverRoute(), MemberAddress("host2", 1))
+    val router = new HandleOrForwardRouter(new NeverRoute(), MemberAddress("host2", 1))
     verifyInteractions(router, isForwarded = false)
   }
 
   it should "not forward message when router emits node to self" in {
-    val router = new Router(new AlwaysRouteTo(MemberAddress("host2", 1)), MemberAddress("host2", 1))
+    val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host2", 1)), MemberAddress("host2", 1))
     verifyInteractions(router, isForwarded = false)
   }
 
   it should "forward message when router says so" in {
-    val router = new Router(new AlwaysRouteTo(MemberAddress("host1", 1)), MemberAddress("host2", 1)) {
+    val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1)), MemberAddress("host2", 1)) {
       // mocking the actual forward implementation
       override def forward[RespT, ReqT](serverCall: ServerCall[ReqT, RespT], incomingRequest: ReqT, node: MemberAddress): RespT = 1.asInstanceOf[RespT]
     }
     verifyInteractions(router, isForwarded = true)
   }
 
-  def verifyInteractions(router: Router, isForwarded: Boolean): Unit = {
+  def verifyInteractions(router: HandleOrForwardRouter, isForwarded: Boolean): Unit = {
     val serverCall = mock(classOf[ServerCall[Int, Int]])
     val serverMethodDesc = mock(classOf[MethodDescriptor[Int, Int]])
     when(serverCall.getMethodDescriptor).thenReturn(serverMethodDesc)

@@ -67,7 +67,7 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
     else {
       var duped = 0
       var hashIdx = hashFn.hash(key)
-      var uniqueNodes = mutable.MutableList[MemberAddress]()
+      val uniqueNodes = mutable.MutableList[MemberAddress]()
       var index = 0
       while (index < n) {
         val (newHash, candidate) = findCandidate(hashIdx)
