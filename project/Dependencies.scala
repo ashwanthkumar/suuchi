@@ -37,8 +37,9 @@ object Dependencies {
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.12"
   val Log4JVersion = "2.6.2"
   val log4jCore = "org.apache.logging.log4j" % "log4j-core" % Log4JVersion
+  val log4jApi = "org.apache.logging.log4j" % "log4j-api" % Log4JVersion
   val log4jSlf4jImpl = "org.apache.logging.log4j" % "log4j-slf4j-impl" % Log4JVersion
-  val logging = Seq(slf4j, log4jCore, log4jSlf4jImpl)
+  val logging = Seq(slf4j, log4jCore, log4jApi, log4jSlf4jImpl)
 
   val rocksDB = "org.rocksdb" % "rocksdbjni" % "4.9.0"
 
