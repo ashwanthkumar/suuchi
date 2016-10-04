@@ -10,7 +10,7 @@ import io.grpc.netty.NettyServerBuilder
 object ExampleApp extends App {
   val store = new InMemoryStore
 
-  val routingStrategy = ConsistentHashingRouting(whoami(5051), whoami(5052), whoami(5053))
+  val routingStrategy = ConsistentHashingRouting(2, whoami(5051), whoami(5052), whoami(5053))
 
   val server1 = Server(NettyServerBuilder.forPort(5051), whoami(5051))
     .routeUsing(new SuuchiReadService(store), routingStrategy)
