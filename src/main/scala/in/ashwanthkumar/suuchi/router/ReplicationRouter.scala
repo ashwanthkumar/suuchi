@@ -13,10 +13,9 @@ import org.slf4j.LoggerFactory
  * Replication Router picks up the set of nodes to which this request needs to be sent to (if not already set)
  * and forwards the request to the list of nodes in parallel and waits for all of them to complete
  */
-abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends ServerInterceptor {
-  me =>
+abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends ServerInterceptor { me =>
   val REPLICATION_REQUEST_KEY = Metadata.Key.of(Headers.REPLICATION_REQUEST, StringMarshaller)
-  val ELIGIBLE_NODES_KEY = Metadata.Key.of(Headers.ELIGIBLE_NODES, ListOfNodesMarshaller)
+  val ELIGIBLE_NODES_KEY = Metadata.Key.of(Headers.ELIGIBLE_NODES, MemberAddressMarshaller)
   var forwarded = false
 
   protected val log = LoggerFactory.getLogger(me.getClass)

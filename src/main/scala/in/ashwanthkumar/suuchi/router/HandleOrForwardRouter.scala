@@ -28,7 +28,7 @@ class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddres
           val eligibleNodes = routingStrategy route incomingRequest
           // Always set ELIGIBLE_NODES header to the list of nodes eligible in the current
           // operation - as defined by the RoutingStrategy
-          headers.put(Metadata.Key.of(Headers.ELIGIBLE_NODES, ListOfNodesMarshaller), eligibleNodes)
+          headers.put(Metadata.Key.of(Headers.ELIGIBLE_NODES, MemberAddressMarshaller), eligibleNodes)
 
           eligibleNodes match {
             case nodes if nodes.nonEmpty && !nodes.exists(_.equals(self)) =>
