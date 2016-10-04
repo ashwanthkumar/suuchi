@@ -10,7 +10,7 @@ import scala.collection.mutable
 class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
   val sortedMap = new util.TreeMap[Integer, VNode]()
 
-  // when looking for n unique bins, give up after a streak of MAX_DUPES
+  // when looking for n unique nodes, give up after a streak of MAX_DUPES
   // duplicates
   val MAX_DUPES = 10
 
@@ -45,7 +45,7 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
   }
 
   /**
-   * This returns the closest n bins in order for the object. There may be
+   * This returns the closest n nodes in order for the object. There may be
    * duplicates.
    */
   def find(key: Array[Byte], n: Int) = {
@@ -62,25 +62,25 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
   }
 
   /**
-   * This returns the closest n bins in order for the object. There is extra
-   * code that forces the bin values to be unique.
+   * This returns the closest n nodes in order for the object. There is extra
+   * code that forces the node values to be unique.
    *
-   * This will return a list that has all the bins (and is smaller than n) if n
-   * > number of bins.
+   * This will return a list that has all the nodes (and is smaller than n) if n
+   * > number of nodes.
    */
   def findNUnique(key: Array[Byte], n: Int) = {
     if (sortedMap.isEmpty) Nil
     else {
       var duped = 0
       var hashIdx = hashFn.hash(key)
-      var uniqueBins = mutable.MutableList[MemberAddress]()
+      var uniqueNodes = mutable.MutableList[MemberAddress]()
       var index = 0
       while (index < n) {
         val (newHash, candidate) = findCandidate(hashIdx)
         hashIdx = newHash
-        if (!uniqueBins.contains(candidate)) {
+        if (!uniqueNodes.contains(candidate)) {
           duped = 0
-          uniqueBins += candidate
+          uniqueNodes += candidate
         } else {
           duped += 1
           index -= 1 // try again
@@ -90,12 +90,11 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
           }
         }
 
-        // was a hit so we increment and loop to find the next bin in the
-        // circle
+        // was a hit so we increment and loop to find the next node in the circle
         hashIdx += 1
         index += 1
       }
-      uniqueBins.toList
+      uniqueNodes.toList
     }
   }
 
