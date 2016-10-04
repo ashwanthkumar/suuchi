@@ -37,11 +37,7 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
   }
 
   def find(key: Array[Byte]): Option[MemberAddress] = {
-    if (sortedMap.isEmpty) None
-    else {
-      val (_, candidate) = findCandidate(hashFn.hash(key))
-      Some(candidate)
-    }
+    find(key, 1).headOption
   }
 
   /**
@@ -51,13 +47,11 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
   def find(key: Array[Byte], n: Int) = {
     if (sortedMap.isEmpty) Nil
     else {
-      var hash = hashFn.hash(key)
-      (0 until n).map { index =>
+      val (_, nodes) = (0 until n).foldLeft((hashFn.hash(key), List.empty[MemberAddress])){ case ((hash, members), idx) =>
         val (newHash, candidate) = findCandidate(hash)
-        hash = newHash + 1
-
-        candidate
-      }.toList
+        (newHash+1, candidate :: members)
+      }
+      nodes.reverse
     }
   }
 
@@ -68,7 +62,7 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
    * This will return a list that has all the nodes (and is smaller than n) if n
    * > number of nodes.
    */
-  def findNUnique(key: Array[Byte], n: Int) = {
+  def findUnique(key: Array[Byte], n: Int) = {
     if (sortedMap.isEmpty) Nil
     else {
       var duped = 0

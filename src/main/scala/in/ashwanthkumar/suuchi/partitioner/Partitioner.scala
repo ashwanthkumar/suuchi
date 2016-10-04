@@ -15,7 +15,7 @@ trait Partitioner {
 
 class ConsistentHashPartitioner(hashRing: ConsistentHashRing) extends Partitioner {
   override def find(key: Array[Byte], replicaCount: Int): List[MemberAddress] = {
-    hashRing.findNUnique(key, replicaCount)
+    hashRing.findUnique(key, replicaCount)
   }
 }
 object ConsistentHashPartitioner {
