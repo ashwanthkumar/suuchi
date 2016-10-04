@@ -42,7 +42,7 @@ class AlwaysRouteTo(memberAddress: MemberAddress) extends RoutingStrategy {
  **/
 class ConsistentHashingRouting(partitioner: ConsistentHashPartitioner) extends RoutingStrategy {
   override def route[ReqT]: PartialFunction[ReqT, Option[MemberAddress]] = {
-    case msg: RoutingStrategy.WithKey => partitioner.find(msg.getKey.toByteArray).map(vnode => vnode.node).headOption
+    case msg: RoutingStrategy.WithKey => partitioner.find(msg.getKey.toByteArray).headOption
   }
 }
 

@@ -9,18 +9,13 @@ import in.ashwanthkumar.suuchi.membership.MemberAddress
 import scala.util.hashing.MurmurHash3
 
 trait Partitioner {
-  def find(key: Array[Byte], replicaCount: Int): List[VNode]
-  def find(key: Array[Byte]) : List[VNode] = find(key, 1)
+  def find(key: Array[Byte], replicaCount: Int): List[MemberAddress]
+  def find(key: Array[Byte]) : List[MemberAddress] = find(key, 1)
 }
 
 class ConsistentHashPartitioner(hashRing: ConsistentHashRing) extends Partitioner {
-  override def find(key: Array[Byte], replicaCount: Int): List[VNode] = {
-    // FIXME: Doesn't take into account key's replica information
-    // We will come to that when we do replication
-    List(hashRing.find(key))
-      .filter(_.isDefined)
-      .take(replicaCount)
-      .map(_.get)
+  override def find(key: Array[Byte], replicaCount: Int): List[MemberAddress] = {
+    hashRing.findNUnique(key, replicaCount)
   }
 }
 object ConsistentHashPartitioner {
