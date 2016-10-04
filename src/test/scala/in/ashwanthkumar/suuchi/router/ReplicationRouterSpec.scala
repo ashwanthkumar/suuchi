@@ -21,7 +21,7 @@ class MockReplicator(nrOfReplicas: Int, self: MemberAddress, mock: ReplicationRo
 }
 
 class ReplicationRouterSpec extends FlatSpec {
-  "ReplicationRouter" should "delete the message to the local node if it's a REPLICATION_REQUEST" in {
+  "ReplicationRouter" should "delegate the message to the local node if it's a REPLICATION_REQUEST" in {
     val whoami = MemberAddress("host1", 1)
     val replicator = new NoReplicator(1, whoami)
 
