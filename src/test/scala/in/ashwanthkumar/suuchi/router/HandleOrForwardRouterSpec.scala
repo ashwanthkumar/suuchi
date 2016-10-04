@@ -2,7 +2,7 @@ package in.ashwanthkumar.suuchi.router
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
 import io.grpc.ServerCall.Listener
-import io.grpc.{Metadata, MethodDescriptor, ServerCall, ServerCallHandler}
+import io.grpc._
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
@@ -14,26 +14,40 @@ class NeverRoute extends RoutingStrategy {
   override def route[ReqT]: PartialFunction[ReqT, List[MemberAddress]] = PartialFunction.empty
 }
 
-class RouterSpec extends FlatSpec {
+class NoAliveNodes extends RoutingStrategy {
+  /**
+   * @inheritdoc
+   */
+  override def route[ReqT]: PartialFunction[ReqT, List[MemberAddress]] = {
+    case _ => Nil
+  }
+}
+
+class HandleOrForwardRouterSpec extends FlatSpec {
   "Router" should "not forward messages if routing strategy doesn't say so" in {
     val router = new HandleOrForwardRouter(new NeverRoute(), MemberAddress("host2", 1))
-    verifyInteractions(router, isForwarded = false)
+    verifyInteractions(router, isForwarded = false, isHandledLocally = true)
+  }
+
+  it should "not forward messages if no nodes are alive" in {
+    val router = new HandleOrForwardRouter(new NoAliveNodes(), MemberAddress("host2", 1))
+    verifyInteractions(router, isForwarded = false, isHandledLocally = false)
   }
 
   it should "not forward message when router emits node to self" in {
     val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host2", 1)), MemberAddress("host2", 1))
-    verifyInteractions(router, isForwarded = false)
+    verifyInteractions(router, isForwarded = false, isHandledLocally = true)
   }
 
   it should "forward message when router says so" in {
     val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1)), MemberAddress("host2", 1)) {
       // mocking the actual forward implementation
-      override def forward[RespT, ReqT](serverCall: ServerCall[ReqT, RespT], incomingRequest: ReqT, node: MemberAddress): RespT = 1.asInstanceOf[RespT]
+      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = 1.asInstanceOf[RespT]
     }
-    verifyInteractions(router, isForwarded = true)
+    verifyInteractions(router, isForwarded = true, isHandledLocally = false)
   }
 
-  def verifyInteractions(router: HandleOrForwardRouter, isForwarded: Boolean): Unit = {
+  def verifyInteractions(router: HandleOrForwardRouter, isForwarded: Boolean, isHandledLocally: Boolean): Unit = {
     val serverCall = mock(classOf[ServerCall[Int, Int]])
     val serverMethodDesc = mock(classOf[MethodDescriptor[Int, Int]])
     when(serverCall.getMethodDescriptor).thenReturn(serverMethodDesc)
@@ -57,9 +71,13 @@ class RouterSpec extends FlatSpec {
 
       verify(serverCall, times(1)).sendHeaders(any(classOf[Metadata]))
       verify(serverCall, times(1)).sendMessage(1)
-    } else {
+    } else if(isHandledLocally) {
       verify(delegate, times(1)).onMessage(1)
       verify(delegate, times(1)).onHalfClose()
+    } else {
+      verify(serverCall, times(0)).sendHeaders(any(classOf[Metadata]))
+      verify(serverCall, times(0)).sendMessage(1)
+      verify(serverCall, times(1)).close(any(classOf[Status]), any(classOf[Metadata]))
     }
     verify(delegate, times(1)).onComplete()
     verify(delegate, times(1)).onCancel()

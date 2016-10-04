@@ -1,6 +1,5 @@
 package in.ashwanthkumar.suuchi.example
 
-import in.ashwanthkumar.suuchi.membership.MemberAddress
 import in.ashwanthkumar.suuchi.router.ConsistentHashingRouting
 import in.ashwanthkumar.suuchi.rpc.Server.whoami
 import in.ashwanthkumar.suuchi.rpc.{Server, SuuchiPutService, SuuchiReadService}

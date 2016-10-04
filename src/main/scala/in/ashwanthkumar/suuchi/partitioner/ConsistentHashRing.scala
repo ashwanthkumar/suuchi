@@ -14,7 +14,6 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
   // duplicates
   val MAX_DUPES = 10
 
-
   def init(nodes: List[MemberAddress]) = {
     nodes.foreach(add)
     this
