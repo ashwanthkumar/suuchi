@@ -1,9 +1,5 @@
 package in.ashwanthkumar.suuchi.partitioner
 
-import java.nio.ByteBuffer
-import java.util
-import java.util.concurrent.ConcurrentMap
-
 import in.ashwanthkumar.suuchi.membership.MemberAddress
 
 import scala.util.hashing.MurmurHash3
