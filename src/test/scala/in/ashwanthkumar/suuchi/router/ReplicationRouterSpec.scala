@@ -1,14 +1,11 @@
 package in.ashwanthkumar.suuchi.router
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
-import io.grpc
 import io.grpc.ServerCall.Listener
-import io.grpc.{ServerCallHandler, MethodDescriptor, Metadata, ServerCall}
+import io.grpc.{Metadata, MethodDescriptor, ServerCall, ServerCallHandler}
 import org.mockito.Matchers._
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers.{convertToAnyShouldWrapper, be}
 import org.mockito.Mockito._
-import org.mockito.Matchers
+import org.scalatest.FlatSpec
 
 class NoReplicator(nrOfReplicas: Int, self: MemberAddress) extends ReplicationRouter(nrOfReplicas, self) {
   override def replicate[ReqT, RespT](eligibleNodes: scala.List[MemberAddress], serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, delegate: ServerCall.Listener[ReqT]): Unit = {}
