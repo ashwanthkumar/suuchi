@@ -35,8 +35,8 @@
 
     <properties>
         <java.version>1.8</java.version>
-        <scala.version>2.10.4</scala.version>
-        <scala.lib.version>2.10</scala.lib.version>
+        <scala.version>2.11.8</scala.version>
+        <scala.lib.version>2.11</scala.lib.version>
         <atomix.version>1.0.0-rc9</atomix.version>
         <catalyst.version>1.1.1</catalyst.version>
         <grpc.version>1.0.1</grpc.version>
@@ -151,7 +151,7 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.lib.version}</artifactId>
-            <version>2.2.0</version>
+            <version>3.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -162,13 +162,6 @@
         </dependency>
 
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>Typesafe Releases</id>
-            <url>http://repo.typesafe.com/typesafe/releases/</url>
-        </repository>
-    </repositories>
 
     <distributionManagement>
         <snapshotRepository>
@@ -264,7 +257,7 @@
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
-                <version>1.0-M2</version>
+                <version>1.0</version>
                 <configuration>
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                     <junitxml>.</junitxml>
