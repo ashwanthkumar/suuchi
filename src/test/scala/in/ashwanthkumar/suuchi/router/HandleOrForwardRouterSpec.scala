@@ -42,7 +42,7 @@ class HandleOrForwardRouterSpec extends FlatSpec {
   it should "forward message when router says so" in {
     val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1)), MemberAddress("host2", 1)) {
       // mocking the actual forward implementation
-      override def forward[RespT, ReqT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, node: MemberAddress, allNodes: List[MemberAddress]): RespT = 1.asInstanceOf[RespT]
+      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = 1.asInstanceOf[RespT]
     }
     verifyInteractions(router, isForwarded = true, isHandledLocally = false)
   }
