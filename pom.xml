@@ -163,13 +163,6 @@
 
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>Typesafe Releases</id>
-            <url>http://repo.typesafe.com/typesafe/releases/</url>
-        </repository>
-    </repositories>
-
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
