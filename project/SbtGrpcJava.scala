@@ -6,6 +6,7 @@ import sbt._
 import sbtprotoc.ProtocPlugin.autoImport.PB
 
 object SbtGrpcJava {
+  val log = MainLogging.defaultScreen(ConsoleOut.systemOut)
 
   def protobufSettings(moduleName: String) = Seq(
     PB.protoSources in Compile := Seq(file(s"$moduleName/src/main/proto")),
@@ -31,7 +32,7 @@ object SbtGrpcJava {
     if (!outputFile.exists()) {
       downloadPlugin(version, fileName, outputFile)
     } else {
-      println("GRPC Plugin found locally")
+      log.success("protoc-grpc-plugin found locally at " + outputFile.getAbsolutePath)
     }
     outputFile.setExecutable(true) // explicitly mark the file executable
     outputFile.getAbsolutePath
@@ -40,9 +41,9 @@ object SbtGrpcJava {
   def downloadPlugin(version: String, fileName: String, outputFile: File): Unit = {
     val binaryUrl = sbt.url("http://repo1.maven.org/maven2/io/grpc/protoc-gen-grpc-java/" + version + "/" + fileName)
     val outputStream = new FileOutputStream(outputFile)
-    println("Downloading " + binaryUrl.toString + " to " + outputFile.getAbsolutePath)
+    log.info("Downloading " + binaryUrl.toString + " to " + outputFile.getAbsolutePath)
     IOUtils.copy(binaryUrl.openConnection().getInputStream, outputStream)
     IOUtils.closeQuietly(outputStream)
-    println("Download of protoc-gen-grpc-java plugin is complete")
+    log.success("Download of protoc-gen-grpc-java plugin is complete")
   }
 }
