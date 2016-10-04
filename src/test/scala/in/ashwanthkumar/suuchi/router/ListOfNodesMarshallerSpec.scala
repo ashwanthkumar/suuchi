@@ -2,7 +2,7 @@ package in.ashwanthkumar.suuchi.router
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
 import org.scalatest.FlatSpec
-import org.scalatest.Matchers.{convertToAnyShouldWrapper, be, have, contain}
+import org.scalatest.Matchers.{be, contain, convertToAnyShouldWrapper, have}
 
 class ListOfNodesMarshallerSpec extends FlatSpec {
   "ListOfNodesMarshaller" should "convert list of members to ascii string" in {

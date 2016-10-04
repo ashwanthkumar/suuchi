@@ -1,12 +1,11 @@
 package in.ashwanthkumar.suuchi.router
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
-import io.grpc.{MethodDescriptor, Status, Metadata, ServerCall}
-import io.grpc.stub.ServerCalls
-import org.scalatest.FlatSpec
-import org.mockito.Mockito._
-import org.mockito.Matchers._
+import io.grpc.{Metadata, MethodDescriptor, ServerCall, Status}
 import org.mockito.Matchers
+import org.mockito.Matchers._
+import org.mockito.Mockito._
+import org.scalatest.FlatSpec
 
 class TestSequentialReplicator(nrReplicas: Int, self: MemberAddress) extends SequentialReplicator(nrReplicas, self) {
   override def forward[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): Any = {}

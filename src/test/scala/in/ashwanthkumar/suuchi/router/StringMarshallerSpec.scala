@@ -1,8 +1,7 @@
 package in.ashwanthkumar.suuchi.router
 
-import in.ashwanthkumar.suuchi.membership.MemberAddress
 import org.scalatest.FlatSpec
-import org.scalatest.Matchers.{be, contain, convertToAnyShouldWrapper, have}
+import org.scalatest.Matchers.{be, convertToAnyShouldWrapper}
 
 class StringMarshallerSpec extends FlatSpec {
    "StringMarshaller" should "return the string as is when serialised" in {
