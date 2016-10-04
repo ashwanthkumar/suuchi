@@ -32,9 +32,9 @@ class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddres
 
           eligibleNodes match {
             case nodes if nodes.nonEmpty && !nodes.exists(_.equals(self)) =>
-              val node = nodes.head
-              log.trace(s"Forwarding request to $node")
-              val clientResponse: RespT = forward(serverCall, headers, incomingRequest, node, nodes)
+              val destination = nodes.head
+              log.trace(s"Forwarding request to $destination")
+              val clientResponse: RespT = forward(serverCall.getMethodDescriptor, headers, incomingRequest, destination)
               // sendHeaders is very important and should be called before sendMessage
               // else client wouldn't receive any data at all
               serverCall.sendHeaders(headers)
@@ -63,11 +63,11 @@ class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddres
     }
   }
 
-  def forward[RespT, ReqT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, node: MemberAddress, allNodes: List[MemberAddress]): RespT = {
-    val forwarderChannel = NettyChannelBuilder.forAddress(node.host, node.port).usePlaintext(true).build()
+  def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
+    val forwarderChannel = NettyChannelBuilder.forAddress(destination.host, destination.port).usePlaintext(true).build()
     val clientResponse = ClientCalls.blockingUnaryCall(
       ClientInterceptors.interceptForward(forwarderChannel, MetadataUtils.newAttachHeadersInterceptor(headers)),
-      serverCall.getMethodDescriptor,
+      method,
       CallOptions.DEFAULT,
       incomingRequest)
 
