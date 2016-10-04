@@ -1,16 +1,12 @@
 package in.ashwanthkumar.suuchi.example
 
-import java.io.File
 import java.nio.file.Files
 
-import in.ashwanthkumar.suuchi.membership.MemberAddress
 import in.ashwanthkumar.suuchi.router.ConsistentHashingRouting
-import in.ashwanthkumar.suuchi.rpc.{SuuchiPutService, SuuchiReadService, Server}
 import in.ashwanthkumar.suuchi.rpc.Server._
-import in.ashwanthkumar.suuchi.store.InMemoryStore
+import in.ashwanthkumar.suuchi.rpc.{Server, SuuchiPutService, SuuchiReadService}
 import in.ashwanthkumar.suuchi.store.rocksdb.{RocksDbConfiguration, RocksDbStore}
 import io.grpc.netty.NettyServerBuilder
-import org.apache.commons.io.FileUtils
 
 object DistributedRocksDb extends App {
   val path1 = Files.createTempDirectory("distributed-rocksdb").toFile
