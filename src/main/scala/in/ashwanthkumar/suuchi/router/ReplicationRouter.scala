@@ -14,8 +14,7 @@ import org.slf4j.LoggerFactory
  * and forwards the request to the list of nodes in parallel and waits for all of them to complete
  */
 abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends ServerInterceptor { me =>
-  val REPLICATION_REQUEST_KEY = Metadata.Key.of(Headers.REPLICATION_REQUEST, StringMarshaller)
-  val ELIGIBLE_NODES_KEY = Metadata.Key.of(Headers.ELIGIBLE_NODES, MemberAddressMarshaller)
+  import ReplicationRouter._
   var forwarded = false
 
   protected val log = LoggerFactory.getLogger(me.getClass)
@@ -30,7 +29,8 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
       override def onMessage(incomingRequest: ReqT): Unit = {
         log.trace("onMessage in replicator")
         // TODO(ashwanthkumar) - Do we need the `.equals(self.toString)` check?
-        // because only forwarded message would have REPLICATION_REQUEST_KEY header anyway
+        // because only explicitly forwarded message to this node would alone
+        // have REPLICATION_REQUEST_KEY header anyway
         if (headers.containsKey(REPLICATION_REQUEST_KEY) && headers.get(REPLICATION_REQUEST_KEY).equals(self.toString)) {
           log.info("Received replication request for {}, processing it", incomingRequest)
           delegate.onMessage(incomingRequest)
@@ -77,6 +77,11 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
    * See [[SequentialReplicator]] for usage.
    */
   def replicate[ReqT, RespT](eligibleNodes: List[MemberAddress], serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, delegate: ServerCall.Listener[ReqT]): Unit
+}
+
+object ReplicationRouter {
+  val REPLICATION_REQUEST_KEY = Metadata.Key.of(Headers.REPLICATION_REQUEST, StringMarshaller)
+  val ELIGIBLE_NODES_KEY = Metadata.Key.of(Headers.ELIGIBLE_NODES, MemberAddressMarshaller)
 }
 
 class SequentialReplicator(nrReplicas: Int, self: MemberAddress) extends ReplicationRouter(nrReplicas, self) {
