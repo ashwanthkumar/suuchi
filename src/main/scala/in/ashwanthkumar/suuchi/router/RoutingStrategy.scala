@@ -42,9 +42,9 @@ class AlwaysRouteTo(memberAddress: MemberAddress) extends RoutingStrategy {
  * Uses a ConsistentHash based Partitioner to find the right node for the incoming message.
  * @param partitioner - which is an implementation of ConsistentHashPartitioner
  **/
-class ConsistentHashingRouting(partitioner: ConsistentHashPartitioner) extends RoutingStrategy {
+class ConsistentHashingRouting(partitioner: ConsistentHashPartitioner, nrReplicas: Int = 2) extends RoutingStrategy {
   override def route[ReqT]: PartialFunction[ReqT, List[MemberAddress]] = {
-    case msg: RoutingStrategy.WithKey => partitioner.find(msg.getKey.toByteArray)
+    case msg: RoutingStrategy.WithKey => partitioner.find(msg.getKey.toByteArray, 2)
   }
 }
 
