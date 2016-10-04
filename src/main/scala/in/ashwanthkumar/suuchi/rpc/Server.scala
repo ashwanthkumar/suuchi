@@ -2,9 +2,8 @@ package in.ashwanthkumar.suuchi.rpc
 
 import java.net.InetAddress
 
-import com.sun.xml.internal.ws.api.client.ServiceInterceptor
 import in.ashwanthkumar.suuchi.membership.MemberAddress
-import in.ashwanthkumar.suuchi.router.{ReplicationRouter, HandleOrForwardRouter, RoutingStrategy}
+import in.ashwanthkumar.suuchi.router.{HandleOrForwardRouter, RoutingStrategy, SequentialReplicator}
 import io.grpc.{Server => GServer, _}
 import org.slf4j.LoggerFactory
 
@@ -29,8 +28,10 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
   }
 
   def withReplication(service: BindableService, nrOfReplica: Int, strategy: RoutingStrategy) = {
-    val router = new ReplicationRouter(strategy, nrOfReplica, whoami)
-    serverBuilder.addService(ServerInterceptors.interceptForward(service, router))
+    val router = new HandleOrForwardRouter(strategy, whoami)
+    // FIXME - make the Replicator pluggable
+    val replicator = new SequentialReplicator(nrOfReplica, whoami)
+    serverBuilder.addService(ServerInterceptors.interceptForward(service, router, replicator))
     this
   }
 
@@ -41,8 +42,6 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
     serverBuilder.addService(ServerInterceptors.interceptForward(service, router))
     this
   }
-
-
 
   def stop() = {
     if (server != null) {

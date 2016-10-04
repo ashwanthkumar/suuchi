@@ -14,7 +14,7 @@ class NeverRoute extends RoutingStrategy {
   override def route[ReqT]: PartialFunction[ReqT, List[MemberAddress]] = PartialFunction.empty
 }
 
-class RouterSpec extends FlatSpec {
+class HandleOrForwardRouterSpec extends FlatSpec {
   "Router" should "not forward messages if routing strategy doesn't say so" in {
     val router = new HandleOrForwardRouter(new NeverRoute(), MemberAddress("host2", 1))
     verifyInteractions(router, isForwarded = false)
@@ -28,7 +28,7 @@ class RouterSpec extends FlatSpec {
   it should "forward message when router says so" in {
     val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1)), MemberAddress("host2", 1)) {
       // mocking the actual forward implementation
-      override def forward[RespT, ReqT](serverCall: ServerCall[ReqT, RespT], incomingRequest: ReqT, node: MemberAddress): RespT = 1.asInstanceOf[RespT]
+      override def forward[RespT, ReqT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, node: MemberAddress, allNodes: List[MemberAddress]): RespT = 1.asInstanceOf[RespT]
     }
     verifyInteractions(router, isForwarded = true)
   }
