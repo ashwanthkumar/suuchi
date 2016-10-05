@@ -149,13 +149,31 @@
     
         <li class="main active"><a href="#distributed-rocksdb-backed-kv">Distributed RocksDB backed KV</a></li>
         
+            <li><a href="#dependencies">Dependencies</a></li>
+        
+            <li><a href="#code">Code</a></li>
+        
     
     </ul>
 </div></div>
             <div class="col-md-9" role="main">
 
 <h1 id="distributed-rocksdb-backed-kv">Distributed RocksDB backed KV</h1>
-<p>Following code builds a consistent hashing based Get/Put requests backed by an RocksDB.</p>
+<h3 id="dependencies">Dependencies</h3>
+<pre><code class="xml">&lt;dependency&gt;
+    &lt;groupId&gt;in.ashwanthkumar&lt;/groupId&gt;
+    &lt;artifactId&gt;suuchi-core&lt;/artifactId&gt;
+    &lt;version&gt;${suuchi.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;in.ashwanthkumar&lt;/groupId&gt;
+    &lt;artifactId&gt;suuchi-rocksdb&lt;/artifactId&gt;
+    &lt;version&gt;${suuchi.version}&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+
+<h3 id="code">Code</h3>
+<p>Following code builds a consistent hashing based Get/Put requests backed by <a href="https://github.com/facebook/rocksdb">RocksDB</a>. It also does replication for Put requests to <code>REPLICATION_COUNT</code> number of nodes in the cluster.</p>
 <pre><code class="scala">package in.ashwanthkumar.suuchi.example
 
 import java.nio.file.Files
@@ -167,20 +185,21 @@ import in.ashwanthkumar.suuchi.store.rocksdb.{RocksDbConfiguration, RocksDbStore
 import io.grpc.netty.NettyServerBuilder
 
 object DistributedRocksDb extends App {
-  val routingStrategy = ConsistentHashingRouting(2, whoami(5051), whoami(5052))
+  val REPLICATION_COUNT = 2
+  val routingStrategy = ConsistentHashingRouting(REPLICATION_COUNT, whoami(5051), whoami(5052))
 
   val path1 = Files.createTempDirectory(&quot;distributed-rocksdb&quot;).toFile
   val store1 = new RocksDbStore(RocksDbConfiguration(path1.getAbsolutePath))
   val server1 = Server(NettyServerBuilder.forPort(5051), whoami(5051))
     .routeUsing(new SuuchiReadService(store1), routingStrategy)
-    .withReplication(new SuuchiPutService(store1), 2, routingStrategy)
+    .withReplication(new SuuchiPutService(store1), REPLICATION_COUNT, routingStrategy)
   server1.start()
 
   val path2 = Files.createTempDirectory(&quot;distributed-rocksdb&quot;).toFile
   val store2 = new RocksDbStore(RocksDbConfiguration(path2.getAbsolutePath))
   val server2 = Server(NettyServerBuilder.forPort(5052), whoami(5052))
     .routeUsing(new SuuchiReadService(store2), routingStrategy)
-    .withReplication(new SuuchiPutService(store2), 2, routingStrategy)
+    .withReplication(new SuuchiPutService(store2), REPLICATION_COUNT, routingStrategy)
   server2.start()
 
   server1.blockUntilShutdown()
@@ -194,7 +213,7 @@ object DistributedRocksDb extends App {
 }
 </code></pre>
 
-<p>TODO - Explain the code.</p></div>
+<p>This code is available as part of <a href="https://github.com/ashwanthkumar/suuchi/tree/master/suuchi-examples"><code>suuchi-examples</code></a> module in the repo.</p></div>
         </div>
 
         <footer class="col-md-12">
