@@ -4,7 +4,7 @@ import java.util.concurrent.Executor
 
 import com.google.common.util.concurrent.{Futures, ListenableFuture}
 import in.ashwanthkumar.suuchi.membership.MemberAddress
-import io.grpc.{MethodDescriptor, Metadata, ServerCall}
+import io.grpc.{Metadata, MethodDescriptor, ServerCall}
 import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
