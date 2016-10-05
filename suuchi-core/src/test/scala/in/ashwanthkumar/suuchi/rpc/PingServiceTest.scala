@@ -1,6 +1,6 @@
 package in.ashwanthkumar.suuchi.rpc
 
-import in.ashwanthkumar.suuchi.rpc.SuuchiRPC.{PingRequest, PingResponse}
+import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{PingRequest, PingResponse}
 import io.grpc.stub.StreamObserver
 import org.mockito.ArgumentCaptor
 import org.mockito.Mockito._

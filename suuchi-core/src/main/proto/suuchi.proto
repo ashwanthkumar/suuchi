@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option java_package = "in.ashwanthkumar.suuchi.rpc";
+option java_package = "in.ashwanthkumar.suuchi.rpc.generated";
 option java_outer_classname = "SuuchiRPC";
 
 // The Ping service definition.

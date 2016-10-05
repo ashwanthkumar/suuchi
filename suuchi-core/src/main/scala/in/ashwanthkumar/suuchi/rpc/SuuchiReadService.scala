@@ -1,7 +1,9 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import com.google.protobuf.ByteString
-import in.ashwanthkumar.suuchi.rpc.SuuchiRPC.{GetRequest, GetResponse}
+import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{GetRequest, GetResponse}
+import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC
+import in.ashwanthkumar.suuchi.rpc.generated.SuuchiReadGrpc
 import in.ashwanthkumar.suuchi.store.ReadStore
 import io.grpc.stub.StreamObserver
 

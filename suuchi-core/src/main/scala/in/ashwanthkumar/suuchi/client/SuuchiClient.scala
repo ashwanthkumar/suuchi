@@ -3,8 +3,8 @@ package in.ashwanthkumar.suuchi.client
 import java.util.concurrent.TimeUnit
 
 import com.google.protobuf.ByteString
-import in.ashwanthkumar.suuchi.rpc.SuuchiRPC.{GetRequest, PutRequest}
-import in.ashwanthkumar.suuchi.rpc.{SuuchiPutGrpc, SuuchiReadGrpc}
+import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{GetRequest, PutRequest}
+import in.ashwanthkumar.suuchi.rpc.generated.{SuuchiPutGrpc, SuuchiReadGrpc}
 import io.grpc.netty.NettyChannelBuilder
 import org.slf4j.LoggerFactory
 
