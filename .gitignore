@@ -5,3 +5,6 @@ target/
 *.iws
 site/
 
+# mvn versions:set
+pom.xml.versionsBackup
+
