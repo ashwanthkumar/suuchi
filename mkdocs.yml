@@ -1,0 +1,14 @@
+site_name: Suuchi
+repo_url: https://github.com/ashwanthkumar/suuchi/
+site_description: Toolkit to build data systems
+theme: flatly
+
+pages:
+- 'Introduction': 'index.md'
+- Internals:
+    - 'Partitioner': 'internals/partitioner.md'
+    - 'Replication': 'internals/replication.md'
+    - 'Router': 'internals/router.md'
+- Recipes:
+    - 'Distributed In Memory Database': 'recipes/inmemorydb.md'
+    - 'Distributed RocksDB Database': 'recipes/rocksdb.md'
