@@ -192,13 +192,14 @@ object ExampleApp extends App {
 </code></pre>
 
 <p>Let's break down the above code step by step.</p>
-<ol>
-<li><code>ConsistentHashingRouting</code> is a routing strategy that does routing between all the nodes using a ConsistentHashRing underneath with default vnode factor of 3.</li>
+<ul>
+<li><code>ConsistentHashingRouting</code> is a <a href="internals/router.md"><em>Routing Strategy</em></a> that does routing between all the nodes using a ConsistentHashRing underneath with default vnode factor of 3.</li>
 <li><code>NettyServerBuilder.forPort(5051)</code> creates a NettyServer on <code>5051</code> port.</li>
-<li><code>server.routeUsing()</code> adds a new protob rpc using a routing strategy.</li>
+<li><code>server.routeUsing()</code> adds a new protobuf rpc using a custom routing strategy behind <a href="internals/router.md"><em>HandleOrForward</em></a> router.</li>
+<li><code>server.withReplication()</code> adds a new protobuf rpc using the ReplicationRouter. By default it wraps both <a href="internals/router.md"><em>HandleOrForward</em></a> and <a href="internals/replication.md"><em>Replicator</em></a> routers.</li>
 <li><code>server1.start()</code> starts the underlying gRPC server.</li>
 <li><code>server1.blockUntilShutdown()</code> waits until the server is stopped.</li>
-</ol></div>
+</ul></div>
         </div>
 
         <footer class="col-md-12">
