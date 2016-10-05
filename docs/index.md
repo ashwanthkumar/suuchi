@@ -1,7 +1,8 @@
 # Suuchi
 Toolkit to build distributed data systems.
 
-## Library Dependency
+Current version of Suuchi is `"0.1.0"`.
+
 ### Maven
 ```xml
 <dependency>
@@ -10,6 +11,13 @@ Toolkit to build distributed data systems.
     <version>${suuchi.version}</version>
 </dependency>
 ```
+
+### SBT
+```sbt
+libraryDependencies += "in.ashwanthkumar" % "suuchi-core" % suuchiVersion
+```
+
+Releases are published to [Sonatype release repository](https://oss.sonatype.org/content/repositories/releases) that eventually gets mirrored to Maven Central.
 
 Development snapshots are available in [Sonatypes's snapshot repository](https://oss.sonatype.org/content/repositories/snapshots/).
 
