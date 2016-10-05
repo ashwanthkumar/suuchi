@@ -13,3 +13,4 @@ pages:
 - Recipes:
     - 'Distributed In Memory Database': 'recipes/inmemorydb.md'
     - 'Distributed RocksDB Database': 'recipes/rocksdb.md'
+    - 'Distributed KVClient': 'recipes/kvclient.md'

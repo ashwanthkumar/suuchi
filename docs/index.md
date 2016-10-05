@@ -26,6 +26,7 @@ If you are a developer looking to use Suuchi, head over to [Quick Start](quick-s
 ## Recipes
 - [Distributed InMemory Database](recipes/inmemorydb.md)
 - [Distributed RocksDB backed KV](recipes/rocksdb.md)
+- [Distributed KVClient](recipes/kvclient.md)
 
 ## Internals
 We try to document the internal workings of some core pieces of Suuchi for developers interested in contributing or understanding their systems better.
