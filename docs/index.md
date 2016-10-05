@@ -28,4 +28,3 @@ We try to document the internal workings of some core pieces of Suuchi for devel
 
 ## License
 [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-
