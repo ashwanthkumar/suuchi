@@ -1,3 +1,8 @@
+# Distributed RocksDB backed KV
+
+Following code builds a consistent hashing based Get/Put requests backed by an RocksDB.
+
+```scala
 package in.ashwanthkumar.suuchi.example
 
 import java.nio.file.Files
@@ -28,7 +33,12 @@ object DistributedRocksDb extends App {
   server1.blockUntilShutdown()
   server2.blockUntilShutdown()
 
-  path1.delete()
-  path2.delete()
-
+  /*
+    Optionally if want to delete the rocksdb directory
+      path1.delete()
+      path2.delete()
+  */
 }
+```
+
+TODO - Explain the code.

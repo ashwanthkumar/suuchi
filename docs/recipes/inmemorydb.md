@@ -1,3 +1,8 @@
+# Distributed InMemory Database
+
+Following code builds a consistent hashing based Get/Put requests backed by an ConcurrentHashMap.
+
+```scala
 package in.ashwanthkumar.suuchi.example
 
 import in.ashwanthkumar.suuchi.router.ConsistentHashingRouting
@@ -31,3 +36,12 @@ object ExampleApp extends App {
   server2.blockUntilShutdown()
   server3.blockUntilShutdown()
 }
+```
+
+Let's break down the above code step by step.
+
+1. `ConsistentHashingRouting` is a routing strategy that does routing between all the nodes using a ConsistentHashRing underneath with default vnode factor of 3.
+2. `NettyServerBuilder.forPort(5051)` creates a NettyServer on `5051` port.
+3. `server.routeUsing()` adds a new protob rpc using a routing strategy.
+4. `server1.start()` starts the underlying gRPC server.
+5. `server1.blockUntilShutdown()` waits until the server is stopped.

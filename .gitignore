@@ -3,4 +3,5 @@
 target/
 *.ipr
 *.iws
+site/
 

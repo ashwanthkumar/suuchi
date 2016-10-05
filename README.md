@@ -58,3 +58,6 @@ Let's break down the above code step by step.
 
 ## Notes
 If you're getting `ClassNotFound` exception, please run `mvn clean compile` once to generate the protoc files.
+
+## License
+https://www.apache.org/licenses/LICENSE-2.0
