@@ -105,6 +105,12 @@
 </li>
 
                     
+                        
+<li >
+    <a href="recipes/kvclient/">Distributed KVClient</a>
+</li>
+
+                    
                     </ul>
                 </li>
             
@@ -149,7 +155,9 @@
     
         <li class="main active"><a href="#suuchi">Suuchi</a></li>
         
-            <li><a href="#library-dependency">Library Dependency</a></li>
+            <li><a href="#maven">Maven</a></li>
+        
+            <li><a href="#sbt">SBT</a></li>
         
             <li><a href="#recipes">Recipes</a></li>
         
@@ -164,7 +172,7 @@
 
 <h1 id="suuchi">Suuchi</h1>
 <p>Toolkit to build distributed data systems.</p>
-<h2 id="library-dependency">Library Dependency</h2>
+<p>Current version of Suuchi is <code>"0.1.0"</code>.</p>
 <h3 id="maven">Maven</h3>
 <pre><code class="xml">&lt;dependency&gt;
     &lt;groupId&gt;in.ashwanthkumar&lt;/groupId&gt;
@@ -173,12 +181,18 @@
 &lt;/dependency&gt;
 </code></pre>
 
+<h3 id="sbt">SBT</h3>
+<pre><code class="sbt">libraryDependencies += &quot;in.ashwanthkumar&quot; % &quot;suuchi-core&quot; % suuchiVersion
+</code></pre>
+
+<p>Releases are published to <a href="https://oss.sonatype.org/content/repositories/releases">Sonatype release repository</a> that eventually gets mirrored to Maven Central.</p>
 <p>Development snapshots are available in <a href="https://oss.sonatype.org/content/repositories/snapshots/">Sonatypes's snapshot repository</a>.</p>
 <p>If you are a developer looking to use Suuchi, head over to <a href="quick-start/">Quick Start</a> guide to get started.</p>
 <h2 id="recipes">Recipes</h2>
 <ul>
 <li><a href="recipes/inmemorydb/">Distributed InMemory Database</a></li>
 <li><a href="recipes/rocksdb/">Distributed RocksDB backed KV</a></li>
+<li><a href="recipes/kvclient/">Distributed KVClient</a></li>
 </ul>
 <h2 id="internals">Internals</h2>
 <p>We try to document the internal workings of some core pieces of Suuchi for developers interested in contributing or understanding their systems better.</p>

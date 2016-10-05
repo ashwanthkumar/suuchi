@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
 
-	<title>Partitioner - Suuchi</title>
+	<title>Distributed KVClient - Suuchi</title>
 
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -62,25 +62,25 @@
             
             
             
-                <li class="dropdown active">
+                <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Internals <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                     
                         
-<li class="active">
-    <a href="./">Partitioner</a>
+<li >
+    <a href="../../internals/partitioner/">Partitioner</a>
 </li>
 
                     
                         
 <li >
-    <a href="../replication/">Replication</a>
+    <a href="../../internals/replication/">Replication</a>
 </li>
 
                     
                         
 <li >
-    <a href="../router/">Router</a>
+    <a href="../../internals/router/">Router</a>
 </li>
 
                     
@@ -89,25 +89,25 @@
             
             
             
-                <li class="dropdown">
+                <li class="dropdown active">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Recipes <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                     
                         
 <li >
-    <a href="../../recipes/inmemorydb/">Distributed In Memory Database</a>
+    <a href="../inmemorydb/">Distributed In Memory Database</a>
 </li>
 
                     
                         
 <li >
-    <a href="../../recipes/rocksdb/">Distributed RocksDB Database</a>
+    <a href="../rocksdb/">Distributed RocksDB Database</a>
 </li>
 
                     
                         
-<li >
-    <a href="../../recipes/kvclient/">Distributed KVClient</a>
+<li class="active">
+    <a href="./">Distributed KVClient</a>
 </li>
 
                     
@@ -125,12 +125,12 @@
                     </a>
                 </li>
                 <li >
-                    <a rel="next" href="../../quick-start/">
+                    <a rel="next" href="../rocksdb/">
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
-                <li >
-                    <a rel="prev" href="../replication/">
+                <li class="disabled">
+                    <a rel="prev" >
                         Next <i class="fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -153,15 +153,37 @@
             <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="main active"><a href="#partitioner">Partitioner</a></li>
+        <li class="main active"><a href="#distributed-kvclient">Distributed KVClient</a></li>
         
     
     </ul>
 </div></div>
             <div class="col-md-9" role="main">
 
-<h1 id="partitioner">Partitioner</h1>
-<p>TBD</p></div>
+<h1 id="distributed-kvclient">Distributed KVClient</h1>
+<p>In the either of <a href="../inmemorydb/">InMemory KV Store</a> or <a href="../rocksdb/">RocksDB based KV Store</a> recipes we only started a server. We need some way to access the server. This recipe is about a simple gRPC client that does a PUT followed by a GET of the same key in the cluster and verify that they're the same.</p>
+<pre><code>package in.ashwanthkumar.suuchi
+
+import java.nio.ByteBuffer
+
+import in.ashwanthkumar.suuchi.client.SuuchiClient
+
+object DistributedKVClient extends App {
+  val client = new SuuchiClient(&quot;localhost&quot;, 5051)
+  val putResponse = client.put(Array(65.toByte), Array(65.toByte)) // puts k=v as A=A (in bytes)
+  require(putResponse, &quot;client should have responded successfully&quot;)
+
+  val getResponse = client.get(Array(65.toByte))
+  require(getResponse.isDefined, &quot;server should return a valid response&quot;) // gets k=A
+  require(ByteBuffer.wrap(getResponse.get) == ByteBuffer.wrap(Array(65.toByte)), &quot;response seems invalid - it should be A&quot;)
+
+  println(&quot;Client has been validated&quot;)
+}
+</code></pre>
+
+<p>While running with this client you can find information about how the node in the point of contact with the client automatically
+- forwarded requests to the right node based on Input Key and ConsistentHash Ring
+- replicates the given message across multiple nodes again based on ConsistentHashing Ring.</p></div>
         </div>
 
         <footer class="col-md-12">
