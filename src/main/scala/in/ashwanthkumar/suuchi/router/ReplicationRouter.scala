@@ -28,9 +28,6 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
       override def onReady(): Unit = delegate.onReady()
       override def onMessage(incomingRequest: ReqT): Unit = {
         log.trace("onMessage in replicator")
-        // TODO(ashwanthkumar) - Do we need the `.equals(self.toString)` check?
-        // because only explicitly forwarded message to this node would alone
-        // have REPLICATION_REQUEST_KEY header anyway
         if (headers.containsKey(REPLICATION_REQUEST_KEY) && headers.get(REPLICATION_REQUEST_KEY).equals(self.toString)) {
           log.info("Received replication request for {}, processing it", incomingRequest)
           delegate.onMessage(incomingRequest)
