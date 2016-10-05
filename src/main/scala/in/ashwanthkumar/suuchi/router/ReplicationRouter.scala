@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory
  * and forwards the request to the list of nodes in parallel and waits for all of them to complete
  */
 abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends ServerInterceptor { me =>
-  var forwarded = false
 
   protected val log = LoggerFactory.getLogger(me.getClass)
 
@@ -24,6 +23,7 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
     log.trace("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self)
     val replicator = this
     new Listener[ReqT] {
+      var forwarded = false
       val delegate = next.startCall(serverCall, headers)
 
       override def onReady(): Unit = delegate.onReady()
@@ -35,6 +35,10 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
         } else if (headers.containsKey(Headers.ELIGIBLE_NODES_KEY)) {
           // since this isn't a replication request - replicate the request to list of nodes as defined in ELIGIBLE_NODES header
           val nodes = headers.get(Headers.ELIGIBLE_NODES_KEY)
+          // if the nodes to replicate contain self disable forwarded in all other cases forwarded is true
+          // we need this since the default ServerHandler under which the actual delegate is wrapped under
+          // invokes the method only in onHalfClose and not in onMessage (for non-streaming requests)
+          forwarded = !nodes.contains(self)
           log.trace("Going to replicate the request to {}", nodes)
           replicator.replicate(nodes, serverCall, headers, incomingRequest, delegate)
           log.trace("Replication complete for {}", incomingRequest)
@@ -46,7 +50,7 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
       override def onHalfClose(): Unit = {
         // apparently default ServerCall listener seems to hold some state from OnMessage which fails
         // here and client fails with an exception message -- Half-closed without a request
-        if (replicator.forwarded) serverCall.close(Status.OK, headers) else delegate.onHalfClose()
+        if (forwarded) serverCall.close(Status.OK, headers) else delegate.onHalfClose()
       }
       override def onCancel(): Unit = delegate.onCancel()
       override def onComplete(): Unit = delegate.onComplete()
@@ -54,7 +58,6 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
   }
 
   def forward[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): Any = {
-    forwarded = true
     // Add HEADER to signify that this is a REPLICATION_REQUEST
     headers.put(Headers.REPLICATION_REQUEST_KEY, destination.toString)
     val nettyChannel = NettyChannelBuilder.forAddress(destination.host, destination.port).usePlaintext(true).build()
@@ -72,7 +75,6 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
   def forwardAsync[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata,
                                 incomingRequest: ReqT,
                                 destination: MemberAddress)(implicit executor: Executor): ListenableFuture[RespT] = {
-    forwarded = true
     // Add HEADER to signify that this is a REPLICATION_REQUEST
     headers.put(Headers.REPLICATION_REQUEST_KEY, destination.toString)
     val nettyChannel = NettyChannelBuilder.forAddress(destination.host, destination.port).usePlaintext(true).build()
@@ -126,7 +128,6 @@ class SequentialReplicator(nrReplicas: Int, self: MemberAddress) extends Replica
     // we need to push this after the forwarding else we return to client immediately saying we're done
     if(hasLocalMember) {
       delegate.onMessage(incomingRequest)
-      forwarded = false // FIXME - we had to unset this here since the actual service method is invoked only on onHalfClose()
     }
   }
 }
@@ -152,7 +153,6 @@ class ParallelReplicator(nrReplicas: Int, self: MemberAddress) extends Replicati
     // we need to push this after the forwarding else we return to client immediately saying we're done
     if(hasLocalMember) {
       delegate.onMessage(incomingRequest)
-      forwarded = false // FIXME - we had to unset this here since the actual service method is invoked only on onHalfClose()
     }
   }
 }
