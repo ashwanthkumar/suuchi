@@ -1,7 +1,8 @@
 # Suuchi
 Toolkit to build distributed data systems.
 
-## Getting Started
+## Library Dependency
+### Maven
 ```xml
 <dependency>
     <groupId>in.ashwanthkumar</groupId>
