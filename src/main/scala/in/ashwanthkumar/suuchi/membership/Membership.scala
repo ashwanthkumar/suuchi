@@ -2,16 +2,13 @@ package in.ashwanthkumar.suuchi.membership
 
 import java.io.File
 import java.time.Duration
-import java.util
 import java.util.function.Consumer
 
 import io.atomix.AtomixReplica
-import io.atomix.catalyst.transport
 import io.atomix.catalyst.transport.Address
 import io.atomix.catalyst.transport.netty.NettyTransport
-import io.atomix.copycat.server.storage.{StorageLevel, Storage}
-import io.atomix.group.{DistributedGroup, LocalMember, GroupMember}
-import io.atomix.variables.DistributedValue
+import io.atomix.copycat.server.storage.{Storage, StorageLevel}
+import io.atomix.group.{GroupMember, LocalMember}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._

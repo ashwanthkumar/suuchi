@@ -4,7 +4,7 @@ import in.ashwanthkumar.suuchi.membership.MemberAddress
 import io.grpc.ServerCall.Listener
 import io.grpc._
 import io.grpc.netty.NettyChannelBuilder
-import io.grpc.stub.ClientCalls
+import io.grpc.stub.{ClientCalls, MetadataUtils}
 import org.slf4j.LoggerFactory
 
 /**
@@ -13,31 +13,39 @@ import org.slf4j.LoggerFactory
  *
  * @param routingStrategy
  */
-class Router(routingStrategy: RoutingStrategy, self: MemberAddress) extends ServerInterceptor {
+class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddress) extends ServerInterceptor {
   private val log = LoggerFactory.getLogger(getClass)
 
   override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
-    log.trace("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self)
+    log.trace("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self + ", headers= " + headers.toString)
     new Listener[ReqT] {
       val delegate = next.startCall(serverCall, headers)
       var forwarded = false
 
       override def onReady(): Unit = delegate.onReady()
       override def onMessage(incomingRequest: ReqT): Unit = {
-        // TODO - Handle forwarding loop here
-        if(routingStrategy.route.isDefinedAt(incomingRequest)) {
-          routingStrategy route incomingRequest match {
-            case Some(node) if !node.equals(self) =>
-              log.trace(s"Forwarding request to $node")
-              val clientResponse: RespT = forward(serverCall, incomingRequest, node)
+        if (routingStrategy.route.isDefinedAt(incomingRequest)) {
+          val eligibleNodes = routingStrategy route incomingRequest
+          // Always set ELIGIBLE_NODES header to the list of nodes eligible in the current
+          // operation - as defined by the RoutingStrategy
+          headers.put(Headers.ELIGIBLE_NODES_KEY, eligibleNodes)
+
+          eligibleNodes match {
+            case nodes if nodes.nonEmpty && !nodes.exists(_.equals(self)) =>
+              val destination = nodes.head
+              log.trace(s"Forwarding request to $destination")
+              val clientResponse: RespT = forward(serverCall.getMethodDescriptor, headers, incomingRequest, destination)
               // sendHeaders is very important and should be called before sendMessage
               // else client wouldn't receive any data at all
               serverCall.sendHeaders(headers)
               serverCall.sendMessage(clientResponse)
               forwarded = true
-            case _ =>
+            case nodes if nodes.nonEmpty && nodes.exists(_.equals(self)) =>
               log.trace("Calling delegate's onMessage")
               delegate.onMessage(incomingRequest)
+            case Nil =>
+              log.trace("Couldn't locate the right node for this request. Returning a NOT_FOUND response")
+              serverCall.close(Status.NOT_FOUND, headers)
           }
         } else {
           log.trace("Calling delegate's onMessage since router can't understand this message")
@@ -55,9 +63,14 @@ class Router(routingStrategy: RoutingStrategy, self: MemberAddress) extends Serv
     }
   }
 
-  def forward[RespT, ReqT](serverCall: ServerCall[ReqT, RespT], incomingRequest: ReqT, node: MemberAddress): RespT = {
-    val forwarderChannel = NettyChannelBuilder.forAddress(node.host, node.port).usePlaintext(true).build()
-    val clientResponse = ClientCalls.blockingUnaryCall(forwarderChannel, serverCall.getMethodDescriptor, CallOptions.DEFAULT, incomingRequest)
+  def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
+    val forwarderChannel = NettyChannelBuilder.forAddress(destination.host, destination.port).usePlaintext(true).build()
+    val clientResponse = ClientCalls.blockingUnaryCall(
+      ClientInterceptors.interceptForward(forwarderChannel, MetadataUtils.newAttachHeadersInterceptor(headers)),
+      method,
+      CallOptions.DEFAULT,
+      incomingRequest)
+
     forwarderChannel.shutdown()
     clientResponse
   }

@@ -12,10 +12,12 @@ trait RoutingStrategy {
    * Decides if the incoming message should be forwarded or handled by the current node itself.
    *
    * @tparam ReqT Type of the input Message
-   * @return  Some(MemberAddress) - if the request is meant to be forwarded
-   *          <p> None - if the request can be handled by the current node itself
+   * @return  List[MemberAddress]
+   *          <p> > 1 when there are multiple nodes to which this needs to be replicated to including the current node
+   *          <p> = 1 when replication factor is 1
+   *          <p> Nil - should never happen unless there's a bug
    */
-  def route[ReqT]: PartialFunction[ReqT, Option[MemberAddress]]
+  def route[ReqT]: PartialFunction[ReqT, List[MemberAddress]]
 }
 object RoutingStrategy {
   type WithKey = {def getKey: ByteString}
@@ -30,9 +32,9 @@ class AlwaysRouteTo(memberAddress: MemberAddress) extends RoutingStrategy {
   /**
    * @inheritdoc
    */
-  override def route[ReqT]: PartialFunction[ReqT, Option[MemberAddress]] = {
+  override def route[ReqT]: PartialFunction[ReqT, List[MemberAddress]] = {
     case msg: RoutingStrategy.WithKey =>
-      Some(memberAddress)
+      List(memberAddress)
   }
 }
 
@@ -40,12 +42,12 @@ class AlwaysRouteTo(memberAddress: MemberAddress) extends RoutingStrategy {
  * Uses a ConsistentHash based Partitioner to find the right node for the incoming message.
  * @param partitioner - which is an implementation of ConsistentHashPartitioner
  **/
-class ConsistentHashingRouting(partitioner: ConsistentHashPartitioner) extends RoutingStrategy {
-  override def route[ReqT]: PartialFunction[ReqT, Option[MemberAddress]] = {
-    case msg: RoutingStrategy.WithKey => partitioner.find(msg.getKey.toByteArray).map(vnode => vnode.node).headOption
+class ConsistentHashingRouting(partitioner: ConsistentHashPartitioner, nrReplicas: Int) extends RoutingStrategy {
+  override def route[ReqT]: PartialFunction[ReqT, List[MemberAddress]] = {
+    case msg: RoutingStrategy.WithKey => partitioner.find(msg.getKey.toByteArray, nrReplicas)
   }
 }
 
 object ConsistentHashingRouting {
-  def apply(nodes: MemberAddress*) = new ConsistentHashingRouting(ConsistentHashPartitioner(nodes.toList))
+  def apply(replicas: Int, nodes: MemberAddress*) = new ConsistentHashingRouting(ConsistentHashPartitioner(nodes.toList), replicas)
 }
