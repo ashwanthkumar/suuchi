@@ -1,7 +1,6 @@
 package in.ashwanthkumar.suuchi.router
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
-import io.grpc.Metadata.AsciiMarshaller
 import io.grpc.ServerCall.Listener
 import io.grpc._
 import io.grpc.netty.NettyChannelBuilder
@@ -14,7 +13,6 @@ import org.slf4j.LoggerFactory
  * and forwards the request to the list of nodes in parallel and waits for all of them to complete
  */
 abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends ServerInterceptor { me =>
-  import Headers._
   var forwarded = false
 
   protected val log = LoggerFactory.getLogger(me.getClass)
@@ -28,12 +26,12 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
       override def onReady(): Unit = delegate.onReady()
       override def onMessage(incomingRequest: ReqT): Unit = {
         log.trace("onMessage in replicator")
-        if (headers.containsKey(REPLICATION_REQUEST_KEY) && headers.get(REPLICATION_REQUEST_KEY).equals(self.toString)) {
+        if (headers.containsKey(Headers.REPLICATION_REQUEST_KEY) && headers.get(Headers.REPLICATION_REQUEST_KEY).equals(self.toString)) {
           log.info("Received replication request for {}, processing it", incomingRequest)
           delegate.onMessage(incomingRequest)
-        } else if (headers.containsKey(ELIGIBLE_NODES_KEY)) {
+        } else if (headers.containsKey(Headers.ELIGIBLE_NODES_KEY)) {
           // since this isn't a replication request - replicate the request to list of nodes as defined in ELIGIBLE_NODES header
-          val nodes = headers.get(ELIGIBLE_NODES_KEY)
+          val nodes = headers.get(Headers.ELIGIBLE_NODES_KEY)
           log.trace("Going to replicate the request to {}", nodes)
           replicator.replicate(nodes, serverCall, headers, incomingRequest, delegate)
           log.trace("Replication complete for {}", incomingRequest)
@@ -55,7 +53,7 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
   def forward[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): Any = {
     forwarded = true
     // Add HEADER to signify that this is a REPLICATION_REQUEST
-    headers.put(REPLICATION_REQUEST_KEY, destination.toString)
+    headers.put(Headers.REPLICATION_REQUEST_KEY, destination.toString)
     val nettyChannel = NettyChannelBuilder.forAddress(destination.host, destination.port).usePlaintext(true).build()
 
     val clientResponse = ClientCalls.blockingUnaryCall(
