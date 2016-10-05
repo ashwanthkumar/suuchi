@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>suuchi-examples</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>Suuchi Examples</name>
+    <description>Example modules using Suuchi</description>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>in.ashwanthkumar</groupId>
+        <artifactId>suuchi</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <scala.lib.version>2.11</scala.lib.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>in.ashwanthkumar</groupId>
+            <artifactId>suuchi-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.lib.version}</artifactId>
+            <version>3.0.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.10.19</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+</project>
