@@ -9,8 +9,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>core</module>
-        <module>examples</module>
+        <module>suuchi-core</module>
+        <module>suuchi-examples</module>
     </modules>
 
     <url>https://github.com/ashwanthkumar/suuchi</url>
