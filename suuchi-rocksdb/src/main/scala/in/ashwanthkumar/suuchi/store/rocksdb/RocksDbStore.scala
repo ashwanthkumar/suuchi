@@ -1,13 +1,9 @@
 package in.ashwanthkumar.suuchi.store.rocksdb
 
-import java.util
-
 import in.ashwanthkumar.suuchi.store.Store
 import in.ashwanthkumar.suuchi.utils.Logging
 import org.rocksdb._
-import org.slf4j.LoggerFactory
-import scala.collection.mutable
-import scala.collection.JavaConversions._
+
 import scala.util.Try
 
 class RocksDbStore(config: RocksDbConfiguration) extends Store with Logging {
