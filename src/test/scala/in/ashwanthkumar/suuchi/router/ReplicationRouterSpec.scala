@@ -28,7 +28,7 @@ class ReplicationRouterSpec extends FlatSpec {
     setupAndVerify { (serverCall: ServerCall[Int, Int], delegate: ServerCall.Listener[Int], next: ServerCallHandler[Int, Int]) =>
       when(next.startCall(any(classOf[ServerCall[Int, Int]]), any(classOf[Metadata]))).thenReturn(delegate)
       val headers = new Metadata()
-      headers.put(ReplicationRouter.REPLICATION_REQUEST_KEY, whoami.toString)
+      headers.put(Headers.REPLICATION_REQUEST_KEY, whoami.toString)
 
       val listener = replicator.interceptCall(serverCall, headers, next)
       listener.onReady()
@@ -67,7 +67,7 @@ class ReplicationRouterSpec extends FlatSpec {
 
     setupAndVerify { (serverCall: ServerCall[Int, Int], delegate: ServerCall.Listener[Int], next: ServerCallHandler[Int, Int]) =>
       val headers = new Metadata()
-      headers.put(ReplicationRouter.ELIGIBLE_NODES_KEY, List(whoami))
+      headers.put(Headers.ELIGIBLE_NODES_KEY, List(whoami))
       val listener = replicator.interceptCall(serverCall, headers, next)
       listener.onReady()
       listener.onMessage(1)
