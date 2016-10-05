@@ -1,24 +1,3 @@
-# Distributed RocksDB backed KV
-
-### Dependencies
-```xml
-<dependency>
-    <groupId>in.ashwanthkumar</groupId>
-    <artifactId>suuchi-core</artifactId>
-    <version>${suuchi.version}</version>
-</dependency>
-<dependency>
-    <groupId>in.ashwanthkumar</groupId>
-    <artifactId>suuchi-rocksdb</artifactId>
-    <version>${suuchi.version}</version>
-</dependency>
-```
-
-### Code
-
-Following code builds a consistent hashing based Get/Put requests backed by [RocksDB](https://github.com/facebook/rocksdb). It also does replication for Put requests to `REPLICATION_COUNT` number of nodes in the cluster.
-
-```scala
 package in.ashwanthkumar.suuchi.example
 
 import java.nio.file.Files
@@ -50,12 +29,7 @@ object DistributedRocksDb extends App {
   server1.blockUntilShutdown()
   server2.blockUntilShutdown()
 
-  /*
-    Optionally if want to delete the rocksdb directory
-      path1.delete()
-      path2.delete()
-  */
-}
-```
+  path1.delete()
+  path2.delete()
 
-This code is available as part of [`suuchi-examples`](https://github.com/ashwanthkumar/suuchi/tree/master/suuchi-examples) module in the repo.
+}

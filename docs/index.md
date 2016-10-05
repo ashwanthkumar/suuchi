@@ -6,7 +6,7 @@ Toolkit to build distributed data systems.
 ```xml
 <dependency>
     <groupId>in.ashwanthkumar</groupId>
-    <artifactId>suuchi</artifactId>
+    <artifactId>suuchi-core</artifactId>
     <version>${suuchi.version}</version>
 </dependency>
 ```
