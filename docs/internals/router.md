@@ -13,7 +13,7 @@ RoutingStrategy forms the heart of HandleOrForward router. Out of the box Suuchi
 - [ConsistentHashingRouting](https://en.wikipedia.org/wiki/Consistent_hashing)
 
 ## Custom Routers
-[_RoutingStrategy_](https://github.com/ashwanthkumar/suuchi/blob/master/src/main/scala/in/ashwanthkumar/suuchi/router/RoutingStrategy.scala#L10) trait is defined as follows
+[_RoutingStrategy_](https://github.com/ashwanthkumar/suuchi/blob/master/suuchi-core/src/main/scala/in/ashwanthkumar/suuchi/router/RoutingStrategy.scala#L10) trait is defined as follows
 
 ```scala
 trait RoutingStrategy {
