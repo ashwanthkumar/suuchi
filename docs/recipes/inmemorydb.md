@@ -40,9 +40,9 @@ object ExampleApp extends App {
 
 Let's break down the above code step by step.
 
-- `ConsistentHashingRouting` is a [_Routing Strategy_](internals/router.md) that does routing between all the nodes using a ConsistentHashRing underneath with default vnode factor of 3.
+- `ConsistentHashingRouting` is a [_Routing Strategy_](../internals/router.md#routingstrategy) that does routing between all the nodes using a ConsistentHashRing underneath with default vnode factor of 3.
 - `NettyServerBuilder.forPort(5051)` creates a NettyServer on `5051` port.
-- `server.routeUsing()` adds a new protobuf rpc using a custom routing strategy behind [_HandleOrForward_](internals/router.md) router.
-- `server.withReplication()` adds a new protobuf rpc using the ReplicationRouter. By default it wraps both [_HandleOrForward_](internals/router.md) and [_Replicator_](internals/replication.md) routers.
+- `server.routeUsing()` adds a new protobuf rpc using a custom routing strategy behind [_HandleOrForward_](../internals/router.md) router.
+- `server.withReplication()` adds a new protobuf rpc using the ReplicationRouter. By default it wraps both [_HandleOrForward_](../internals/router.md) and [_Replicator_](../internals/replication.md) routers.
 - `server1.start()` starts the underlying gRPC server.
 - `server1.blockUntilShutdown()` waits until the server is stopped.
