@@ -14,7 +14,6 @@
     </parent>
 
     <properties>
-        <scala.lib.version>2.11</scala.lib.version>
         <rocksdb.version>4.9.0</rocksdb.version>
     </properties>
 
@@ -31,12 +30,6 @@
             <version>${rocksdb.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.lib.version}</artifactId>
-            <version>3.0.0</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
