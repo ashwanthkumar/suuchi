@@ -15,7 +15,7 @@ object DistributedRocksDb extends App {
   val store1 = new RocksDbStore(RocksDbConfiguration(path1.getAbsolutePath))
   val store2 = new RocksDbStore(RocksDbConfiguration(path2.getAbsolutePath))
 
-  val routingStrategy = ConsistentHashingRouting(whoami(5051), whoami(5052))
+  val routingStrategy = ConsistentHashingRouting(2, whoami(5051), whoami(5052))
 
   val server1 = Server(NettyServerBuilder.forPort(5051), whoami(5051))
     .routeUsing(new SuuchiReadService(store1), routingStrategy)

@@ -3,8 +3,8 @@ package in.ashwanthkumar.suuchi.rpc
 import java.net.InetAddress
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
-import in.ashwanthkumar.suuchi.router.{Router, RoutingStrategy}
-import io.grpc.{BindableService, Server => GServer, ServerBuilder, ServerInterceptors, ServerServiceDefinition}
+import in.ashwanthkumar.suuchi.router.{HandleOrForwardRouter, RoutingStrategy, SequentialReplicator}
+import io.grpc.{Server => GServer, _}
 import org.slf4j.LoggerFactory
 
 class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: MemberAddress) {
@@ -27,10 +27,18 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
     })
   }
 
+  def withReplication(service: BindableService, nrOfReplica: Int, strategy: RoutingStrategy) = {
+    val router = new HandleOrForwardRouter(strategy, whoami)
+    // FIXME - make the Replicator pluggable
+    val replicator = new SequentialReplicator(nrOfReplica, whoami)
+    serverBuilder.addService(ServerInterceptors.interceptForward(service, router, replicator))
+    this
+  }
+
   def routeUsing(service: BindableService, strategy: RoutingStrategy): Server[T] = routeUsing(service.bindService(), strategy)
 
   def routeUsing(service: ServerServiceDefinition, strategy: RoutingStrategy) = {
-    val router = new Router(strategy, whoami)
+    val router = new HandleOrForwardRouter(strategy, whoami)
     serverBuilder.addService(ServerInterceptors.interceptForward(service, router))
     this
   }

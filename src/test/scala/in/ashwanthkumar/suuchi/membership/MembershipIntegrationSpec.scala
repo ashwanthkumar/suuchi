@@ -3,8 +3,8 @@ package in.ashwanthkumar.suuchi.membership
 import java.nio.file.Files
 
 import org.apache.commons.io.FileUtils
+import org.scalatest.Matchers.{convertToAnyShouldWrapper, have}
 import org.scalatest.{BeforeAndAfter, FlatSpec}
-import org.scalatest.Matchers.{convertToAnyShouldWrapper, be, have, size}
 
 class MembershipIntegrationSpec extends FlatSpec with BeforeAndAfter {
 

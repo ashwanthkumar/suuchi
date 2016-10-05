@@ -1,6 +1,5 @@
 package in.ashwanthkumar.suuchi.store
 
-import com.google.protobuf.ByteString
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers.{be, convertToAnyShouldWrapper}
 

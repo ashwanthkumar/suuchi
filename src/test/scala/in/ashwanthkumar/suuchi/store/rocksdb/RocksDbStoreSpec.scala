@@ -3,8 +3,8 @@ package in.ashwanthkumar.suuchi.store.rocksdb
 import java.io.File
 
 import org.apache.commons.io.FileUtils
-import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.Matchers._
+import org.scalatest.{BeforeAndAfter, FlatSpec}
 
 class RocksDbStoreSpec extends FlatSpec with BeforeAndAfter {
   val ROCKSDB_TEST_LOCATION = "/tmp/suuchi-rocks-test"

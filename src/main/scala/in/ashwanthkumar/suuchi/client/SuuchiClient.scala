@@ -1,6 +1,5 @@
 package in.ashwanthkumar.suuchi.client
 
-import java.lang.{String => JString}
 import java.util.concurrent.TimeUnit
 
 import com.google.protobuf.ByteString

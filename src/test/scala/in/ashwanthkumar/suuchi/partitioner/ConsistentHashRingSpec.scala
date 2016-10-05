@@ -43,6 +43,42 @@ class ConsistentHashRingSpec extends FlatSpec {
 
   it should "return the only node on find when only 1 node is present in the ring" in {
     val ring = ConsistentHashRing(1).add(MemberAddress("host1", 1))
-    ring.find("1".getBytes) should be(Some(VNode(MemberAddress("host1", 1), 1)))
+    ring.find("1".getBytes) should be(Some(MemberAddress("host1", 1)))
+  }
+
+  it should "return the same node multiple times when the number of unique nodes is less but requested bins are more" in {
+    val ring = ConsistentHashRing(3).add(MemberAddress("host1", 1))
+    val list = ring.find("1".getBytes, 3)
+    list should have size 3
+    list.head should be(MemberAddress("host1", 1))
+    list(1) should be(MemberAddress("host1", 1))
+    list(2) should be(MemberAddress("host1", 1))
+  }
+
+  it should "might return same node multiple times even when we have enough number of nodes" in {
+    val members = (1 to 5).map {index => MemberAddress(s"host$index", index)}.toList
+    val ring = ConsistentHashRing(3).init(members)
+    val list = ring.find("1".getBytes, 3)
+    list should have size 3
+    list.head should be(MemberAddress("host2", 2))
+    list(1) should be(MemberAddress("host2", 2))
+    list(2) should be(MemberAddress("host5", 5))
+  }
+
+  it should "not return the same node multiple times" in {
+    val ring = ConsistentHashRing(3).add(MemberAddress("host1", 1))
+    val list = ring.findUnique("1".getBytes, 3)
+    list should have size 1
+    list should contain(MemberAddress("host1", 1))
+  }
+
+  it should "return unique set of nodes when we've more then replica count nodes in the ring" in {
+    val members = (1 to 5).map {index => MemberAddress(s"host$index", index)}.toList
+    val ring = ConsistentHashRing(3).init(members)
+    val list = ring.findUnique("1".getBytes, 3)
+    list should have size 3
+    list should contain(MemberAddress("host2", 2))
+    list should contain(MemberAddress("host4", 4))
+    list should contain(MemberAddress("host5", 5))
   }
 }
