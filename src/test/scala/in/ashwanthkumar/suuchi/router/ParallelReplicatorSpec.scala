@@ -40,4 +40,24 @@ class ParallelReplicatorSpec extends FlatSpec with BeforeAndAfter {
     verify(mockReplicator, times(1)).forwardAsync(any(classOf[MethodDescriptor[Int, Int]]), any(classOf[Metadata]), anyInt(), Matchers.eq(destination2))(any(classOf[Executor]))
 
   }
+
+  it should "forward requests to target nodes in parallel & once done, should delegate to local node if it's in the replica node list" in {
+    implicit val mockExecutor = mock(classOf[Executor])
+    val mockReplicator = mock(classOf[ParallelReplicator])
+    val replicator = new MockParallelReplicator(2, MemberAddress("host1", 1), mockReplicator)
+    val serverCall = mock(classOf[ServerCall[Int, Int]])
+    val delegate = mock(classOf[ServerCall.Listener[Int]])
+    val headers = new Metadata()
+    val destination1 = MemberAddress("host2", 2)
+    val destination2 = MemberAddress("host1", 1)
+
+    when(mockReplicator.forwardAsync(any(classOf[MethodDescriptor[Int, Int]]), any(classOf[Metadata]), anyInt(), Matchers.eq(destination1))(any(classOf[Executor])))
+      .thenReturn(Futures.immediateFuture(2))
+
+    replicator.replicate[Int, Int](List(destination1, destination2), serverCall, headers, 1, delegate)
+
+    verify(mockReplicator, times(1)).forwardAsync(any(classOf[MethodDescriptor[Int, Int]]), any(classOf[Metadata]), anyInt(), Matchers.eq(destination1))(any(classOf[Executor]))
+    verify(delegate, times(1)).onMessage(Matchers.eq(1))
+
+  }
 }
