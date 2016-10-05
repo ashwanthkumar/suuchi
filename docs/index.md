@@ -13,6 +13,8 @@ Toolkit to build distributed data systems.
 
 Development snapshots are available in [Sonatypes's snapshot repository](https://oss.sonatype.org/content/repositories/snapshots/).
 
+If you are a developer looking to use Suuchi, head over to [Quick Start](quick-start.md) guide to get started.
+
 ## Recipes
 - [Distributed InMemory Database](recipes/inmemorydb.md)
 - [Distributed RocksDB backed KV](recipes/rocksdb.md)
