@@ -54,6 +54,7 @@
     <properties>
         <scala.version>2.11.8</scala.version>
         <scala.lib.version>2.11</scala.lib.version>
+        <jacoco-maven-plugin.version>0.7.7.201606060606</jacoco-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -117,19 +118,28 @@
             </plugin>
 
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.4</version>
+                <configuration>
+                    <stagingDirectory>target/staging</stagingDirectory>
+                </configuration>
+            </plugin>
             <!-- Codecoverage -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.7.201606060606</version>
+                <version>${jacoco-maven-plugin.version}</version>
                 <executions>
                     <execution>
+                        <id>default-prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>report</id>
+                        <id>post-test</id>
                         <phase>test</phase>
                         <goals>
                             <goal>report</goal>
@@ -222,5 +232,19 @@
             </build>
         </profile>
     </profiles>
+
+    <reporting>
+        <!--
+            https://github.com/jacoco/jacoco/blob/master/jacoco-maven-plugin.test/it/it-site/pom.xml
+        -->
+        <!--<excludeDefaults>true</excludeDefaults>-->
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
+            </plugin>
+        </plugins>
+    </reporting>
 
 </project>
