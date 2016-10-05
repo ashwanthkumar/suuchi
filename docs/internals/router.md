@@ -18,11 +18,11 @@ RoutingStrategy forms the heart of HandleOrForward router. Out of the box Suuchi
 ```scala
 trait RoutingStrategy {
   /**
-   * Decides if the incoming message should be forwarded or handled by the current node itself.
+   * Decides if the incoming message should be forwarded or handled by the current node.
    *
    * @tparam ReqT Type of the input Message
    * @return  Some(MemberAddress) - if the request is meant to be forwarded
-   *          <p> None - if the request can be handled by the current node itself
+   *          <p> None - if the request can be handled by the current node
    */
   def route[ReqT]: PartialFunction[ReqT, Option[MemberAddress]]
 }
