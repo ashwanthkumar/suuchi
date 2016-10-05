@@ -168,6 +168,22 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <useReleaseProfile>true</useReleaseProfile>
+                    <releaseProfiles>release</releaseProfiles>
+                    <remoteTagging>true</remoteTagging>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <!-- turn off the site deploy. There's a maven bug that makes it break -->
+                    <goals>deploy</goals>
+                    <pushChanges>true</pushChanges>
+                    <localCheckout>true</localCheckout>
+                </configuration>
+            </plugin>
+
             <!-- Codecoverage -->
             <plugin>
                 <groupId>org.jacoco</groupId>
