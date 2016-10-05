@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
  * and forwards the request to the list of nodes in parallel and waits for all of them to complete
  */
 abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends ServerInterceptor { me =>
-  import ReplicationRouter._
+  import Headers._
   var forwarded = false
 
   protected val log = LoggerFactory.getLogger(me.getClass)
@@ -58,7 +58,7 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
   def forward[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): Any = {
     forwarded = true
     // Add HEADER to signify that this is a REPLICATION_REQUEST
-    headers.put(Metadata.Key.of(Headers.REPLICATION_REQUEST, StringMarshaller), destination.toString)
+    headers.put(REPLICATION_REQUEST_KEY, destination.toString)
     val nettyChannel = NettyChannelBuilder.forAddress(destination.host, destination.port).usePlaintext(true).build()
 
     val clientResponse = ClientCalls.blockingUnaryCall(
@@ -77,11 +77,6 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
    * See [[SequentialReplicator]] for usage.
    */
   def replicate[ReqT, RespT](eligibleNodes: List[MemberAddress], serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, delegate: ServerCall.Listener[ReqT]): Unit
-}
-
-object ReplicationRouter {
-  val REPLICATION_REQUEST_KEY = Metadata.Key.of(Headers.REPLICATION_REQUEST, StringMarshaller)
-  val ELIGIBLE_NODES_KEY = Metadata.Key.of(Headers.ELIGIBLE_NODES, MemberAddressMarshaller)
 }
 
 class SequentialReplicator(nrReplicas: Int, self: MemberAddress) extends ReplicationRouter(nrReplicas, self) {
