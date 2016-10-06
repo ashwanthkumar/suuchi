@@ -9,18 +9,22 @@ import scala.language.existentials
 
 class CachedChannelPool(map: ConcurrentHashMap[String, ManagedChannel]) {
   def get(node: MemberAddress, insecure: Boolean = false): ManagedChannel = {
-    val key = node.toExternalForm
-    if (map.containsKey(key)) {
-      map.get(key)
+    val target = node.toExternalForm
+    if (map.containsKey(target)) {
+      map.get(target)
     } else {
-      val builder = ManagedChannelBuilder.forTarget(key)
+      val builder = builderFrom(target)
       if (insecure) {
         builder.usePlaintext(true)
       }
       val channel = builder.build()
-      map.put(key, channel)
+      map.put(target, channel)
       channel
     }
+  }
+
+  private[rpc] def builderFrom(key: String): ManagedChannelBuilder[_] = {
+    ManagedChannelBuilder.forTarget(key)
   }
 }
 
