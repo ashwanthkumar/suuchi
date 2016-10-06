@@ -59,3 +59,5 @@ object DistributedRocksDb extends App {
 ```
 
 This code is available as part of [`suuchi-examples`](https://github.com/ashwanthkumar/suuchi/tree/master/suuchi-examples) module in the repo.
+
+To see this recipe in action, you might also want to look into the client which can talk to this service - [DistributedKVClient](kvclient.md).

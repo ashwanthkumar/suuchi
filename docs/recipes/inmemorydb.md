@@ -50,3 +50,5 @@ Let's break down the above code step by step.
 - `server.withReplication()` adds a new protobuf rpc using the ReplicationRouter. By default it wraps both [_HandleOrForward_](../internals/router.md) and [_Replicator_](../internals/replication.md) routers.
 - `server1.start()` starts the underlying gRPC server.
 - `server1.blockUntilShutdown()` waits until the server is stopped.
+
+To see this recipe in action, you might also want to look into the client which can talk to this service - [DistributedKVClient](kvclient.md).
