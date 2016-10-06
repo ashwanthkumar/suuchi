@@ -6,5 +6,5 @@ Refer [#27](https://github.com/ashwanthkumar/suuchi/pull/27) and [#23](https://g
 
 ## Types
 - Synchronous SequentialReplication (default available)
-- Synchronous ParallelReplication - ([#30](https://github.com/ashwanthkumar/suuchi/issues/30))
+- Synchronous ParallelReplication - (default available)
 - Synchronous ChainedReplication - ([#31](https://github.com/ashwanthkumar/suuchi/issues/31))
