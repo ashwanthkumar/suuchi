@@ -3,7 +3,9 @@ package in.ashwanthkumar.suuchi.rpc
 import java.util.concurrent.ConcurrentHashMap
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
-import io.grpc.{ManagedChannelBuilder, ManagedChannel}
+import io.grpc.{ManagedChannel, ManagedChannelBuilder}
+
+import scala.language.existentials
 
 class CachedChannelPool(map: ConcurrentHashMap[String, ManagedChannel]) {
   def get(node: MemberAddress, insecure: Boolean = false): ManagedChannel = {

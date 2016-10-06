@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory
 abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends ServerInterceptor { me =>
 
   protected val log = LoggerFactory.getLogger(me.getClass)
+  val channelPool = CachedChannelPool()
 
   override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
     log.trace("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self)
@@ -60,7 +61,7 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
   def forward[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): Any = {
     // Add HEADER to signify that this is a REPLICATION_REQUEST
     headers.put(Headers.REPLICATION_REQUEST_KEY, destination.toString)
-    val channel = CachedChannelPool.get(destination, insecure = true)
+    val channel = channelPool.get(destination, insecure = true)
 
     ClientCalls.blockingUnaryCall(
       ClientInterceptors.interceptForward(channel, MetadataUtils.newAttachHeadersInterceptor(headers)),
@@ -74,7 +75,7 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
                                 destination: MemberAddress)(implicit executor: Executor): ListenableFuture[RespT] = {
     // Add HEADER to signify that this is a REPLICATION_REQUEST
     headers.put(Headers.REPLICATION_REQUEST_KEY, destination.toString)
-    val channel = CachedChannelPool.get(destination, insecure = true)
+    val channel = channelPool.get(destination, insecure = true)
     val clientCall = ClientInterceptors.interceptForward(channel, MetadataUtils.newAttachHeadersInterceptor(headers))
       .newCall(methodDescriptor, CallOptions.DEFAULT)
     ClientCalls.futureUnaryCall(clientCall, incomingRequest)
