@@ -209,7 +209,8 @@ object DistributedKVServer extends App {
 <li><code>server.withReplication()</code> adds a new protobuf rpc using the ReplicationRouter. By default it wraps both <a href="../../internals/router/"><em>HandleOrForward</em></a> and <a href="../../internals/replication/"><em>Replicator</em></a> routers.</li>
 <li><code>server1.start()</code> starts the underlying gRPC server.</li>
 <li><code>server1.blockUntilShutdown()</code> waits until the server is stopped.</li>
-</ul></div>
+</ul>
+<p>To see this recipe in action, you might also want to look into the client which can talk to this service - <a href="../kvclient/">DistributedKVClient</a>.</p></div>
         </div>
 
         <footer class="col-md-12">
