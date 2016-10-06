@@ -181,6 +181,10 @@
                     <goals>deploy</goals>
                     <pushChanges>true</pushChanges>
                     <localCheckout>true</localCheckout>
+                    <!--
+                      During release:perform, enable the "release" profile
+                    -->
+                    <releaseProfiles>release-sign-artifacts</releaseProfiles>
                 </configuration>
             </plugin>
 
