@@ -1,9 +1,9 @@
 package in.ashwanthkumar.suuchi.router
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.rpc.CachedChannelPool
 import io.grpc.ServerCall.Listener
 import io.grpc._
-import io.grpc.netty.NettyChannelBuilder
 import io.grpc.stub.{ClientCalls, MetadataUtils}
 import org.slf4j.LoggerFactory
 
@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory
  */
 class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddress) extends ServerInterceptor {
   private val log = LoggerFactory.getLogger(getClass)
+  val channelPool = CachedChannelPool()
 
   override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
     log.trace("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self + ", headers= " + headers.toString)
@@ -64,14 +65,11 @@ class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddres
   }
 
   def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
-    val forwarderChannel = NettyChannelBuilder.forAddress(destination.host, destination.port).usePlaintext(true).build()
-    val clientResponse = ClientCalls.blockingUnaryCall(
-      ClientInterceptors.interceptForward(forwarderChannel, MetadataUtils.newAttachHeadersInterceptor(headers)),
+    val channel = channelPool.get(destination, insecure = true)
+    ClientCalls.blockingUnaryCall(
+      ClientInterceptors.interceptForward(channel, MetadataUtils.newAttachHeadersInterceptor(headers)),
       method,
       CallOptions.DEFAULT,
       incomingRequest)
-
-    forwarderChannel.shutdown()
-    clientResponse
   }
 }
