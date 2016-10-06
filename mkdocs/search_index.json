@@ -57,7 +57,7 @@
         }, 
         {
             "location": "/internals/replication/", 
-            "text": "Replication Internals\n\n\nSuuchi out of the box comes with \nSynchronous Sequential Replication\n during writes. It's fairly easy to build custom replicators.\n\n\nRefer \n#27\n and \n#23\n on how Replication is implemented.\n\n\nTypes\n\n\n\n\nSynchronous SequentialReplication (default available)\n\n\nSynchronous ParallelReplication - (\n#30\n)\n\n\nSynchronous ChainedReplication - (\n#31\n)", 
+            "text": "Replication Internals\n\n\nSuuchi out of the box comes with \nSynchronous Sequential Replication\n during writes. It's fairly easy to build custom replicators.\n\n\nRefer \n#27\n and \n#23\n on how Replication is implemented.\n\n\nTypes\n\n\n\n\nSynchronous SequentialReplication (default available)\n\n\nSynchronous ParallelReplication - (default available)\n\n\nSynchronous ChainedReplication - (\n#31\n)", 
             "title": "Replication"
         }, 
         {
@@ -67,7 +67,7 @@
         }, 
         {
             "location": "/internals/replication/#types", 
-            "text": "Synchronous SequentialReplication (default available)  Synchronous ParallelReplication - ( #30 )  Synchronous ChainedReplication - ( #31 )", 
+            "text": "Synchronous SequentialReplication (default available)  Synchronous ParallelReplication - (default available)  Synchronous ChainedReplication - ( #31 )", 
             "title": "Types"
         }, 
         {
