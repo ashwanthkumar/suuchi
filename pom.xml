@@ -1,9 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>in.ashwanthkumar</groupId>
     <artifactId>suuchi</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.2-SNAPSHOT</version>
     <name>Suuchi</name>
     <description>Toolkit to build distributed Data Systems</description>
     <packaging>pom</packaging>
@@ -24,7 +23,8 @@
     <scm>
         <url>https://github.com/ashwanthkumar/suuchi</url>
         <connection>scm:git:git@github.com:ashwanthkumar/suuchi.git</connection>
-    </scm>
+      <tag>HEAD</tag>
+  </scm>
 
     <developers>
         <developer>
@@ -182,6 +182,10 @@
                     <goals>deploy</goals>
                     <pushChanges>true</pushChanges>
                     <localCheckout>true</localCheckout>
+                    <!--
+                      During release:perform, enable the "release" profile
+                    -->
+                    <releaseProfiles>release-sign-artifacts</releaseProfiles>
                 </configuration>
             </plugin>
 
