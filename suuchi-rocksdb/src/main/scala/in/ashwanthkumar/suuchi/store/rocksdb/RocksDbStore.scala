@@ -27,4 +27,9 @@ class RocksDbStore(config: RocksDbConfiguration) extends Store with Logging {
     log.info(s"[Closing RocksDb]")
     db.close()
   }
+
+  override def remove(key: Array[Byte]): Boolean = {
+    db.remove(key)
+    true
+  }
 }
