@@ -1,12 +1,12 @@
 package in.ashwanthkumar.suuchi.router
 
-import java.util.concurrent.{Executors, Executor}
+import java.util.concurrent.{Executor, Executors}
 
 import com.google.common.util.concurrent.{Futures, ListenableFuture}
 import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.rpc.CachedChannelPool
 import io.grpc.ServerCall.Listener
 import io.grpc._
-import io.grpc.netty.NettyChannelBuilder
 import io.grpc.stub.{ClientCalls, MetadataUtils}
 import org.slf4j.LoggerFactory
 
@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory
 abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends ServerInterceptor { me =>
 
   protected val log = LoggerFactory.getLogger(me.getClass)
+  val channelPool = CachedChannelPool()
 
   override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
     log.trace("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self)
@@ -60,16 +61,13 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
   def forward[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): Any = {
     // Add HEADER to signify that this is a REPLICATION_REQUEST
     headers.put(Headers.REPLICATION_REQUEST_KEY, destination.toString)
-    val nettyChannel = NettyChannelBuilder.forAddress(destination.host, destination.port).usePlaintext(true).build()
+    val channel = channelPool.get(destination, insecure = true)
 
-    val clientResponse = ClientCalls.blockingUnaryCall(
-      ClientInterceptors.interceptForward(nettyChannel, MetadataUtils.newAttachHeadersInterceptor(headers)),
+    ClientCalls.blockingUnaryCall(
+      ClientInterceptors.interceptForward(channel, MetadataUtils.newAttachHeadersInterceptor(headers)),
       methodDescriptor,
       CallOptions.DEFAULT,
       incomingRequest)
-
-    nettyChannel.shutdown()
-    clientResponse
   }
 
   def forwardAsync[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata,
@@ -77,14 +75,10 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
                                 destination: MemberAddress)(implicit executor: Executor): ListenableFuture[RespT] = {
     // Add HEADER to signify that this is a REPLICATION_REQUEST
     headers.put(Headers.REPLICATION_REQUEST_KEY, destination.toString)
-    val nettyChannel = NettyChannelBuilder.forAddress(destination.host, destination.port).usePlaintext(true).build()
-    val clientCall = ClientInterceptors.interceptForward(nettyChannel, MetadataUtils.newAttachHeadersInterceptor(headers))
+    val channel = channelPool.get(destination, insecure = true)
+    val clientCall = ClientInterceptors.interceptForward(channel, MetadataUtils.newAttachHeadersInterceptor(headers))
       .newCall(methodDescriptor, CallOptions.DEFAULT)
-    val clientResponse = ClientCalls.futureUnaryCall(clientCall, incomingRequest)
-    clientResponse.addListener(new Runnable {
-      override def run(): Unit = nettyChannel.shutdown()
-    }, executor)
-    clientResponse
+    ClientCalls.futureUnaryCall(clientCall, incomingRequest)
   }
 
   /**

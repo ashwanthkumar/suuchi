@@ -54,6 +54,7 @@
     <properties>
         <scala.version>2.11.8</scala.version>
         <scala.lib.version>2.11</scala.lib.version>
+        <grpc.version>1.0.1</grpc.version>
         <jacoco-maven-plugin.version>0.7.7.201606060606</jacoco-maven-plugin.version>
     </properties>
 
