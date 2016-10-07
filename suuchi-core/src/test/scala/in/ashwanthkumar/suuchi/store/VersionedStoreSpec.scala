@@ -12,14 +12,16 @@ trait MockDateUtils extends DateUtils {
   }
 }
 
+object ByWriteTimestampMocked extends ByWriteTimestamp with MockDateUtils
+
 class VersionedStoreSpec extends FlatSpec {
   "VersionedStore" should "return no version info for a key for the first time" in {
-    val store = new VersionedStore(new InMemoryStore, 3)
+    val store = new VersionedStore(new InMemoryStore, ByWriteTimestampMocked, 3)
     store.getVersions(Array(1.toByte)).size should be(0)
   }
 
   it should "return version info appropriately after every insert" in {
-    val store = new VersionedStore(new InMemoryStore, 3) with MockDateUtils
+    val store = new VersionedStore(new InMemoryStore, ByWriteTimestampMocked, 3)
     store.getVersions(Array(1.toByte)).size should be(0)
 
     store.put(Array(1.toByte), Array(100.toByte))
@@ -37,7 +39,7 @@ class VersionedStoreSpec extends FlatSpec {
 
   it should "delete old versions of data for a key when we exceed numVersions" in {
     val inMemoryStore = new InMemoryStore
-    val store = new VersionedStore(inMemoryStore, 3) with MockDateUtils
+    val store = new VersionedStore(inMemoryStore, ByWriteTimestampMocked, 3)
     store.getVersions(Array(1.toByte)).size should be(0)
 
     store.put(Array(1.toByte), Array(100.toByte))
