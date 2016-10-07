@@ -15,8 +15,6 @@
     <properties>
         <java.version>1.8</java.version>
         <scala.version>2.11.8</scala.version>
-        <atomix.version>1.0.0-rc9</atomix.version>
-        <catalyst.version>1.1.1</catalyst.version>
         <netty.version>4.1.3.Final</netty.version>
     </properties>
 
@@ -25,27 +23,6 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>2.8.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.atomix</groupId>
-            <artifactId>atomix</artifactId>
-            <version>${atomix.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.atomix</groupId>
-            <artifactId>atomix-resource</artifactId>
-            <version>${atomix.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.atomix.catalyst</groupId>
-            <artifactId>catalyst-transport</artifactId>
-            <version>${catalyst.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.atomix.catalyst</groupId>
-            <artifactId>catalyst-netty</artifactId>
-            <version>${catalyst.version}</version>
         </dependency>
 
         <dependency>

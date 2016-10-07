@@ -1,12 +1,13 @@
-package in.ashwanthkumar.suuchi.membership
+package in.ashwanthkumar.suuchi.membership.atomix
 
 import java.nio.file.Files
 
+import in.ashwanthkumar.suuchi.membership.{MemberAddress, InMemoryBootstrapper}
 import org.apache.commons.io.FileUtils
-import org.scalatest.Matchers.{convertToAnyShouldWrapper, have}
 import org.scalatest.{BeforeAndAfter, FlatSpec}
+import org.scalatest.Matchers.{convertToAnyShouldWrapper, have}
 
-class MembershipIntegrationSpec extends FlatSpec with BeforeAndAfter {
+class AtomixMembershipSpec extends FlatSpec with BeforeAndAfter {
 
   val BASE_PORT = 60000
   val raftDir = Files.createTempDirectory("suuchi-membership-it")
@@ -33,10 +34,9 @@ class MembershipIntegrationSpec extends FlatSpec with BeforeAndAfter {
 
   "Membership" should "launch 5 nodes and say they have 5 nodes" in {
     members.foreach(_.start())
-//    Thread.sleep(10 * 1000) // wait for all the nodes to come up
-
-    members.map(m => (m.nodes, m.me)).foreach(println)
+    members.map(m => (m.nodes, m.whoami)).foreach(println)
     val totalNodes = members.head.nodes
     totalNodes should have size 5
   }
+
 }
