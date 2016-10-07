@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
-abstract class Membership(host: String, port: Int) {
+abstract class Membership {
   def bootstrap(bootstrapper: Bootstrapper): Membership
 
   def start(): Membership
@@ -25,9 +25,11 @@ abstract class Membership(host: String, port: Int) {
   def onLeave: Member => Unit
 
   def nodes: Iterable[Member]
+
+  def whoami: Member
 }
 
-class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifier: String) extends Membership(host, port) {
+class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifier: String) extends Membership {
   private val log = LoggerFactory.getLogger(classOf[AtomixMembership])
 
   var atomix = AtomixReplica.builder(new Address(host, port))
@@ -89,4 +91,6 @@ class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifi
   override def stop(): Unit = {
     me.leave().join()
   }
+
+  override def whoami: Member = Member(me.id())
 }

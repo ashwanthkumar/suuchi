@@ -11,6 +11,7 @@
         <module>suuchi-core</module>
         <module>suuchi-examples</module>
         <module>suuchi-rocksdb</module>
+        <module>suuchi-membership-scalecube</module>
     </modules>
 
     <url>https://github.com/ashwanthkumar/suuchi</url>
