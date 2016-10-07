@@ -101,6 +101,21 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
     }
   }
 
+  /**
+   * Represent the ConsistentHashRing as [[RingState]] which is more easier to work with in terms of Ranges that each node manages.
+   *
+   * @return  RingState
+   */
+  def ringState = {
+    import scala.collection.JavaConversions._
+
+    val firstToken = sortedMap.firstKey()
+    val tokenRings = sortedMap.keysIterator.drop(1).foldLeft(RingState(firstToken, Nil)) { (state, token) =>
+      RingState(token, ranges = TokenRange(state.lastKnown, token - 1, sortedMap.get(state.lastKnown)) :: state.ranges)
+    }
+    RingState(Int.MaxValue, ranges = TokenRange(tokenRings.lastKnown, firstToken - 1, sortedMap.get(tokenRings.lastKnown)) :: tokenRings.ranges)
+  }
+
   // USED ONLY FOR TESTS
   private[partitioner] def nodes = sortedMap.values()
 }
