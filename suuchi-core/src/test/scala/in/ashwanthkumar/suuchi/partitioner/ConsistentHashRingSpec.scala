@@ -60,9 +60,9 @@ class ConsistentHashRingSpec extends FlatSpec {
     val ring = ConsistentHashRing(3).init(members)
     val list = ring.find("1".getBytes, 3)
     list should have size 3
-    list.head should be(MemberAddress("host2", 2))
-    list(1) should be(MemberAddress("host2", 2))
-    list(2) should be(MemberAddress("host5", 5))
+    list.head should be(MemberAddress("host3", 3))
+    list(1) should be(MemberAddress("host3", 3))
+    list(2) should be(MemberAddress("host4", 4))
   }
 
   it should "not return the same node multiple times" in {
@@ -77,9 +77,9 @@ class ConsistentHashRingSpec extends FlatSpec {
     val ring = ConsistentHashRing(3).init(members)
     val list = ring.findUnique("1".getBytes, 3)
     list should have size 3
-    list should contain(MemberAddress("host2", 2))
+    list should contain(MemberAddress("host3", 3))
     list should contain(MemberAddress("host4", 4))
-    list should contain(MemberAddress("host5", 5))
+    list should contain(MemberAddress("host1", 1))
   }
 
   it should "return the right ringState that wraps around the HashRing" in {
