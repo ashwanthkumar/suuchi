@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
  * Replication Router picks up the set of nodes to which this request needs to be sent to (if not already set)
  * and forwards the request to the list of nodes in parallel and waits for all of them to complete
  */
-abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends ServerInterceptor { me =>
+abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends ServerInterceptor {me =>
 
   protected val log = LoggerFactory.getLogger(me.getClass)
   val channelPool = CachedChannelPool()
@@ -105,10 +105,16 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
    * Just do it!
    *
    * Error handling and other scenarios are handled at [[ReplicationRouter.replicate]]
-   * */
+   **/
   def doReplication[ReqT, RespT](eligibleNodes: List[MemberAddress], serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, delegate: Listener[ReqT]): Unit
 }
 
+/**
+ * Sequential Synchronous replication implementation. While replicating we'll issue a forward request to each of the candidate nodes one by one.
+ *
+ * @param nrReplicas Number of replicas to keep for the requests
+ * @param self  Reference to [[MemberAddress)]] of the current node
+ */
 class SequentialReplicator(nrReplicas: Int, self: MemberAddress) extends ReplicationRouter(nrReplicas, self) {
   override def doReplication[ReqT, RespT](eligibleNodes: List[MemberAddress], serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, delegate: Listener[ReqT]) = {
     log.debug("Sequentially sending out replication requests to the above set of nodes")
@@ -120,32 +126,43 @@ class SequentialReplicator(nrReplicas: Int, self: MemberAddress) extends Replica
     }
 
     // we need to push this after the forwarding else we return to client immediately saying we're done
-    if(hasLocalMember) {
+    if (hasLocalMember) {
       delegate.onMessage(incomingRequest)
     }
   }
 }
 
 object ParallelReplicator {
-  implicit val PARALLEL_REPLICATION_EXECUTOR = Executors.newFixedThreadPool(3)
+  /**
+   * Default Executor that can be used along with [[ParallelReplicator]]
+   */
+  implicit val PARALLEL_REPLICATION_EXECUTOR = Executors.newCachedThreadPool()
 }
-class ParallelReplicator(nrReplicas: Int, self: MemberAddress) extends ReplicationRouter(nrReplicas, self) {
-  import ParallelReplicator._
+
+/**
+ * Parallel Synchronous replication implementation. While replicating we'll issue a forward request to all the nodes in
+ * parallel. Even if one of the node's request fails the entire operation is assumed to have failed.
+ *
+ * @param nrReplicas  Number of replicas to make
+ * @param self  Reference to [[MemberAddress]] of the current node
+ * @param executor  [[Executor]] implementation to use while issuing requests in parallel
+ */
+class ParallelReplicator(nrReplicas: Int, self: MemberAddress)(implicit executor: Executor) extends ReplicationRouter(nrReplicas, self) {
   override def doReplication[ReqT, RespT](eligibleNodes: List[MemberAddress], serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, delegate: Listener[ReqT]): Unit = {
     log.debug("Sending out replication requests to the above set of nodes in parallel")
 
     val hasLocalMember = eligibleNodes.exists(_.equals(self))
 
     val replicationResponses = eligibleNodes.filterNot(_.equals(self)).map { destination =>
-        forwardAsync(serverCall.getMethodDescriptor, headers, incomingRequest, destination)
+      forwardAsync(serverCall.getMethodDescriptor, headers, incomingRequest, destination)
     }
 
     // Future.sequence equivalent + doing a get to ensure all operations complete
     log.debug("Waiting for replication response from replica nodes")
-    Futures.allAsList(replicationResponses:_*).get()
+    Futures.allAsList(replicationResponses: _*).get()
 
     // we need to push this after the forwarding else we return to client immediately saying we're done
-    if(hasLocalMember) {
+    if (hasLocalMember) {
       delegate.onMessage(incomingRequest)
     }
   }
