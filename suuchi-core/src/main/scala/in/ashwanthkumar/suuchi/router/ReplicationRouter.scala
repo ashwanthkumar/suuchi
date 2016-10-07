@@ -136,7 +136,7 @@ object ParallelReplicator {
   /**
    * Default Executor that can be used along with [[ParallelReplicator]]
    */
-  implicit val PARALLEL_REPLICATION_EXECUTOR = Executors.newCachedThreadPool()
+  implicit val Implicit = Executors.newCachedThreadPool()
 }
 
 /**
