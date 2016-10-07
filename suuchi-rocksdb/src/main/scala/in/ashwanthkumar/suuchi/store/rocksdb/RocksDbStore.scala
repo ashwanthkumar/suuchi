@@ -29,7 +29,6 @@ class RocksDbStore(config: RocksDbConfiguration) extends Store with Logging {
   }
 
   override def remove(key: Array[Byte]): Boolean = {
-    db.remove(key)
-    true
+    Try(db.remove(key)).isSuccess
   }
 }
