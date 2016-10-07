@@ -12,15 +12,15 @@ object Versions {
 }
 
 object VersionedStore {
-  val VERSION_PREFIX = "V_"
-  val DATA_PREFIX = "D_"
-  def vkey(key: Array[Byte]) = VERSION_PREFIX.getBytes ++ key
-  def dkey(key: Array[Byte], version: Long) = DATA_PREFIX.getBytes ++ key ++ version.toString.getBytes
+  val VERSION_PREFIX = "V_".getBytes()
+  val DATA_PREFIX = "D_".getBytes()
+  def vkey(key: Array[Byte]) = VERSION_PREFIX ++ key
+  def dkey(key: Array[Byte], version: Long) = DATA_PREFIX ++ key ++ version.toString.getBytes
 }
 
-class VersionedStore(store: Store, numVersions: Int) extends Store with DeleteStore with DateUtils {
+class VersionedStore(store: Store, numVersions: Int, concurrencyFactor: Int = 8192) extends Store with DateUtils {
   import VersionedStore._
-  val SYNC_SLOTS = Array.fill(8192)(new Object)
+  val SYNC_SLOTS = Array.fill(concurrencyFactor)(new Object)
 
   override def get(key: Array[Byte]) : Option[Array[Byte]] = {
     // fetch version record
@@ -52,7 +52,7 @@ class VersionedStore(store: Store, numVersions: Int) extends Store with DeleteSt
 
   def atomicUpdate(key: Array[Byte], version: Long) = {
     val versionKey = vkey(key)
-    val absHash = math.abs(MurmurHash3.arrayHash(versionKey))
+    val absHash = math.abs(MurmurHash3.bytesHash(versionKey))
     // Synchronizing the version metadata update part alone
     val monitor = SYNC_SLOTS(absHash % SYNC_SLOTS.length)
     val versions  = monitor.synchronized {
@@ -68,8 +68,7 @@ class VersionedStore(store: Store, numVersions: Int) extends Store with DeleteSt
   def remove(key: Array[Byte]) = {
     val versions = getVersions(key)
     removeVersion(key)
-    versions.foreach(v => removeData(key, v))
-    true
+    versions.forall(v => removeData(key, v))
   }
 
   private def removeData(key: Array[Byte], version: Long) = store.remove(dkey(key, version))
