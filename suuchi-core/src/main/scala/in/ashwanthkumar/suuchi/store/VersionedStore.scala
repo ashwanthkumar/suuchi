@@ -1,14 +1,14 @@
 package in.ashwanthkumar.suuchi.store
 
-import in.ashwanthkumar.suuchi.store.Store
 import in.ashwanthkumar.suuchi.utils.DateUtils
-
 import scala.util.hashing.MurmurHash3
 
 
 object Versions {
+  def fromBytes(bytes: Array[Byte]) = fromString(new String(bytes))
   def fromString(versionString: String) = versionString.split('|').map(_.toLong)
   def toString(versions: List[Long]) = versions.map(_.toString).mkString("|")
+  def toBytes(versions: List[Long]) = toString(versions).getBytes
 }
 
 object VersionedStore {
@@ -27,7 +27,7 @@ class VersionedStore(store: Store, numVersions: Int, concurrencyFactor: Int = 81
     val vRecord = store.get(vkey(key))
     if(vRecord.isEmpty) None
     else {
-      val versions = Versions.fromString(new String(vRecord.get))
+      val versions = Versions.fromBytes(vRecord.get)
       get(key, versions.max)
     }
   }
@@ -57,9 +57,8 @@ class VersionedStore(store: Store, numVersions: Int, concurrencyFactor: Int = 81
     val monitor = SYNC_SLOTS(absHash % SYNC_SLOTS.length)
     val versions  = monitor.synchronized {
       val vRecord = store.get(versionKey)
-      val updatedVersions = vRecord.map(bytes => version :: Versions.fromString(new String(bytes)).toList).getOrElse(List(version))
-      // write version record
-      store.put(versionKey, Versions.toString(updatedVersions.take(numVersions)).getBytes)
+      val updatedVersions = version :: vRecord.map(bytes => Versions.fromBytes(bytes).toList).getOrElse(List.empty[Long])
+      store.put(versionKey, Versions.toBytes(updatedVersions.take(numVersions)))
       updatedVersions
     }
     versions
@@ -77,7 +76,7 @@ class VersionedStore(store: Store, numVersions: Int, concurrencyFactor: Int = 81
   private[store] def getVersions(key: Array[Byte]): List[Long] = {
     val vRecord = store.get(vkey(key))
     vRecord
-      .map(vr => Versions.fromString(new String(vr)).toList)
+      .map(vr => Versions.fromBytes(vr).toList)
       .getOrElse(List.empty[Long])
   }
 }
