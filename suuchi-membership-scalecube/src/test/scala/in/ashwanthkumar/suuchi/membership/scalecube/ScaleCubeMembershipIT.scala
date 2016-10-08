@@ -36,7 +36,7 @@ class ScaleCubeMembershipIT extends FlatSpec with BeforeAndAfter {
     members.foreach(_.stop())
   }
 
-  "ScaleCubeCluster" should "launch 5 nodes and say they have 5 nodes" in {
+  "ScaleCubeCluster" should "launch 5 nodes and say they have 5 nodes" ignore {
     members.foreach(_.start())
     val status = latch.await(60, TimeUnit.SECONDS) // wait until all nodes have contacted with the seed node
     status should be(true)
