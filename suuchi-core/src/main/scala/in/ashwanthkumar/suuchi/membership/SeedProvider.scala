@@ -1,6 +1,6 @@
 package in.ashwanthkumar.suuchi.membership
 
-trait Bootstrapper {
+trait SeedProvider {
   /**
    * Returns a list of host that're used to connect to form a cluster. These nodes always represent the
    * initial seed nodes. While different [[Membership]] implementations might have different guarantees,
@@ -13,9 +13,13 @@ trait Bootstrapper {
 }
 
 /**
- * Default in memory implementation of [[Bootstrapper]] to be used in tests and static
+ * Default in memory implementation of [[SeedProvider]] to be used in tests and static
  * configuration file based environments.
  *
  * @param nodes List[MemberAddress] that represents seed nodes to connect to
  */
-case class InMemoryBootstrapper(override val nodes: List[MemberAddress]) extends Bootstrapper
+case class InMemorySeedProvider(override val nodes: List[MemberAddress]) extends SeedProvider
+
+object InMemorySeedProvider {
+  val EMPTY = InMemorySeedProvider(Nil)
+}

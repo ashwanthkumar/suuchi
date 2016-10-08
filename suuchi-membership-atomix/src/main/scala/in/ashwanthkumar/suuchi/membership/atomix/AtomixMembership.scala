@@ -4,7 +4,7 @@ import java.io.File
 import java.time.Duration
 import java.util.function.Consumer
 
-import in.ashwanthkumar.suuchi.membership.{Bootstrapper, MemberAddress, Membership}
+import in.ashwanthkumar.suuchi.membership.{MemberListener, SeedProvider, MemberAddress, Membership}
 import io.atomix.AtomixReplica
 import io.atomix.catalyst.transport.Address
 import io.atomix.catalyst.transport.netty.NettyTransport
@@ -22,7 +22,7 @@ import scala.collection.JavaConversions._
  */
 case class MemberState(address: MemberAddress)
 
-class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifier: String) extends Membership {
+class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifier: String, listeners: List[MemberListener] = Nil) extends Membership(listeners) {
   private val log = LoggerFactory.getLogger(classOf[AtomixMembership])
 
   var atomix = AtomixReplica.builder(new Address(host, port))
@@ -40,16 +40,13 @@ class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifi
 
   var me: LocalMember = _
 
-  override def bootstrap(bootstrapper: Bootstrapper): AtomixMembership = {
-    if (bootstrapper.nodes.isEmpty) {
+  override def start(seedProvider: SeedProvider): AtomixMembership = {
+    if (seedProvider.nodes.isEmpty) {
       atomix = atomix.bootstrap().join()
     } else {
-      atomix = atomix.join(bootstrapper.nodes.map(m => new Address(m.host, m.port))).join()
+      atomix = atomix.join(seedProvider.nodes.map(m => new Address(m.host, m.port))).join()
     }
-    this
-  }
 
-  override def start(): AtomixMembership = {
     val group = atomix.getGroup(clusterIdentifier).join()
     me = group.join(MemberState(MemberAddress(host, port))).join()
     // register a shutdown hook right away
@@ -82,13 +79,6 @@ class AtomixMembership(host: String, port: Int, workDir: String, clusterIdentifi
     })
 
     this
-  }
-
-  override def onJoin: (MemberAddress) => Unit = (m: MemberAddress) => {
-    log.info(s"$m has joined")
-  }
-  override def onLeave: (MemberAddress) => Unit = (m: MemberAddress) => {
-    log.info(s"$m has left")
   }
 
   override def nodes: Iterable[MemberAddress] = {
