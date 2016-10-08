@@ -2,13 +2,18 @@
     "docs": [
         {
             "location": "/", 
-            "text": "Suuchi\n\n\nToolkit to build distributed data systems.\n\n\nCurrent version of Suuchi is \n\"0.1.0\"\n.\n\n\nMaven\n\n\ndependency\n\n    \ngroupId\nin.ashwanthkumar\n/groupId\n\n    \nartifactId\nsuuchi-core\n/artifactId\n\n    \nversion\n${suuchi.version}\n/version\n\n\n/dependency\n\n\n\n\n\nSBT\n\n\nlibraryDependencies += \nin.ashwanthkumar\n % \nsuuchi-core\n % suuchiVersion\n\n\n\n\nReleases are published to \nSonatype release repository\n that eventually gets mirrored to Maven Central.\n\n\nDevelopment snapshots are available in \nSonatypes's snapshot repository\n.\n\n\nIf you are a developer looking to use Suuchi, head over to \nQuick Start\n guide to get started.\n\n\nRecipes\n\n\n\n\nDistributed InMemory Database\n\n\nDistributed RocksDB backed KV\n\n\nDistributed KVClient\n\n\n\n\nInternals\n\n\nWe try to document the internal workings of some core pieces of Suuchi for developers interested in contributing or understanding their systems better.\n\n\n\n\nPartitioner\n\n\nReplication\n\n\nRouter\n\n\n\n\nLicense\n\n\nhttps://www.apache.org/licenses/LICENSE-2.0", 
+            "text": "Suuchi\n\n\nToolkit to build distributed data systems, that uses \ngRPC\n under the hood as the communication medium.\n\n\nCurrent version of Suuchi is \n\"0.2.1\"\n.\n\n\nDependencies\n\n\nMaven\n\n\ndependency\n\n    \ngroupId\nin.ashwanthkumar\n/groupId\n\n    \nartifactId\nsuuchi-core\n/artifactId\n\n    \nversion\n${suuchi.version}\n/version\n\n\n/dependency\n\n\n\n\n\nSBT\n\n\nlibraryDependencies += \nin.ashwanthkumar\n % \nsuuchi-core\n % suuchiVersion\n\n\n\n\nReleases are published to \nSonatype release repository\n that eventually gets mirrored to Maven Central.\n\n\nDevelopment snapshots are available in \nSonatypes's snapshot repository\n.\n\n\nFeatures\n\n\n\n\nEnable partitioning of data using \nConsistent Hashing\n\n\nSupports synchronous replication to desired number of nodes\n\n\nEnables above set of features for any gRPC based service definitions\n\n\n\n\nIf you are a developer looking to use Suuchi, head over to \nQuick Start\n guide to get started.\n\n\nRecipes\n\n\n\n\nDistributed InMemory Database\n\n\nDistributed RocksDB backed KV\n\n\nDistributed KVClient\n\n\n\n\nInternals\n\n\nWe try to document the internal workings of some core pieces of Suuchi for developers interested in contributing or understanding their systems better.\n\n\n\n\nPartitioner\n\n\nReplication\n\n\nRouter\n\n\n\n\nLicense\n\n\nhttps://www.apache.org/licenses/LICENSE-2.0", 
             "title": "Introduction"
         }, 
         {
             "location": "/#suuchi", 
-            "text": "Toolkit to build distributed data systems.  Current version of Suuchi is  \"0.1.0\" .", 
+            "text": "Toolkit to build distributed data systems, that uses  gRPC  under the hood as the communication medium.  Current version of Suuchi is  \"0.2.1\" .", 
             "title": "Suuchi"
+        }, 
+        {
+            "location": "/#dependencies", 
+            "text": "", 
+            "title": "Dependencies"
         }, 
         {
             "location": "/#maven", 
@@ -17,8 +22,13 @@
         }, 
         {
             "location": "/#sbt", 
-            "text": "libraryDependencies +=  in.ashwanthkumar  %  suuchi-core  % suuchiVersion  Releases are published to  Sonatype release repository  that eventually gets mirrored to Maven Central.  Development snapshots are available in  Sonatypes's snapshot repository .  If you are a developer looking to use Suuchi, head over to  Quick Start  guide to get started.", 
+            "text": "libraryDependencies +=  in.ashwanthkumar  %  suuchi-core  % suuchiVersion  Releases are published to  Sonatype release repository  that eventually gets mirrored to Maven Central.  Development snapshots are available in  Sonatypes's snapshot repository .", 
             "title": "SBT"
+        }, 
+        {
+            "location": "/#features", 
+            "text": "Enable partitioning of data using  Consistent Hashing  Supports synchronous replication to desired number of nodes  Enables above set of features for any gRPC based service definitions   If you are a developer looking to use Suuchi, head over to  Quick Start  guide to get started.", 
+            "title": "Features"
         }, 
         {
             "location": "/#recipes", 
@@ -37,12 +47,12 @@
         }, 
         {
             "location": "/quick-start/", 
-            "text": "Quick Start\n\n\nSuuchi internally uses gRPC for it's communication. If you're new to gRPC, we recommend to follow the tutorial available on \ngrpc.io\n. \n\n\nIn the rest of this page we're going to assume you've the following setup\n\n\n\n\nMaven\n or \nSBT\n based project setup and suuchi dependencies configured already.\n\n\nA ProtoBuf based service defined, and gRPC required classes generated.\n\n\nYou've also implemented at least one of Services defined in the proto.\n\n\nCreate a package \nin.ashwanthkumar.suuchi.getting_started\n\n\nCreate a class inside the above package as \nDistributedKV.scala\n, and copy-paste the code-snippet from the \nDistributed Inmemory DB Recipe\n.\n\n\nRun the \nDistribuedKV\n object. Once it has started, run the \nDistributedKVClient\n object. This would make RPC calls to the server and get back a response and verify that it's valid.\n\n\nThat's it! - you've now built a distributed, partitioned and replicated memory backed KVStore.", 
+            "text": "Quick Start\n\n\nSuuchi internally uses \ngRPC\n for it's internode communication. If you're new to gRPC, we recommend to follow the tutorial available on \ngrpc.io\n to get started on a basic service.\n\n\nIn the rest of this page we're going to assume you've the following setup\n\n\n\n\n\n\nMaven\n or \nSBT\n based project setup and suuchi dependencies configured already.\n\n\n\n\n\n\nA ProtoBuf based service defined, and gRPC required classes generated.\n\n\n\n\n\n\nYou've also implemented at least one of Services defined in the proto.\n\n\n\n\n\n\nCreate a package \nin.ashwanthkumar.suuchi.getting_started\n\n\n\n\n\n\nCreate a class inside the above package as \nDistributedKV.scala\n, and copy-paste the code-snippet from the \nDistributed Inmemory DB Recipe\n.\n\n\n\n\n\n\nRun the \nDistribuedKV\n object. Once it has started, run the \nDistributedKVClient\n object. This would make RPC calls to the server and get back a response and verify that it's valid.\n\n\n\n\n\n\nThat's it! - you've now built a distributed, partitioned and replicated memory backed KVStore.", 
             "title": "Quick Start"
         }, 
         {
             "location": "/quick-start/#quick-start", 
-            "text": "Suuchi internally uses gRPC for it's communication. If you're new to gRPC, we recommend to follow the tutorial available on  grpc.io .   In the rest of this page we're going to assume you've the following setup   Maven  or  SBT  based project setup and suuchi dependencies configured already.  A ProtoBuf based service defined, and gRPC required classes generated.  You've also implemented at least one of Services defined in the proto.  Create a package  in.ashwanthkumar.suuchi.getting_started  Create a class inside the above package as  DistributedKV.scala , and copy-paste the code-snippet from the  Distributed Inmemory DB Recipe .  Run the  DistribuedKV  object. Once it has started, run the  DistributedKVClient  object. This would make RPC calls to the server and get back a response and verify that it's valid.  That's it! - you've now built a distributed, partitioned and replicated memory backed KVStore.", 
+            "text": "Suuchi internally uses  gRPC  for it's internode communication. If you're new to gRPC, we recommend to follow the tutorial available on  grpc.io  to get started on a basic service.  In the rest of this page we're going to assume you've the following setup    Maven  or  SBT  based project setup and suuchi dependencies configured already.    A ProtoBuf based service defined, and gRPC required classes generated.    You've also implemented at least one of Services defined in the proto.    Create a package  in.ashwanthkumar.suuchi.getting_started    Create a class inside the above package as  DistributedKV.scala , and copy-paste the code-snippet from the  Distributed Inmemory DB Recipe .    Run the  DistribuedKV  object. Once it has started, run the  DistributedKVClient  object. This would make RPC calls to the server and get back a response and verify that it's valid.    That's it! - you've now built a distributed, partitioned and replicated memory backed KVStore.", 
             "title": "Quick Start"
         }, 
         {

@@ -155,9 +155,9 @@
     
         <li class="main active"><a href="#suuchi">Suuchi</a></li>
         
-            <li><a href="#maven">Maven</a></li>
+            <li><a href="#dependencies">Dependencies</a></li>
         
-            <li><a href="#sbt">SBT</a></li>
+            <li><a href="#features">Features</a></li>
         
             <li><a href="#recipes">Recipes</a></li>
         
@@ -171,9 +171,10 @@
             <div class="col-md-9" role="main">
 
 <h1 id="suuchi">Suuchi</h1>
-<p>Toolkit to build distributed data systems.</p>
-<p>Current version of Suuchi is <code>"0.1.0"</code>.</p>
-<h3 id="maven">Maven</h3>
+<p>Toolkit to build distributed data systems, that uses <a href="http://www.grpc.io/">gRPC</a> under the hood as the communication medium.</p>
+<p>Current version of Suuchi is <code>"0.2.1"</code>.</p>
+<h3 id="dependencies">Dependencies</h3>
+<h4 id="maven">Maven</h4>
 <pre><code class="xml">&lt;dependency&gt;
     &lt;groupId&gt;in.ashwanthkumar&lt;/groupId&gt;
     &lt;artifactId&gt;suuchi-core&lt;/artifactId&gt;
@@ -181,12 +182,18 @@
 &lt;/dependency&gt;
 </code></pre>
 
-<h3 id="sbt">SBT</h3>
+<h4 id="sbt">SBT</h4>
 <pre><code class="sbt">libraryDependencies += &quot;in.ashwanthkumar&quot; % &quot;suuchi-core&quot; % suuchiVersion
 </code></pre>
 
 <p>Releases are published to <a href="https://oss.sonatype.org/content/repositories/releases">Sonatype release repository</a> that eventually gets mirrored to Maven Central.</p>
 <p>Development snapshots are available in <a href="https://oss.sonatype.org/content/repositories/snapshots/">Sonatypes's snapshot repository</a>.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Enable partitioning of data using <a href="https://en.wikipedia.org/wiki/Consistent_hashing">Consistent Hashing</a></li>
+<li>Supports synchronous replication to desired number of nodes</li>
+<li>Enables above set of features for any gRPC based service definitions</li>
+</ul>
 <p>If you are a developer looking to use Suuchi, head over to <a href="quick-start/">Quick Start</a> guide to get started.</p>
 <h2 id="recipes">Recipes</h2>
 <ul>

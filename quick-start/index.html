@@ -161,16 +161,30 @@
             <div class="col-md-9" role="main">
 
 <h1 id="quick-start">Quick Start</h1>
-<p>Suuchi internally uses gRPC for it's communication. If you're new to gRPC, we recommend to follow the tutorial available on <a href="http://www.grpc.io/docs/tutorials/basic/java.html">grpc.io</a>. </p>
+<p>Suuchi internally uses <a href="http://www.grpc.io/">gRPC</a> for it's internode communication. If you're new to gRPC, we recommend to follow the tutorial available on <a href="http://www.grpc.io/docs/tutorials/basic/java.html">grpc.io</a> to get started on a basic service.</p>
 <p>In the rest of this page we're going to assume you've the following setup</p>
 <ol>
-<li><a href="..#maven">Maven</a> or <a href="..#sbt">SBT</a> based project setup and suuchi dependencies configured already.</li>
-<li>A ProtoBuf based service defined, and gRPC required classes generated.</li>
-<li>You've also implemented at least one of Services defined in the proto.</li>
-<li>Create a package <code>in.ashwanthkumar.suuchi.getting_started</code></li>
-<li>Create a class inside the above package as <code>DistributedKV.scala</code>, and copy-paste the code-snippet from the <a href="../recipes/inmemorydb/">Distributed Inmemory DB Recipe</a>.</li>
-<li>Run the <code>DistribuedKV</code> object. Once it has started, run the <code>DistributedKVClient</code> object. This would make RPC calls to the server and get back a response and verify that it's valid.</li>
-<li>That's it! - you've now built a distributed, partitioned and replicated memory backed KVStore.</li>
+<li>
+<p><a href="..#maven">Maven</a> or <a href="..#sbt">SBT</a> based project setup and suuchi dependencies configured already.</p>
+</li>
+<li>
+<p>A ProtoBuf based service defined, and gRPC required classes generated.</p>
+</li>
+<li>
+<p>You've also implemented at least one of Services defined in the proto.</p>
+</li>
+<li>
+<p>Create a package <code>in.ashwanthkumar.suuchi.getting_started</code></p>
+</li>
+<li>
+<p>Create a class inside the above package as <code>DistributedKV.scala</code>, and copy-paste the code-snippet from the <a href="../recipes/inmemorydb/">Distributed Inmemory DB Recipe</a>.</p>
+</li>
+<li>
+<p>Run the <code>DistribuedKV</code> object. Once it has started, run the <code>DistributedKVClient</code> object. This would make RPC calls to the server and get back a response and verify that it's valid.</p>
+</li>
+<li>
+<p>That's it! - you've now built a distributed, partitioned and replicated memory backed KVStore.</p>
+</li>
 </ol></div>
         </div>
 
