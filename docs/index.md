@@ -1,9 +1,10 @@
 # Suuchi
-Toolkit to build distributed data systems.
+Toolkit to build distributed data systems, that uses [gRPC](http://www.grpc.io/) under the hood as the communication medium.
 
-Current version of Suuchi is `"0.1.0"`.
+Current version of Suuchi is `"0.2.1"`.
 
-### Maven
+### Dependencies
+#### Maven
 ```xml
 <dependency>
     <groupId>in.ashwanthkumar</groupId>
@@ -12,7 +13,7 @@ Current version of Suuchi is `"0.1.0"`.
 </dependency>
 ```
 
-### SBT
+#### SBT
 ```sbt
 libraryDependencies += "in.ashwanthkumar" % "suuchi-core" % suuchiVersion
 ```
@@ -20,6 +21,12 @@ libraryDependencies += "in.ashwanthkumar" % "suuchi-core" % suuchiVersion
 Releases are published to [Sonatype release repository](https://oss.sonatype.org/content/repositories/releases) that eventually gets mirrored to Maven Central.
 
 Development snapshots are available in [Sonatypes's snapshot repository](https://oss.sonatype.org/content/repositories/snapshots/).
+
+## Features
+
+- Enable partitioning of data using [Consistent Hashing](https://en.wikipedia.org/wiki/Consistent_hashing)
+- Supports synchronous replication to desired number of nodes
+- Enables above set of features for any gRPC based service definitions
 
 If you are a developer looking to use Suuchi, head over to [Quick Start](quick-start.md) guide to get started.
 
