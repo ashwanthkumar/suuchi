@@ -5,11 +5,14 @@ import io.scalecube.cluster.gossip.GossipConfig
 import io.scalecube.cluster.membership.{MembershipConfig, MembershipEvent}
 import io.scalecube.cluster.{Cluster, ClusterConfig, ICluster}
 import io.scalecube.transport.{Address, TransportConfig}
-import rx.functions.Action1
+import org.slf4j.LoggerFactory
+import rx.lang.scala.ImplicitFunctionConversions._
 
 import scala.collection.JavaConversions._
+import scala.language.implicitConversions
 
 class ScaleCubeMembership(port: Int, gossipConfig: Option[GossipConfig] = None) extends Membership {
+  protected val log = LoggerFactory.getLogger(getClass)
 
   var cluster: ICluster = _
 
@@ -30,25 +33,24 @@ class ScaleCubeMembership(port: Int, gossipConfig: Option[GossipConfig] = None) 
           .build()
       )
     }
+    cluster.listenMembership()
+      .filter({ m: MembershipEvent => m.isAdded })
+      .map[MemberAddress]({ m: MembershipEvent => MemberAddress(m.member().address().toString) })
+      .subscribe(this.onJoin)
 
+    cluster.listenMembership()
+      .filter({ m: MembershipEvent => m.isRemoved })
+      .map[MemberAddress]({ m: MembershipEvent => MemberAddress(m.member().address().toString) })
+      .subscribe(this.onLeave)
     this
   }
   override def stop(): Unit = cluster.shutdown().get()
   override def nodes: Iterable[MemberAddress] = cluster.members().map(m => MemberAddress(m.address().toString))
-  override def onJoin: (MemberAddress) => Unit = (m: MemberAddress) => println(s"$m has joined")
   override def start(): Membership = {
-    cluster.listenMembership().subscribe(new MembershipEventListener(this))
+    /* We would have started the member and atempted to have joined the cluster in bootstrap itself */
     this
   }
-  override def onLeave: (MemberAddress) => Unit = (m: MemberAddress) => println(s"$m has left")
+  override def onJoin: (MemberAddress) => Unit = (m: MemberAddress) => log.info(s"[$whoami] $m has joined")
+  override def onLeave: (MemberAddress) => Unit = (m: MemberAddress) => log.info(s"[$whoami] $m has left")
   override def whoami: MemberAddress = MemberAddress(cluster.address().toString)
-}
-
-class MembershipEventListener(membership: Membership) extends Action1[MembershipEvent] {
-  override def call(t: MembershipEvent): Unit = t match {
-    case event if event.isAdded =>
-      membership.onJoin.apply(MemberAddress(event.member().address().toString))
-    case event if event.isRemoved =>
-      membership.onLeave.apply(MemberAddress(event.member().address().toString))
-  }
 }
