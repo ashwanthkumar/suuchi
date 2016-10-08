@@ -7,11 +7,11 @@ abstract class Membership {
 
   def stop(): Unit
 
-  def onJoin: Member => Unit
+  def onJoin: MemberAddress => Unit
 
-  def onLeave: Member => Unit
+  def onLeave: MemberAddress => Unit
 
-  def nodes: Iterable[Member]
+  def nodes: Iterable[MemberAddress]
 
-  def whoami: Member
+  def whoami: MemberAddress
 }

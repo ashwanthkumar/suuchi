@@ -1,6 +1,7 @@
 package in.ashwanthkumar.suuchi.membership.scalecube
 
 import in.ashwanthkumar.suuchi.membership.{InMemoryBootstrapper, MemberAddress, Membership}
+import io.scalecube.cluster.gossip.GossipConfig
 import org.scalatest.Matchers.{convertToAnyShouldWrapper, have}
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 
@@ -12,7 +13,8 @@ class ScaleCubeMembershipIT extends FlatSpec with BeforeAndAfter {
     val bootstrapper = InMemoryBootstrapper(List(MemberAddress("localhost", BASE_PORT + 1)))
     (1 to 5).foreach { i =>
       val memberPort = BASE_PORT + i
-      val member = new ScaleCubeMembership(memberPort)
+      val gossipConfig = GossipConfig.builder().gossipInterval(5).build()
+      val member = new ScaleCubeMembership(memberPort, Some(gossipConfig))
       if (i > 1) {
         members = members ++ List(member.bootstrap(bootstrapper))
       } else {
