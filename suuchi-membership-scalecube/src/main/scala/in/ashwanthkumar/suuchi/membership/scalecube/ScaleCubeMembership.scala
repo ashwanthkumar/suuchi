@@ -27,7 +27,6 @@ class ScaleCubeMembership(port: Int, gossipConfig: Option[GossipConfig] = None) 
       cluster = Cluster.joinAwait(
         clusterConfig
           .membershipConfig(MembershipConfig.builder.seedMembers(seedNodes).build)
-          .gossipConfig(GossipConfig.builder().build())
           .build()
       )
     }
@@ -42,7 +41,7 @@ class ScaleCubeMembership(port: Int, gossipConfig: Option[GossipConfig] = None) 
     this
   }
   override def onLeave: (MemberAddress) => Unit = (m: MemberAddress) => println(s"$m has left")
-  override def whoami: MemberAddress = MemberAddress(cluster.member().address().toString)
+  override def whoami: MemberAddress = MemberAddress(cluster.address().toString)
 }
 
 class MembershipEventListener(membership: Membership) extends Action1[MembershipEvent] {
