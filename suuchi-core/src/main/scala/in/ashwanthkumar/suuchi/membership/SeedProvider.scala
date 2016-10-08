@@ -3,7 +3,7 @@ package in.ashwanthkumar.suuchi.membership
 trait SeedProvider {
   /**
    * Returns a list of host that're used to connect to form a cluster. These nodes always represent the
-   * initial seed nodes. While different [[Membership]] implementations might have different guarantees,
+   * initial seed nodes. While different [[Cluster]] implementations might have different guarantees,
    * It's generally a good practice to expose a single consistent copy of the nodes
    * as seed nodes.
    *

@@ -11,8 +11,8 @@
         <module>suuchi-core</module>
         <module>suuchi-examples</module>
         <module>suuchi-rocksdb</module>
-        <module>suuchi-membership-scalecube</module>
-        <module>suuchi-membership-atomix</module>
+        <module>suuchi-cluster-scalecube</module>
+        <module>suuchi-cluster-atomix</module>
     </modules>
 
     <url>https://github.com/ashwanthkumar/suuchi</url>
