@@ -5,3 +5,6 @@ comment:
   branches: null
   flags: null
   paths: null
+
+ignore:
+  - suuchi-examples
