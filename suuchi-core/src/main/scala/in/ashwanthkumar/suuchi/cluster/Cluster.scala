@@ -76,7 +76,7 @@ abstract class Cluster(listeners: List[MemberListener]) {
   /**
    * Handler for Membership implementations to bind when new members join the cluster.
    */
-  final def onJoin: MemberAddress => Unit = m => listeners.foreach(_.onJoin(m))
+  final protected def onJoin: MemberAddress => Unit = m => listeners.foreach(_.onJoin(m))
 
   /**
    * Handler for Membership implementations to bind when new members leave the cluster
@@ -84,5 +84,5 @@ abstract class Cluster(listeners: List[MemberListener]) {
    * ways the node can't participate in regular activity of the cluster and has to be
    * removed from it's duty.
    */
-  final def onLeave: MemberAddress => Unit = m => listeners.foreach(_.onLeave(m))
+  final protected def onLeave: MemberAddress => Unit = m => listeners.foreach(_.onLeave(m))
 }
