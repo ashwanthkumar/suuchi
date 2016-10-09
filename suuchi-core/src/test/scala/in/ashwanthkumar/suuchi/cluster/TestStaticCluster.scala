@@ -13,10 +13,12 @@ class TestStaticCluster(self: MemberAddress, listeners: List[MemberListener]) ex
 
   def addNode(node: MemberAddress): Unit = {
     members ++= Set(node)
+    this.onJoin.apply(node)
   }
 
   def removeNode(node: MemberAddress): Unit = {
     members --= Set(node)
+    this.onLeave.apply(node)
   }
 }
 
