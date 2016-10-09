@@ -1,6 +1,6 @@
 package in.ashwanthkumar.suuchi.membership.scalecube
 
-import in.ashwanthkumar.suuchi.membership.{SeedProvider, MemberAddress, MemberListener, Cluster}
+import in.ashwanthkumar.suuchi.membership.{Cluster => SuuchiCluster, MemberAddress, MemberListener, SeedProvider}
 import io.scalecube.cluster.gossip.GossipConfig
 import io.scalecube.cluster.membership.{MembershipConfig, MembershipEvent}
 import io.scalecube.cluster.{Cluster, ClusterConfig, ICluster}
@@ -11,12 +11,12 @@ import rx.lang.scala.ImplicitFunctionConversions._
 import scala.collection.JavaConversions._
 import scala.language.implicitConversions
 
-class ScaleCubeCluster(port: Int, gossipConfig: Option[GossipConfig] = None, listeners: List[MemberListener]) extends Cluster(listeners) {
+class ScaleCubeCluster(port: Int, gossipConfig: Option[GossipConfig] = None, listeners: List[MemberListener]) extends SuuchiCluster(listeners) {
   protected val log = LoggerFactory.getLogger(getClass)
 
   var cluster: ICluster = _
 
-  override def start(seedProvider: SeedProvider): Cluster = {
+  override def start(seedProvider: SeedProvider): SuuchiCluster = {
     val clusterConfig = ClusterConfig.builder()
       .transportConfig(
         TransportConfig.builder()
