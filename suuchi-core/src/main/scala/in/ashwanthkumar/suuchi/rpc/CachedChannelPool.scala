@@ -2,7 +2,7 @@ package in.ashwanthkumar.suuchi.rpc
 
 import java.util.concurrent.ConcurrentHashMap
 
-import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import io.grpc.{ManagedChannel, ManagedChannelBuilder}
 
 import scala.language.existentials

@@ -1,4 +1,4 @@
-package in.ashwanthkumar.suuchi.membership
+package in.ashwanthkumar.suuchi.cluster
 
 case class MemberAddress(host: String, port: Int) {
   def toExternalForm = s"$host:$port"

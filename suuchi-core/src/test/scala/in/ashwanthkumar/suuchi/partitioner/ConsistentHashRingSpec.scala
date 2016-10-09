@@ -1,6 +1,6 @@
 package in.ashwanthkumar.suuchi.partitioner
 
-import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 

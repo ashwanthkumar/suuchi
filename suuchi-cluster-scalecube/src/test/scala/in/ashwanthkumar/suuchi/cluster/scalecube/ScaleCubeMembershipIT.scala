@@ -1,8 +1,8 @@
-package in.ashwanthkumar.suuchi.membership.scalecube
+package in.ashwanthkumar.suuchi.cluster.scalecube
 
 import java.util.concurrent._
 
-import in.ashwanthkumar.suuchi.membership.{InMemorySeedProvider, MemberAddress, MemberListener, Cluster}
+import in.ashwanthkumar.suuchi.cluster.{InMemorySeedProvider, MemberAddress, MemberListener, Cluster}
 import io.scalecube.cluster.gossip.GossipConfig
 import org.scalatest.Matchers.{convertToAnyShouldWrapper, have}
 import org.scalatest.{BeforeAndAfter, FlatSpec}

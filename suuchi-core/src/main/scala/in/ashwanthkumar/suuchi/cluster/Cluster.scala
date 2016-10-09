@@ -1,4 +1,4 @@
-package in.ashwanthkumar.suuchi.membership
+package in.ashwanthkumar.suuchi.cluster
 
 /**
  * Listeners are notified whenever there are new nodes joining the cluster

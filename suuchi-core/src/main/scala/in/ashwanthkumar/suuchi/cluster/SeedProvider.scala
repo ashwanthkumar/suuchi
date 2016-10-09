@@ -1,4 +1,4 @@
-package in.ashwanthkumar.suuchi.membership
+package in.ashwanthkumar.suuchi.cluster
 
 trait SeedProvider {
   /**

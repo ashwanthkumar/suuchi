@@ -3,7 +3,7 @@ package in.ashwanthkumar.suuchi.router
 import java.util.concurrent.Executor
 
 import com.google.common.util.concurrent.{Futures, ListenableFuture}
-import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import io.grpc.{Metadata, MethodDescriptor, ServerCall}
 import org.mockito.Matchers
 import org.mockito.Matchers._

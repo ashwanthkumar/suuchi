@@ -1,6 +1,6 @@
-package in.ashwanthkumar.suuchi.membership.scalecube
+package in.ashwanthkumar.suuchi.cluster.scalecube
 
-import in.ashwanthkumar.suuchi.membership.{Cluster => SuuchiCluster, MemberAddress, MemberListener, SeedProvider}
+import in.ashwanthkumar.suuchi.cluster.{Cluster => SuuchiCluster, MemberAddress, MemberListener, SeedProvider}
 import io.scalecube.cluster.gossip.GossipConfig
 import io.scalecube.cluster.membership.{MembershipConfig, MembershipEvent}
 import io.scalecube.cluster.{Cluster, ClusterConfig, ICluster}

@@ -1,8 +1,8 @@
-package in.ashwanthkumar.suuchi.membership.atomix
+package in.ashwanthkumar.suuchi.cluster.atomix
 
 import java.nio.file.Files
 
-import in.ashwanthkumar.suuchi.membership.{MemberAddress, InMemorySeedProvider}
+import in.ashwanthkumar.suuchi.cluster.{MemberAddress, InMemorySeedProvider}
 import org.apache.commons.io.FileUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.Matchers.{convertToAnyShouldWrapper, have}

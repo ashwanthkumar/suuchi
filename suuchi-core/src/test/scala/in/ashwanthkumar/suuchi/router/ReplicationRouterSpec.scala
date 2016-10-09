@@ -1,6 +1,6 @@
 package in.ashwanthkumar.suuchi.router
 
-import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import io.grpc.ServerCall.Listener
 import io.grpc.{Metadata, MethodDescriptor, ServerCall, ServerCallHandler}
 import org.mockito.Matchers._
@@ -9,17 +9,17 @@ import org.scalatest.FlatSpec
 
 class NoReplicator(nrOfReplicas: Int, self: MemberAddress) extends ReplicationRouter(nrOfReplicas, self) {
   override def replicate[ReqT, RespT](eligibleNodes: scala.List[MemberAddress], serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, delegate: ServerCall.Listener[ReqT]): Unit = {}
-  override def doReplication[ReqT, RespT](eligibleNodes: scala.List[_root_.in.ashwanthkumar.suuchi.membership.MemberAddress], serverCall: _root_.io.grpc.ServerCall[ReqT, RespT], headers: _root_.io.grpc.Metadata, incomingRequest: ReqT, delegate: _root_.io.grpc.ServerCall.Listener[ReqT]): Unit = ???
+  override def doReplication[ReqT, RespT](eligibleNodes: scala.List[_root_.in.ashwanthkumar.suuchi.cluster.MemberAddress], serverCall: _root_.io.grpc.ServerCall[ReqT, RespT], headers: _root_.io.grpc.Metadata, incomingRequest: ReqT, delegate: _root_.io.grpc.ServerCall.Listener[ReqT]): Unit = ???
 }
 
 class MockReplicator(nrOfReplicas: Int, self: MemberAddress, mock: ReplicationRouter) extends ReplicationRouter(nrOfReplicas, self) {
   /**
    * @inheritdoc
    */
-  override def replicate[ReqT, RespT](eligibleNodes: scala.List[_root_.in.ashwanthkumar.suuchi.membership.MemberAddress], serverCall: _root_.io.grpc.ServerCall[ReqT, RespT], headers: _root_.io.grpc.Metadata, incomingRequest: ReqT, delegate: _root_.io.grpc.ServerCall.Listener[ReqT]): Unit = {
+  override def replicate[ReqT, RespT](eligibleNodes: scala.List[_root_.in.ashwanthkumar.suuchi.cluster.MemberAddress], serverCall: _root_.io.grpc.ServerCall[ReqT, RespT], headers: _root_.io.grpc.Metadata, incomingRequest: ReqT, delegate: _root_.io.grpc.ServerCall.Listener[ReqT]): Unit = {
     mock.replicate(eligibleNodes, serverCall, headers, incomingRequest, delegate)
   }
-  override def doReplication[ReqT, RespT](eligibleNodes: scala.List[_root_.in.ashwanthkumar.suuchi.membership.MemberAddress], serverCall: _root_.io.grpc.ServerCall[ReqT, RespT], headers: _root_.io.grpc.Metadata, incomingRequest: ReqT, delegate: _root_.io.grpc.ServerCall.Listener[ReqT]): Unit = ???
+  override def doReplication[ReqT, RespT](eligibleNodes: scala.List[_root_.in.ashwanthkumar.suuchi.cluster.MemberAddress], serverCall: _root_.io.grpc.ServerCall[ReqT, RespT], headers: _root_.io.grpc.Metadata, incomingRequest: ReqT, delegate: _root_.io.grpc.ServerCall.Listener[ReqT]): Unit = ???
 }
 
 class ReplicationRouterSpec extends FlatSpec {

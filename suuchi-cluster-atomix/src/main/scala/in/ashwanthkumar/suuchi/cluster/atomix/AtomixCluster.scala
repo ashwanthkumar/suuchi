@@ -1,10 +1,10 @@
-package in.ashwanthkumar.suuchi.membership.atomix
+package in.ashwanthkumar.suuchi.cluster.atomix
 
 import java.io.File
 import java.time.Duration
 import java.util.function.Consumer
 
-import in.ashwanthkumar.suuchi.membership.{MemberListener, SeedProvider, MemberAddress, Cluster}
+import in.ashwanthkumar.suuchi.cluster.{MemberListener, SeedProvider, MemberAddress, Cluster}
 import io.atomix.AtomixReplica
 import io.atomix.catalyst.transport.Address
 import io.atomix.catalyst.transport.netty.NettyTransport

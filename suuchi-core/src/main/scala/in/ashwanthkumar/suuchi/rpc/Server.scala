@@ -2,7 +2,7 @@ package in.ashwanthkumar.suuchi.rpc
 
 import java.net.InetAddress
 
-import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import in.ashwanthkumar.suuchi.router.{HandleOrForwardRouter, RoutingStrategy, SequentialReplicator}
 import io.grpc.{Server => GServer, _}
 import org.slf4j.LoggerFactory
