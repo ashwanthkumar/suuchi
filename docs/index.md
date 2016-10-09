@@ -1,5 +1,10 @@
 # Suuchi
-Toolkit to build distributed data systems, that uses [gRPC](http://www.grpc.io/) under the hood as the communication medium.
+
+Having inspired from tools like [Uber's Ringpop](https://ringpop.readthedocs.io/) and a strong desire to understand how distributed systems work - Suuchi was born.
+
+Suuchi is toolkit to build distributed data systems, that uses [gRPC](http://www.grpc.io/) under the hood as the communication medium. The overall goal of this project is to build pluggable components that can be easily composed by the developer to build a data system of desired characteristics.
+
+> This project is alpha quality and not meant to be used in any production setting. We welcome all kinds of feedback to help improve the library.
 
 Current version of Suuchi is `"0.2.1"`.
 
