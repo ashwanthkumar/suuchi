@@ -10,5 +10,10 @@ class ClusterProvider$Spec extends FlatSpec {
 
     cluster.nodes should have size 2
     cluster.whoami should be(MemberAddress("host1", 1))
+
+    cluster.asInstanceOf[TestStaticCluster].addNode(MemberAddress("host3", 3))
+    cluster.nodes should have size 3
+    cluster.asInstanceOf[TestStaticCluster].removeNode(MemberAddress("host3", 3))
+    cluster.nodes should have size 2
   }
 }
