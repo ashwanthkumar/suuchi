@@ -25,7 +25,7 @@ trait MemberListener {
  * <li>Supports custom Listeners who'll be notified when a node joins / exits the cluster</li>
  * </ol>
  *
- * @param listeners
+ * @param listeners List[MemberListener] who would be notified about changes in cluster membership
  */
 abstract class Cluster(listeners: List[MemberListener]) {
   /**
