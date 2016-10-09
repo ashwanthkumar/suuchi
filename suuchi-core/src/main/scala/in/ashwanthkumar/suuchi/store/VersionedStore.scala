@@ -64,7 +64,7 @@ class VersionedStore(store: Store, versionedBy: VersionedBy, numVersions: Int, c
     if(versions.size > numVersions) removeData(key, versions.min)
 
     // Write out the actual data record
-    store.put(dkey(key, versions.max), value)
+    store.put(dkey(key, currentVersion), value)
 
   }
 

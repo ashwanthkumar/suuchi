@@ -1,5 +1,8 @@
 package in.ashwanthkumar.suuchi.store
 
+import java.nio.ByteBuffer
+
+import in.ashwanthkumar.suuchi.store.PrimitivesSerDeUtils.{bytesToLong, longToBytes}
 import in.ashwanthkumar.suuchi.utils.DateUtils
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
@@ -12,6 +15,10 @@ trait MockDateUtils extends DateUtils {
   }
 }
 class ByWriteTimestampMocked extends ByWriteTimestamp with MockDateUtils
+class KeyAsVersion extends VersionedBy {
+  override val versionOrdering: Ordering[Long] = Ordering.Long.reverse
+  override def version(key: Array[Byte], value: Array[Byte]): Long = bytesToLong(key)
+}
 
 class VersionedStoreSpec extends FlatSpec {
   "VersionedStore" should "return no version info for a key for the first time" in {
@@ -34,6 +41,17 @@ class VersionedStoreSpec extends FlatSpec {
 
     store.put(Array(1.toByte), Array(103.toByte))
     store.getVersions(Array(1.toByte)) should be(List(4,3,2))
+  }
+
+  it should "write data for value with an earlier version" in {
+    val store = new VersionedStore(new InMemoryStore, new KeyAsVersion, 3)
+    store.put(longToBytes(456), longToBytes(456))
+    store.getVersions(longToBytes(456)) should be(List(456))
+    store.get(longToBytes(456)).map(ByteBuffer.wrap) should be(Some(ByteBuffer.wrap(longToBytes(456))))
+
+    store.put(longToBytes(123), longToBytes(123))
+    store.getVersions(longToBytes(123)) should be(List(123))
+    store.get(longToBytes(123)).map(ByteBuffer.wrap) should be(Some(ByteBuffer.wrap(longToBytes(123))))
   }
 
   it should "delete old versions of data for a key when we exceed numVersions" in {
