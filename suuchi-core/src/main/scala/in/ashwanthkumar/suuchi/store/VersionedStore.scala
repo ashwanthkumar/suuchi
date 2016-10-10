@@ -98,6 +98,3 @@ class VersionedStore(store: Store, versionedBy: VersionedBy, numVersions: Int, c
       .getOrElse(List.empty[Long])
   }
 }
-
-
-
