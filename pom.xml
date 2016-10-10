@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>in.ashwanthkumar</groupId>
     <artifactId>suuchi</artifactId>
-    <version>0.2.2-SNAPSHOT</version>
+    <version>0.2.4-SNAPSHOT</version>
     <name>Suuchi</name>
     <description>Toolkit to build distributed Data Systems</description>
     <packaging>pom</packaging>
@@ -101,6 +101,10 @@
                             <compileOrder>Mixed</compileOrder>
                             <addScalacArgs>-feature</addScalacArgs>
                             <scalaVersion>${scala.version}</scalaVersion>
+                            <javacArgs>
+                                <javacArg>-source</javacArg>
+                                <javacArg>1.8</javacArg>
+                            </javacArgs>
                         </configuration>
                     </execution>
                     <execution>

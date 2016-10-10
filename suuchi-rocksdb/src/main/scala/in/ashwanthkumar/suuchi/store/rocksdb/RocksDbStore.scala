@@ -4,6 +4,7 @@ import in.ashwanthkumar.suuchi.store.Store
 import in.ashwanthkumar.suuchi.utils.Logging
 import org.rocksdb._
 
+import scala.language.postfixOps
 import scala.util.Try
 
 class RocksDbStore(config: RocksDbConfiguration) extends Store with Logging {
@@ -20,11 +21,25 @@ class RocksDbStore(config: RocksDbConfiguration) extends Store with Logging {
   }
 
   override def put(key: Array[Byte], value: Array[Byte]) = this.synchronized {
-    Try(db.put(writeOptions, key, value)).isSuccess
+    logOnError(() => db.put(writeOptions, key, value)) isSuccess
   }
 
   def close() = {
     log.info(s"[Closing RocksDb]")
     db.close()
+  }
+
+  override def remove(key: Array[Byte]): Boolean = {
+    logOnError(() => db.remove(key)) isSuccess
+  }
+
+  def logOnError[T](f: () => T): Try[T] = {
+    Try {
+      f()
+    } recover {
+      case e: Exception =>
+        log.error(e.getMessage, e)
+        throw e
+    }
   }
 }
