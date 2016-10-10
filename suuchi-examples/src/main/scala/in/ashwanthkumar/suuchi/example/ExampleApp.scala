@@ -8,7 +8,6 @@ import io.grpc.netty.NettyServerBuilder
 
 // Start the app with either / one each of 5051, 5052 or/and 5053 port numbers
 object ExampleApp extends App {
-  import in.ashwanthkumar.suuchi.router.ParallelReplicator.Implicit
 
   val port = args(0).toInt
   val replication = 2

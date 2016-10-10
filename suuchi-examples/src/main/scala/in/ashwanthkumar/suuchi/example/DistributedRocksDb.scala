@@ -9,7 +9,6 @@ import in.ashwanthkumar.suuchi.store.rocksdb.{RocksDbConfiguration, RocksDbStore
 import io.grpc.netty.NettyServerBuilder
 
 object DistributedRocksDb extends App {
-  import in.ashwanthkumar.suuchi.router.ParallelReplicator._
 
   val REPLICATION_COUNT = 2
   val routingStrategy = ConsistentHashingRouting(REPLICATION_COUNT, whoami(5051), whoami(5052))

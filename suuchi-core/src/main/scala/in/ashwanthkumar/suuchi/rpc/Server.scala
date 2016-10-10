@@ -97,8 +97,7 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
    * @return  this object for chaining
    * @return
    */
-  def withParallelReplication(service: ServerServiceDefinition, nrReplicas: Int, strategy: RoutingStrategy)
-                             (implicit executor: Executor): Server[T] = {
+  def withParallelReplication(service: ServerServiceDefinition, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
     withReplication(service, new ParallelReplicator(nrReplicas, whoami), strategy)
   }
 
@@ -112,8 +111,7 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
    * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
    * @return  this object for chaining
    */
-  def withParallelReplication(service: BindableService, nrReplicas: Int, strategy: RoutingStrategy)
-                             (implicit executor: Executor): Server[T] = {
+  def withParallelReplication(service: BindableService, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
     withParallelReplication(service.bindService(), nrReplicas, strategy)
   }
 
