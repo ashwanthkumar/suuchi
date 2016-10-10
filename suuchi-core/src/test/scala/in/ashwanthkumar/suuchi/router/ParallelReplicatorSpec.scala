@@ -10,7 +10,7 @@ import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 
-class MockParallelReplicator(nrReplicas: Int, self: MemberAddress, mock: ParallelReplicator) extends ParallelReplicator(nrReplicas, self) {
+class MockParallelReplicator(nrReplicas: Int, self: MemberAddress, mock: ParallelReplicator)(implicit executor: Executor) extends ParallelReplicator(nrReplicas, self) {
   override def forwardAsync[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata,
                                          incomingRequest: ReqT, destination: MemberAddress)
                                         (implicit executor: Executor) : ListenableFuture[RespT] = {

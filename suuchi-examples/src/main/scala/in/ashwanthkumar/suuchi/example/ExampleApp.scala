@@ -8,6 +8,8 @@ import io.grpc.netty.NettyServerBuilder
 
 // Start the app with either / one each of 5051, 5052 or/and 5053 port numbers
 object ExampleApp extends App {
+  import in.ashwanthkumar.suuchi.router.ParallelReplicator.Implicit
+
   val port = args(0).toInt
   val replication = 2
 
@@ -16,7 +18,9 @@ object ExampleApp extends App {
   val store = new InMemoryStore
   val server = Server(NettyServerBuilder.forPort(port), whoami(port))
     .routeUsing(new SuuchiReadService(store), routingStrategy)
-    .withReplication(new SuuchiPutService(store), replication, routingStrategy)
+    .withParallelReplication(new SuuchiPutService(store), replication, routingStrategy)
+  // .withSequentialReplication(new SuuchiPutService(store), replication, routingStrategy)
+  // use the above when you want to replicate to one node at a time
   server.start()
 
   server.blockUntilShutdown()
