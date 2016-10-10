@@ -6,6 +6,7 @@ trait ReadStore {
 
 trait WriteStore {
   def put(key: Array[Byte], value: Array[Byte]): Boolean
+  def remove(key: Array[Byte]): Boolean
 }
 
 trait Store extends ReadStore with WriteStore

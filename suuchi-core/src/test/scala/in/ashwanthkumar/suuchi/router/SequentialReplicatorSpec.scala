@@ -2,10 +2,11 @@ package in.ashwanthkumar.suuchi.router
 
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import io.grpc.{Metadata, MethodDescriptor, ServerCall, Status}
-import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
+import org.mockito.{ArgumentCaptor, Matchers}
 import org.scalatest.FlatSpec
+import org.scalatest.Matchers.{be, convertToAnyShouldWrapper}
 
 class TestSequentialReplicator(nrReplicas: Int, self: MemberAddress) extends SequentialReplicator(nrReplicas, self) {
   override def forward[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): Any = {}
@@ -25,7 +26,11 @@ class SequentialReplicatorSpec extends FlatSpec {
     val headers = new Metadata()
     replicator.replicate[Int, Int](List(MemberAddress("host1", 1)), serverCall, headers, 1, delegate)
 
-    verify(serverCall, times(1)).close(Status.FAILED_PRECONDITION, headers)
+    val statusCaptor = ArgumentCaptor.forClass(classOf[Status])
+    verify(serverCall, times(1)).close(statusCaptor.capture(), Matchers.eq(headers))
+    val actualStatus = statusCaptor.getValue
+    actualStatus.getDescription should be("We don't have enough nodes to satisfy the replication factor. Not processing this request")
+    actualStatus.getCode should be(Status.FAILED_PRECONDITION.getCode)
   }
 
   it should "fail if no nodes were sent to replicate" in {
@@ -35,7 +40,11 @@ class SequentialReplicatorSpec extends FlatSpec {
     val headers = new Metadata()
     replicator.replicate[Int, Int](Nil, serverCall, headers, 1, delegate)
 
-    verify(serverCall, times(1)).close(Status.INTERNAL, headers)
+    val statusCaptor = ArgumentCaptor.forClass(classOf[Status])
+    verify(serverCall, times(1)).close(statusCaptor.capture(), Matchers.eq(headers))
+    val actualStatus = statusCaptor.getValue
+    actualStatus.getDescription should be("This should never happen. No nodes found to place replica")
+    actualStatus.getCode should be(Status.INTERNAL.getCode)
   }
 
   it should "sequentially send forwards to the replicas" in {

@@ -1,6 +1,7 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import java.net.InetAddress
+import java.util.concurrent.Executor
 
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import in.ashwanthkumar.suuchi.router.{HandleOrForwardRouter, RoutingStrategy, SequentialReplicator}
@@ -27,12 +28,91 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
     })
   }
 
-  def withReplication(service: BindableService, nrOfReplica: Int, strategy: RoutingStrategy) = {
+  /**
+   * Enable a custom [[ReplicationRouter]] implementation for replicating requests to this service. [[RoutingStrategy]]
+   * defines the list of nodes we should replicate the request too.
+   *
+   * @param service Service to which we should hook into for replication.
+   *                Generally these're Write services.
+   * @param replicator [[ReplicationRouter]] implementation that does the actual replication
+   * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
+   * @return  this object for chaining
+   */
+  def withReplication(service: ServerServiceDefinition, replicator: ReplicationRouter, strategy: RoutingStrategy): Server[T] = {
     val router = new HandleOrForwardRouter(strategy, whoami)
-    // FIXME - make the Replicator pluggable
-    val replicator = new SequentialReplicator(nrOfReplica, whoami)
     serverBuilder.addService(ServerInterceptors.interceptForward(service, router, replicator))
     this
+  }
+
+  /**
+   * Enable a custom [[ReplicationRouter]] implementation for replicating requests to this service. [[RoutingStrategy]]
+   * defines the list of nodes we should replicate the request too.
+   *
+   * @param service Service to which we should hook into for replication.
+   *                Generally these're Write services.
+   * @param replicator [[ReplicationRouter]] implementation that does the actual replication
+   * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
+   * @return  this object for chaining
+   */
+  def withReplication(service: BindableService, replicator: ReplicationRouter, strategy: RoutingStrategy): Server[T] = {
+    withReplication(service.bindService(), replicator, strategy)
+  }
+
+  /**
+   * Enable [[SequentialReplicator]] for replicating requests to this service. [[RoutingStrategy]]
+   * defines the list of nodes we should replicate the request too.
+   *
+   * @param service Service to which we should hook into for replication.
+   *                Generally these're Write services.
+   * @param nrReplicas  Number of replicas to make for each request
+   * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
+   * @return  this object for chaining
+   */
+  def withSequentialReplication(service: ServerServiceDefinition, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
+    withReplication(service, new SequentialReplicator(nrReplicas, whoami), strategy)
+  }
+
+  /**
+   * Enable [[SequentialReplicator]] for replicating requests to this service. [[RoutingStrategy]]
+   * defines the list of nodes we should replicate the request too.
+   *
+   * @param service Service to which we should hook into for replication.
+   *                Generally these're Write services.
+   * @param nrReplicas  Number of replicas to make for each request
+   * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
+   * @return  this object for chaining
+   */
+  def withSequentialReplication(service: BindableService, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
+    withSequentialReplication(service.bindService(), nrReplicas, strategy)
+  }
+
+  /**
+   * Enable [[ParallelReplicator]] for replicating requets to this service. [[RoutingStrategy]]
+   * defines the list of nodes we should replicate the request too.
+   *
+   * @param service Service to which we should hook into for replication.
+   *                Generally these're Write services.
+   * @param nrReplicas  Number of replicas to make for each request
+   * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
+   * @return  this object for chaining
+   * @return
+   */
+  def withParallelReplication(service: ServerServiceDefinition, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
+    withReplication(service, new ParallelReplicator(nrReplicas, whoami), strategy)
+  }
+
+  /**
+   * Enable [[ParallelReplicator]] for replicating requets to this service. [[RoutingStrategy]]
+   * defines the list of nodes we should replicate the request too.
+   *
+   * @param service Service to which we should hook into for replication.
+   *                Generally these're Write services.
+   * @param nrReplicas  Number of replicas to make for each request
+   * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
+   * @return  this object for chaining
+   */
+  def withParallelReplication(service: BindableService, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
+    withParallelReplication(service.bindService(), nrReplicas, strategy)
   }
 
   def routeUsing(service: BindableService, strategy: RoutingStrategy): Server[T] = routeUsing(service.bindService(), strategy)

@@ -6,28 +6,21 @@ import in.ashwanthkumar.suuchi.rpc.{Server, SuuchiPutService, SuuchiReadService}
 import in.ashwanthkumar.suuchi.store.InMemoryStore
 import io.grpc.netty.NettyServerBuilder
 
+// Start the app with either / one each of 5051, 5052 or/and 5053 port numbers
 object ExampleApp extends App {
-  val routingStrategy = ConsistentHashingRouting(2, whoami(5051), whoami(5052), whoami(5053))
 
-  val store1 = new InMemoryStore
-  val server1 = Server(NettyServerBuilder.forPort(5051), whoami(5051))
-    .routeUsing(new SuuchiReadService(store1), routingStrategy)
-    .withReplication(new SuuchiPutService(store1), 2, routingStrategy)
-  server1.start()
+  val port = args(0).toInt
+  val replication = 2
 
-  val store2 = new InMemoryStore
-  val server2 = Server(NettyServerBuilder.forPort(5052), whoami(5052))
-    .routeUsing(new SuuchiReadService(store2), routingStrategy)
-    .withReplication(new SuuchiPutService(store2), 2, routingStrategy)
-  server2.start()
+  val routingStrategy = ConsistentHashingRouting(replication, whoami(5051), whoami(5052), whoami(5053))
 
-  val store3 = new InMemoryStore
-  val server3 = Server(NettyServerBuilder.forPort(5053), whoami(5053))
-    .routeUsing(new SuuchiReadService(store3), routingStrategy)
-    .withReplication(new SuuchiPutService(store3), 2, routingStrategy)
-  server3.start()
+  val store = new InMemoryStore
+  val server = Server(NettyServerBuilder.forPort(port), whoami(port))
+    .routeUsing(new SuuchiReadService(store), routingStrategy)
+    .withParallelReplication(new SuuchiPutService(store), replication, routingStrategy)
+  // .withSequentialReplication(new SuuchiPutService(store), replication, routingStrategy)
+  // use the above when you want to replicate to one node at a time
+  server.start()
 
-  server1.blockUntilShutdown()
-  server2.blockUntilShutdown()
-  server3.blockUntilShutdown()
+  server.blockUntilShutdown()
 }
