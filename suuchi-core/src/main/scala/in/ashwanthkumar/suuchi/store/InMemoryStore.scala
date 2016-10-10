@@ -20,4 +20,10 @@ class InMemoryStore extends Store {
     log.trace(s"GetResult for key=${new String(key)}, value=${value.map(b => new String(b))}")
     value
   }
+
+  override def remove(key: Array[Byte]): Boolean = {
+    log.trace(s"Remove for key=${new String(key)}")
+    store.remove(ByteBuffer.wrap(key))
+    true
+  }
 }

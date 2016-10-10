@@ -101,6 +101,10 @@
                             <compileOrder>Mixed</compileOrder>
                             <addScalacArgs>-feature</addScalacArgs>
                             <scalaVersion>${scala.version}</scalaVersion>
+                            <javacArgs>
+                                <javacArg>-source</javacArg>
+                                <javacArg>1.8</javacArg>
+                            </javacArgs>
                         </configuration>
                     </execution>
                     <execution>
