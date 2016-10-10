@@ -7,6 +7,8 @@ import io.grpc._
 import io.grpc.stub.{ClientCalls, MetadataUtils}
 import org.slf4j.LoggerFactory
 
+import scala.util.Try
+
 /**
  * Router decides to route the incoming request to right node in the cluster as defined
  * by the [[RoutingStrategy]].
@@ -33,14 +35,25 @@ class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddres
 
           eligibleNodes match {
             case nodes if nodes.nonEmpty && !nodes.exists(_.equals(self)) =>
-              val destination = nodes.head
-              log.trace(s"Forwarding request to $destination")
-              val clientResponse: RespT = forward(serverCall.getMethodDescriptor, headers, incomingRequest, destination)
-              // sendHeaders is very important and should be called before sendMessage
-              // else client wouldn't receive any data at all
-              serverCall.sendHeaders(headers)
-              serverCall.sendMessage(clientResponse)
-              forwarded = true
+              forwarded = nodes.exists(destination =>
+                Try {
+                  log.trace(s"Forwarding request to $destination")
+                  val clientResponse: RespT = forward(serverCall.getMethodDescriptor, headers, incomingRequest, destination)
+                  // sendHeaders is very important and should be called before sendMessage
+                  // else client wouldn't receive any data at all
+                  serverCall.sendHeaders(headers)
+                  serverCall.sendMessage(clientResponse)
+                  true
+                } recover {
+                  case r: RuntimeException =>
+                    log.error(r.getMessage, r)
+                    false
+                } get
+              )
+
+              if (!forwarded) {
+                serverCall.close(Status.FAILED_PRECONDITION.withDescription("No alive nodes to handle traffic."), headers)
+              }
             case nodes if nodes.nonEmpty && nodes.exists(_.equals(self)) =>
               log.trace("Calling delegate's onMessage")
               delegate.onMessage(incomingRequest)

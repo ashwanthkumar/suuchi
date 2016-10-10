@@ -47,6 +47,32 @@ class HandleOrForwardRouterSpec extends FlatSpec {
     verifyInteractions(router, isForwarded = true, isHandledLocally = false)
   }
 
+  it should "forward message to next node in the ring if the first one fails" in {
+    val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1), MemberAddress("host2", 2)), MemberAddress("host2", 1)) {
+      var shouldFail = true
+      // mocking the actual forward implementation
+      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
+        if (shouldFail) {
+          shouldFail = false
+          throw new RuntimeException("An exception happened while trying to forward the request")
+        } else {
+          1.asInstanceOf[RespT]
+        }
+      }
+    }
+    verifyInteractions(router, isForwarded = true, isHandledLocally = false)
+  }
+
+  it should "not forward message to any node in the ring if all node forwards fail" in {
+    val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1), MemberAddress("host2", 2)), MemberAddress("host2", 1)) {
+      // mocking the actual forward implementation
+      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
+        throw new RuntimeException("An exception happened while trying to forward the request")
+      }
+    }
+    verifyInteractions(router, isForwarded = false, isHandledLocally = false)
+  }
+
   def verifyInteractions(router: HandleOrForwardRouter, isForwarded: Boolean, isHandledLocally: Boolean): Unit = {
     val serverCall = mock(classOf[ServerCall[Int, Int]])
     val serverMethodDesc = mock(classOf[MethodDescriptor[Int, Int]])
@@ -71,7 +97,7 @@ class HandleOrForwardRouterSpec extends FlatSpec {
 
       verify(serverCall, times(1)).sendHeaders(any(classOf[Metadata]))
       verify(serverCall, times(1)).sendMessage(1)
-    } else if(isHandledLocally) {
+    } else if (isHandledLocally) {
       verify(delegate, times(1)).onMessage(1)
       verify(delegate, times(1)).onHalfClose()
     } else {
