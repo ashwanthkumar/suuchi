@@ -7,6 +7,7 @@ import io.grpc._
 import io.grpc.stub.{ClientCalls, MetadataUtils}
 import org.slf4j.LoggerFactory
 
+import scala.language.postfixOps
 import scala.util.Try
 
 /**

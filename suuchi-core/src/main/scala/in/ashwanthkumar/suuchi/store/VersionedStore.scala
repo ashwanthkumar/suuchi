@@ -3,6 +3,8 @@ package in.ashwanthkumar.suuchi.store
 import in.ashwanthkumar.suuchi.utils.DateUtils
 import scala.util.hashing.MurmurHash3
 
+import scala.language.postfixOps
+
 
 object Versions {
   /*
