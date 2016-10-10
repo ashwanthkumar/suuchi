@@ -6,7 +6,7 @@ import org.scalatest.Matchers.{convertToAnyShouldWrapper, be}
 import scala.util.Random
 
 class VersionsSpec extends FlatSpec {
-  "Versions" should "do long serde properly" in {
+  "Versions" should "do List[Long] SerDe properly" in {
     val a = Random.nextLong()
     val b = Random.nextLong()
 
