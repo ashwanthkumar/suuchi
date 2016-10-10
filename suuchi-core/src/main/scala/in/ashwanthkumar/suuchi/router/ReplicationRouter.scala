@@ -90,13 +90,13 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
     eligibleNodes match {
       case nodes if nodes.size < nrReplicas =>
         log.warn("We don't have enough nodes to satisfy the replication factor. Not processing this request")
-        serverCall.close(Status.FAILED_PRECONDITION, headers)
+        serverCall.close(Status.FAILED_PRECONDITION.withDescription("We don't have enough nodes to satisfy the replication factor. Not processing this request"), headers)
       case nodes if nodes.nonEmpty =>
         log.info("Replication nodes for {} are {}", incomingRequest, nodes)
         doReplication(eligibleNodes, serverCall, headers, incomingRequest, delegate)
       case Nil =>
         log.error("This should never happen. No nodes found to place replica")
-        serverCall.close(Status.INTERNAL, headers)
+        serverCall.close(Status.INTERNAL.withDescription("This should never happen. No nodes found to place replica"), headers)
     }
   }
 
