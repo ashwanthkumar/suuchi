@@ -11,7 +11,8 @@ import io.grpc.netty.NettyServerBuilder
 object DistributedRocksDb extends App {
 
   val REPLICATION_COUNT = 2
-  val routingStrategy = ConsistentHashingRouting(REPLICATION_COUNT, whoami(5051), whoami(5052))
+  val PARTITIONS_PER_NODE = 2
+  val routingStrategy = ConsistentHashingRouting(REPLICATION_COUNT, PARTITIONS_PER_NODE, whoami(5051), whoami(5052))
 
   val path1 = Files.createTempDirectory("distributed-rocksdb").toFile
   val store1 = new RocksDbStore(RocksDbConfiguration(path1.getAbsolutePath))

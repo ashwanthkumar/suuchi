@@ -10,9 +10,10 @@ import io.grpc.netty.NettyServerBuilder
 object ExampleApp extends App {
 
   val port = args(0).toInt
+  val partitions = 100
   val replication = 2
 
-  val routingStrategy = ConsistentHashingRouting(replication, whoami(5051), whoami(5052), whoami(5053))
+  val routingStrategy = ConsistentHashingRouting(replication, partitions, whoami(5051), whoami(5052), whoami(5053))
 
   val store = new InMemoryStore
   val server = Server(NettyServerBuilder.forPort(port), whoami(port))
