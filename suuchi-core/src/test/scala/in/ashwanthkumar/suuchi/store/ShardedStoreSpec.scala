@@ -36,5 +36,45 @@ class ShardedStoreSpec extends FlatSpec {
     response2.map(ByteBuffer.wrap) should be(Some(Array(Byte.MaxValue)).map(ByteBuffer.wrap))
   }
 
+  it should "return the same store instance for the same partition but for different keys too" in {
+    val hash = mock(classOf[Hash])
+    when(hash.hash("1".getBytes)).thenReturn(1)
+    when(hash.hash("2".getBytes)).thenReturn(1)
+
+    val store = mock(classOf[Store])
+    when(store.get("1".getBytes)).thenReturn(None)
+
+    val createStore = mock(classOf[(Int) => Store])
+    when(createStore.apply(1)).thenReturn(store)
+
+    val shardedStore = new ShardedStore(3, hash, createStore)
+    shardedStore.put("1".getBytes, "1".getBytes) should be(true)
+    shardedStore.put("2".getBytes, "3".getBytes) should be(true)
+    verify(store, times(1)).put("1".getBytes, "1".getBytes)
+    verify(store, times(1)).put("2".getBytes, "3".getBytes)
+  }
+
+  it should "call get / put / remove on the delegate store when corresponding methods are called" in {
+    val hash = mock(classOf[Hash])
+    when(hash.hash("1".getBytes)).thenReturn(1)
+
+    val store = mock(classOf[Store])
+    when(store.get("1".getBytes)).thenReturn(None)
+    when(store.put("1".getBytes, "2".getBytes)).thenReturn(true)
+    when(store.remove("1".getBytes)).thenReturn(true)
+
+    val createStore = mock(classOf[(Int) => Store])
+    when(createStore.apply(1)).thenReturn(store)
+
+    val shardedStore = new ShardedStore(3, hash, createStore)
+    shardedStore.get("1".getBytes) should be(None)
+    shardedStore.put("1".getBytes, "2".getBytes) should be(true)
+    shardedStore.remove("1".getBytes) should be(true)
+
+    verify(store, times(1)).get("1".getBytes)
+    verify(store, times(1)).put("1".getBytes, "2".getBytes)
+    verify(store, times(1)).remove("1".getBytes)
+  }
+
   // TODO - Write tests for the synchronized {} in getStore.
 }
