@@ -76,5 +76,44 @@ class ShardedStoreSpec extends FlatSpec {
     verify(store, times(1)).remove("1".getBytes)
   }
 
+  it should "return None for store.get when underlying store throws an Exception" in {
+    val hash = mock(classOf[Hash])
+    when(hash.hash("1".getBytes)).thenReturn(1)
+
+    val store = mock(classOf[Store])
+    when(store.get("1".getBytes)).thenThrow(classOf[RuntimeException])
+    val createStore = mock(classOf[(Int) => Store])
+    when(createStore.apply(1)).thenReturn(store)
+
+    val shardedStore = new ShardedStore(3, hash, createStore)
+    shardedStore.get("1".getBytes) should be(None)
+  }
+
+  it should "return false for store.put when underlying store throws an Exception" in {
+    val hash = mock(classOf[Hash])
+    when(hash.hash("1".getBytes)).thenReturn(1)
+
+    val store = mock(classOf[Store])
+    when(store.put("1".getBytes, "2".getBytes)).thenThrow(classOf[RuntimeException])
+    val createStore = mock(classOf[(Int) => Store])
+    when(createStore.apply(1)).thenReturn(store)
+
+    val shardedStore = new ShardedStore(3, hash, createStore)
+    shardedStore.put("1".getBytes, "2".getBytes) should be(false)
+  }
+
+  it should "return false for store.remove when underlying store throws an Exception" in {
+    val hash = mock(classOf[Hash])
+    when(hash.hash("1".getBytes)).thenReturn(1)
+
+    val store = mock(classOf[Store])
+    when(store.remove("1".getBytes)).thenThrow(classOf[RuntimeException])
+    val createStore = mock(classOf[(Int) => Store])
+    when(createStore.apply(1)).thenReturn(store)
+
+    val shardedStore = new ShardedStore(3, hash, createStore)
+    shardedStore.remove("1".getBytes) should be(false)
+  }
+
   // TODO - Write tests for the synchronized {} in getStore.
 }
