@@ -30,9 +30,7 @@ object RocksDbConfiguration {
   val MAX_WRITE_BUFFER_NUMBER = 2
   val MAX_BG_COMPACTIONS = 2
 
-  def apply(location: String): RocksDbConfiguration = apply(location, BATCH_SIZE, false, MEMTABLE_SIZE,
-    DESIRED_NUM_FILES_AT_BASE_LEVEL, MAX_BYTES_FOR_BASE_LEVEL, MAX_WRITE_BUFFER_NUMBER, MAX_BG_COMPACTIONS,
-    new Options().setCreateIfMissing(true))
+  def apply(location: String): RocksDbConfiguration = apply(location, new Options().setCreateIfMissing(true))
 
   def apply(location: String, options: Options): RocksDbConfiguration = new RocksDbConfiguration(location, BATCH_SIZE,
     false, MEMTABLE_SIZE, DESIRED_NUM_FILES_AT_BASE_LEVEL, MAX_BYTES_FOR_BASE_LEVEL, MAX_WRITE_BUFFER_NUMBER,
