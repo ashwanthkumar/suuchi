@@ -32,7 +32,7 @@ class ShardedStore(partitionsPerNode: Int, hashFn: Hash, createStore: (Int) => S
   override def put(key: Array[Byte], value: Array[Byte]): Boolean = logOnError(() => getStore(key).put(key, value)).isSuccess
   override def remove(key: Array[Byte]): Boolean = logOnError(() => getStore(key).remove(key)).isSuccess
 
-  private def getStore(key: Array[Byte]): Store = {
+  protected def getStore(key: Array[Byte]): Store = {
     val partition = math.abs(hashFn.hash(key)) % partitionsPerNode
     if (map.containsKey(partition)) {
       map.get(partition)
