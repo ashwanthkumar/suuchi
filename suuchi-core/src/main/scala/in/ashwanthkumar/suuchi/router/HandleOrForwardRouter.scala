@@ -1,11 +1,14 @@
 package in.ashwanthkumar.suuchi.router
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.rpc.CachedChannelPool
 import io.grpc.ServerCall.Listener
 import io.grpc._
-import io.grpc.netty.NettyChannelBuilder
 import io.grpc.stub.{ClientCalls, MetadataUtils}
 import org.slf4j.LoggerFactory
+
+import scala.language.postfixOps
+import scala.util.Try
 
 /**
  * Router decides to route the incoming request to right node in the cluster as defined
@@ -15,6 +18,7 @@ import org.slf4j.LoggerFactory
  */
 class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddress) extends ServerInterceptor {
   private val log = LoggerFactory.getLogger(getClass)
+  val channelPool = CachedChannelPool()
 
   override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
     log.trace("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self + ", headers= " + headers.toString)
@@ -32,14 +36,25 @@ class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddres
 
           eligibleNodes match {
             case nodes if nodes.nonEmpty && !nodes.exists(_.equals(self)) =>
-              val destination = nodes.head
-              log.trace(s"Forwarding request to $destination")
-              val clientResponse: RespT = forward(serverCall.getMethodDescriptor, headers, incomingRequest, destination)
-              // sendHeaders is very important and should be called before sendMessage
-              // else client wouldn't receive any data at all
-              serverCall.sendHeaders(headers)
-              serverCall.sendMessage(clientResponse)
-              forwarded = true
+              forwarded = nodes.exists(destination =>
+                Try {
+                  log.trace(s"Forwarding request to $destination")
+                  val clientResponse: RespT = forward(serverCall.getMethodDescriptor, headers, incomingRequest, destination)
+                  // sendHeaders is very important and should be called before sendMessage
+                  // else client wouldn't receive any data at all
+                  serverCall.sendHeaders(headers)
+                  serverCall.sendMessage(clientResponse)
+                  true
+                } recover {
+                  case r: RuntimeException =>
+                    log.error(r.getMessage, r)
+                    false
+                } get
+              )
+
+              if (!forwarded) {
+                serverCall.close(Status.FAILED_PRECONDITION.withDescription("No alive nodes to handle traffic."), headers)
+              }
             case nodes if nodes.nonEmpty && nodes.exists(_.equals(self)) =>
               log.trace("Calling delegate's onMessage")
               delegate.onMessage(incomingRequest)
@@ -64,14 +79,11 @@ class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddres
   }
 
   def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
-    val forwarderChannel = NettyChannelBuilder.forAddress(destination.host, destination.port).usePlaintext(true).build()
-    val clientResponse = ClientCalls.blockingUnaryCall(
-      ClientInterceptors.interceptForward(forwarderChannel, MetadataUtils.newAttachHeadersInterceptor(headers)),
+    val channel = channelPool.get(destination, insecure = true)
+    ClientCalls.blockingUnaryCall(
+      ClientInterceptors.interceptForward(channel, MetadataUtils.newAttachHeadersInterceptor(headers)),
       method,
       CallOptions.DEFAULT,
       incomingRequest)
-
-    forwarderChannel.shutdown()
-    clientResponse
   }
 }

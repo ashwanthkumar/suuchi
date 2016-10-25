@@ -9,14 +9,14 @@ trait Partitioner {
   def find(key: Array[Byte]) : List[MemberAddress] = find(key, 1)
 }
 
-class ConsistentHashPartitioner(hashRing: ConsistentHashRing, replicaCount: Int) extends Partitioner {
+class ConsistentHashPartitioner(hashRing: ConsistentHashRing) extends Partitioner {
   override def find(key: Array[Byte], replicaCount: Int): List[MemberAddress] = {
     hashRing.findUnique(key, replicaCount)
   }
 }
 object ConsistentHashPartitioner {
-  def apply(nodes: List[MemberAddress]) = new ConsistentHashPartitioner(ConsistentHashRing(nodes), 3)
-  def apply(ring: ConsistentHashRing) = new ConsistentHashPartitioner(ring, 3)
+  def apply(nodes: List[MemberAddress], partitionsPerNode: Int) = new ConsistentHashPartitioner(ConsistentHashRing(nodes, partitionsPerNode))
+  def apply(ring: ConsistentHashRing) = new ConsistentHashPartitioner(ring)
 }
 
 trait Hash {

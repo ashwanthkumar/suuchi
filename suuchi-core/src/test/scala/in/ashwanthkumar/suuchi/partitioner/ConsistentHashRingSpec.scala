@@ -10,8 +10,8 @@ object IdentityHash extends Hash {
 
 class ConsistentHashRingSpec extends FlatSpec {
   "ConsistentHashRing" should "pin nodes into the ring accounting for virtual nodes" in {
-    val ring = new ConsistentHashRing(SuuchiHash, 3)
-    ring.init(List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3)))
+    val nodes = List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3))
+    val ring = ConsistentHashRing(nodes, 3)
 
     ring.nodes.size() should be(9)
 
@@ -37,17 +37,17 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "return None when no nodes are present in the ring" in {
-    val ring = ConsistentHashRing()
+    val ring = ConsistentHashRing(Nil, 3)
     ring.find("1".getBytes) should be(None)
   }
 
   it should "return the only node on find when only 1 node is present in the ring" in {
-    val ring = ConsistentHashRing(1).add(MemberAddress("host1", 1))
+    val ring = ConsistentHashRing(List(MemberAddress("host1", 1)), 1)
     ring.find("1".getBytes) should be(Some(MemberAddress("host1", 1)))
   }
 
   it should "return the same node multiple times when the number of unique nodes is less but requested bins are more" in {
-    val ring = ConsistentHashRing(3).add(MemberAddress("host1", 1))
+    val ring = ConsistentHashRing(List(MemberAddress("host1", 1)), 3)
     val list = ring.find("1".getBytes, 3)
     list should have size 3
     list.head should be(MemberAddress("host1", 1))
@@ -56,8 +56,8 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "might return same node multiple times even when we have enough number of nodes" in {
-    val members = (1 to 5).map {index => MemberAddress(s"host$index", index)}.toList
-    val ring = ConsistentHashRing(3).init(members)
+    val members = (1 to 5).map { index => MemberAddress(s"host$index", index) }.toList
+    val ring = ConsistentHashRing(members, 3)
     val list = ring.find("1".getBytes, 3)
     list should have size 3
     list.head should be(MemberAddress("host3", 3))
@@ -66,15 +66,15 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "not return the same node multiple times" in {
-    val ring = ConsistentHashRing(3).add(MemberAddress("host1", 1))
+    val ring = ConsistentHashRing(List(MemberAddress("host1", 1)), 3)
     val list = ring.findUnique("1".getBytes, 3)
     list should have size 1
     list should contain(MemberAddress("host1", 1))
   }
 
   it should "return unique set of nodes when we've more then replica count nodes in the ring" in {
-    val members = (1 to 5).map {index => MemberAddress(s"host$index", index)}.toList
-    val ring = ConsistentHashRing(3).init(members)
+    val members = (1 to 5).map { index => MemberAddress(s"host$index", index) }.toList
+    val ring = ConsistentHashRing(members, 3)
     val list = ring.findUnique("1".getBytes, 3)
     list should have size 3
     list should contain(MemberAddress("host3", 3))

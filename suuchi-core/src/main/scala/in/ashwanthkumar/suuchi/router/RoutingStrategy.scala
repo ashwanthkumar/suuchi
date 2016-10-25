@@ -25,16 +25,16 @@ object RoutingStrategy {
 
 /**
  * Always forward the requests to a given node - useful in tests or while debugging
- * @param memberAddress
+ * @param members
  */
-class AlwaysRouteTo(memberAddress: MemberAddress) extends RoutingStrategy {
+class AlwaysRouteTo(members: MemberAddress*) extends RoutingStrategy {
   private val log = LoggerFactory.getLogger(getClass)
   /**
    * @inheritdoc
    */
   override def route[ReqT]: PartialFunction[ReqT, List[MemberAddress]] = {
     case msg: RoutingStrategy.WithKey =>
-      List(memberAddress)
+      members.toList
   }
 }
 
@@ -49,5 +49,7 @@ class ConsistentHashingRouting(partitioner: ConsistentHashPartitioner, nrReplica
 }
 
 object ConsistentHashingRouting {
-  def apply(replicas: Int, nodes: MemberAddress*) = new ConsistentHashingRouting(ConsistentHashPartitioner(nodes.toList), replicas)
+  def apply(nrReplicas: Int, partitionsPerNode: Int, nodes: MemberAddress*) = {
+    new ConsistentHashingRouting(ConsistentHashPartitioner(nodes.toList, partitionsPerNode), nrReplicas)
+  }
 }

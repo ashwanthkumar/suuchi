@@ -6,8 +6,12 @@ import in.ashwanthkumar.suuchi.membership.MemberAddress
 
 import scala.collection.mutable
 
+case class VNode(node: MemberAddress, nodeReplicaId: Int) {
+  def key = node.host + "_" + node.port + "_" + nodeReplicaId
+}
+
 // Ref - https://git.io/vPOP5
-class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
+class ConsistentHashRing(hashFn: Hash, paritionsPerNode: Int) {
   val sortedMap = new util.TreeMap[Integer, VNode]()
 
   // when looking for n unique nodes, give up after a streak of MAX_DUPES
@@ -22,14 +26,14 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
   private def hash(vnode: VNode): Int = hashFn.hash(vnode.key.getBytes)
 
   def add(node: MemberAddress) = {
-    (1 to vnodeFactor).map(i => VNode(node, i)).foreach { vnode =>
+    (1 to paritionsPerNode).map(i => VNode(node, i)).foreach { vnode =>
       sortedMap.put(hash(vnode), vnode)
     }
     this
   }
 
   def remove(node: MemberAddress) = {
-    (1 to vnodeFactor).map(i => VNode(node, i)).foreach { vnode =>
+    (1 to paritionsPerNode).map(i => VNode(node, i)).foreach { vnode =>
       sortedMap.remove(hash(vnode))
     }
     this
@@ -46,9 +50,9 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
   def find(key: Array[Byte], n: Int) = {
     if (sortedMap.isEmpty) Nil
     else {
-      val (_, nodes) = (0 until n).foldLeft((hashFn.hash(key), List.empty[MemberAddress])){ case ((hash, members), idx) =>
+      val (_, nodes) = (0 until n).foldLeft((hashFn.hash(key), List.empty[MemberAddress])) { case ((hash, members), idx) =>
         val (newHash, candidate) = findCandidate(hash)
-        (newHash+1, candidate :: members)
+        (newHash + 1, candidate :: members)
       }
       nodes.reverse
     }
@@ -121,13 +125,7 @@ class ConsistentHashRing(hashFn: Hash, vnodeFactor: Int = 3) {
 }
 
 object ConsistentHashRing {
-  def apply(hashFn: Hash): ConsistentHashRing = new ConsistentHashRing(hashFn)
+  def apply(hashFn: Hash, nodes: List[MemberAddress], partitionsPerNode: Int): ConsistentHashRing = new ConsistentHashRing(SuuchiHash, partitionsPerNode).init(nodes)
 
-  def apply(): ConsistentHashRing = apply(SuuchiHash)
-
-  def apply(nodes: List[MemberAddress]): ConsistentHashRing = apply(SuuchiHash).init(nodes)
-
-  def apply(replication: Int): ConsistentHashRing = apply(SuuchiHash, replication)
-
-  def apply(hashFn: Hash, replication: Int): ConsistentHashRing = new ConsistentHashRing(hashFn, replication)
+  def apply(nodes: List[MemberAddress], partitionsPerNode: Int): ConsistentHashRing = apply(SuuchiHash, nodes, partitionsPerNode)
 }

@@ -1,12 +1,12 @@
 package in.ashwanthkumar.suuchi.router
 
-import java.util.concurrent.{Executors, Executor}
+import java.util.concurrent.{Executor, Executors}
 
 import com.google.common.util.concurrent.{Futures, ListenableFuture}
 import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.rpc.CachedChannelPool
 import io.grpc.ServerCall.Listener
 import io.grpc._
-import io.grpc.netty.NettyChannelBuilder
 import io.grpc.stub.{ClientCalls, MetadataUtils}
 import org.slf4j.LoggerFactory
 
@@ -15,9 +15,10 @@ import org.slf4j.LoggerFactory
  * Replication Router picks up the set of nodes to which this request needs to be sent to (if not already set)
  * and forwards the request to the list of nodes in parallel and waits for all of them to complete
  */
-abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends ServerInterceptor { me =>
+abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends ServerInterceptor {me =>
 
   protected val log = LoggerFactory.getLogger(me.getClass)
+  val channelPool = CachedChannelPool()
 
   override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
     log.trace("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self)
@@ -30,7 +31,7 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
       override def onMessage(incomingRequest: ReqT): Unit = {
         log.trace("onMessage in replicator")
         if (headers.containsKey(Headers.REPLICATION_REQUEST_KEY) && headers.get(Headers.REPLICATION_REQUEST_KEY).equals(self.toString)) {
-          log.info("Received replication request for {}, processing it", incomingRequest)
+          log.debug("Received replication request for {}, processing it", incomingRequest)
           delegate.onMessage(incomingRequest)
         } else if (headers.containsKey(Headers.ELIGIBLE_NODES_KEY)) {
           // since this isn't a replication request - replicate the request to list of nodes as defined in ELIGIBLE_NODES header
@@ -60,31 +61,24 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
   def forward[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): Any = {
     // Add HEADER to signify that this is a REPLICATION_REQUEST
     headers.put(Headers.REPLICATION_REQUEST_KEY, destination.toString)
-    val nettyChannel = NettyChannelBuilder.forAddress(destination.host, destination.port).usePlaintext(true).build()
+    val channel = channelPool.get(destination, insecure = true)
 
-    val clientResponse = ClientCalls.blockingUnaryCall(
-      ClientInterceptors.interceptForward(nettyChannel, MetadataUtils.newAttachHeadersInterceptor(headers)),
+    ClientCalls.blockingUnaryCall(
+      ClientInterceptors.interceptForward(channel, MetadataUtils.newAttachHeadersInterceptor(headers)),
       methodDescriptor,
       CallOptions.DEFAULT,
       incomingRequest)
-
-    nettyChannel.shutdown()
-    clientResponse
   }
 
   def forwardAsync[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata,
                                 incomingRequest: ReqT,
-                                destination: MemberAddress)(implicit executor: Executor): ListenableFuture[RespT] = {
+                                destination: MemberAddress): ListenableFuture[RespT] = {
     // Add HEADER to signify that this is a REPLICATION_REQUEST
     headers.put(Headers.REPLICATION_REQUEST_KEY, destination.toString)
-    val nettyChannel = NettyChannelBuilder.forAddress(destination.host, destination.port).usePlaintext(true).build()
-    val clientCall = ClientInterceptors.interceptForward(nettyChannel, MetadataUtils.newAttachHeadersInterceptor(headers))
+    val channel = channelPool.get(destination, insecure = true)
+    val clientCall = ClientInterceptors.interceptForward(channel, MetadataUtils.newAttachHeadersInterceptor(headers))
       .newCall(methodDescriptor, CallOptions.DEFAULT)
-    val clientResponse = ClientCalls.futureUnaryCall(clientCall, incomingRequest)
-    clientResponse.addListener(new Runnable {
-      override def run(): Unit = nettyChannel.shutdown()
-    }, executor)
-    clientResponse
+    ClientCalls.futureUnaryCall(clientCall, incomingRequest)
   }
 
   /**
@@ -96,13 +90,13 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
     eligibleNodes match {
       case nodes if nodes.size < nrReplicas =>
         log.warn("We don't have enough nodes to satisfy the replication factor. Not processing this request")
-        serverCall.close(Status.FAILED_PRECONDITION, headers)
+        serverCall.close(Status.FAILED_PRECONDITION.withDescription("We don't have enough nodes to satisfy the replication factor. Not processing this request"), headers)
       case nodes if nodes.nonEmpty =>
-        log.info("Replication nodes for {} are {}", incomingRequest, nodes)
+        log.debug("Replication nodes for {} are {}", incomingRequest, nodes)
         doReplication(eligibleNodes, serverCall, headers, incomingRequest, delegate)
       case Nil =>
         log.error("This should never happen. No nodes found to place replica")
-        serverCall.close(Status.INTERNAL, headers)
+        serverCall.close(Status.INTERNAL.withDescription("This should never happen. No nodes found to place replica"), headers)
     }
   }
 
@@ -111,10 +105,16 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
    * Just do it!
    *
    * Error handling and other scenarios are handled at [[ReplicationRouter.replicate]]
-   * */
+   **/
   def doReplication[ReqT, RespT](eligibleNodes: List[MemberAddress], serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, delegate: Listener[ReqT]): Unit
 }
 
+/**
+ * Sequential Synchronous replication implementation. While replicating we'll issue a forward request to each of the candidate nodes one by one.
+ *
+ * @param nrReplicas Number of replicas to keep for the requests
+ * @param self  Reference to [[MemberAddress)]] of the current node
+ */
 class SequentialReplicator(nrReplicas: Int, self: MemberAddress) extends ReplicationRouter(nrReplicas, self) {
   override def doReplication[ReqT, RespT](eligibleNodes: List[MemberAddress], serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, delegate: Listener[ReqT]) = {
     log.debug("Sequentially sending out replication requests to the above set of nodes")
@@ -126,32 +126,35 @@ class SequentialReplicator(nrReplicas: Int, self: MemberAddress) extends Replica
     }
 
     // we need to push this after the forwarding else we return to client immediately saying we're done
-    if(hasLocalMember) {
+    if (hasLocalMember) {
       delegate.onMessage(incomingRequest)
     }
   }
 }
 
-object ParallelReplicator {
-  implicit val PARALLEL_REPLICATION_EXECUTOR = Executors.newFixedThreadPool(3)
-}
+/**
+ * Parallel Synchronous replication implementation. While replicating we'll issue a forward request to all the nodes in
+ * parallel. Even if one of the node's request fails the entire operation is assumed to have failed.
+ *
+ * @param nrReplicas  Number of replicas to make
+ * @param self  Reference to [[MemberAddress]] of the current node
+ */
 class ParallelReplicator(nrReplicas: Int, self: MemberAddress) extends ReplicationRouter(nrReplicas, self) {
-  import ParallelReplicator._
   override def doReplication[ReqT, RespT](eligibleNodes: List[MemberAddress], serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, delegate: Listener[ReqT]): Unit = {
     log.debug("Sending out replication requests to the above set of nodes in parallel")
 
     val hasLocalMember = eligibleNodes.exists(_.equals(self))
 
     val replicationResponses = eligibleNodes.filterNot(_.equals(self)).map { destination =>
-        forwardAsync(serverCall.getMethodDescriptor, headers, incomingRequest, destination)
+      forwardAsync(serverCall.getMethodDescriptor, headers, incomingRequest, destination)
     }
 
     // Future.sequence equivalent + doing a get to ensure all operations complete
     log.debug("Waiting for replication response from replica nodes")
-    Futures.allAsList(replicationResponses:_*).get()
+    Futures.allAsList(replicationResponses: _*).get()
 
     // we need to push this after the forwarding else we return to client immediately saying we're done
-    if(hasLocalMember) {
+    if (hasLocalMember) {
       delegate.onMessage(incomingRequest)
     }
   }

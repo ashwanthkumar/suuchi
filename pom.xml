@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>in.ashwanthkumar</groupId>
     <artifactId>suuchi</artifactId>
-    <version>0.2.2-SNAPSHOT</version>
+    <version>0.2.11-SNAPSHOT</version>
     <name>Suuchi</name>
     <description>Toolkit to build distributed Data Systems</description>
     <packaging>pom</packaging>
@@ -54,6 +54,7 @@
     <properties>
         <scala.version>2.11.8</scala.version>
         <scala.lib.version>2.11</scala.lib.version>
+        <grpc.version>1.0.1</grpc.version>
         <jacoco-maven-plugin.version>0.7.7.201606060606</jacoco-maven-plugin.version>
     </properties>
 
@@ -100,6 +101,10 @@
                             <compileOrder>Mixed</compileOrder>
                             <addScalacArgs>-feature</addScalacArgs>
                             <scalaVersion>${scala.version}</scalaVersion>
+                            <javacArgs>
+                                <javacArg>-source</javacArg>
+                                <javacArg>1.8</javacArg>
+                            </javacArgs>
                         </configuration>
                     </execution>
                     <execution>
