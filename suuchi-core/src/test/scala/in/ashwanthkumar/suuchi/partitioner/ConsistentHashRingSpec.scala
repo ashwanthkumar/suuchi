@@ -83,7 +83,7 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "return the right ringState that wraps around the HashRing" in {
-    val ring = ConsistentHashRing(2)
+    val ring = ConsistentHashRing(Nil, 2)
     val host1 = MemberAddress("host1", 1)
     val host2 = MemberAddress("host2", 2)
     val host3 = MemberAddress("host3", 3)
