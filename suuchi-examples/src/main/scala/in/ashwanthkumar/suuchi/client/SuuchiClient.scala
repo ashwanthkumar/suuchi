@@ -1,11 +1,13 @@
 package in.ashwanthkumar.suuchi.client
 
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{CountDownLatch, TimeUnit}
 
 import com.google.protobuf.ByteString
-import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{GetRequest, PutRequest}
-import in.ashwanthkumar.suuchi.rpc.generated.{SuuchiPutGrpc, SuuchiReadGrpc}
+import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{PutResponse, GetRequest, PutRequest}
+import in.ashwanthkumar.suuchi.rpc.generated.{SuuchiRPC, SuuchiPutGrpc, SuuchiReadGrpc}
+import in.ashwanthkumar.suuchi.utils.Logging
 import io.grpc.netty.NettyChannelBuilder
+import io.grpc.stub.StreamObserver
 import org.slf4j.LoggerFactory
 
 class SuuchiClient(host: String, port: Int) {
@@ -16,6 +18,7 @@ class SuuchiClient(host: String, port: Int) {
     .build()
 
   private val writeStub = SuuchiPutGrpc.newBlockingStub(channel)
+  private val asyncWrite = SuuchiPutGrpc.newStub(channel)
   private val readStub = SuuchiReadGrpc.newBlockingStub(channel)
 
   def shutdown() = {
@@ -30,6 +33,10 @@ class SuuchiClient(host: String, port: Int) {
       .build()
 
     writeStub.put(request).getStatus
+  }
+
+  def bulkPut(responseObserver: StreamObserver[SuuchiRPC.PutResponse]) = {
+    asyncWrite.bulkPut(responseObserver)
   }
 
   def get(key: Array[Byte]): Option[Array[Byte]] = {
@@ -47,16 +54,52 @@ class SuuchiClient(host: String, port: Int) {
   }
 }
 
+class BulkPutListener(countDownLatch: CountDownLatch) extends StreamObserver[PutResponse] with Logging {
+  override def onNext(value: PutResponse): Unit = {
+    log.info("Got response from server")
+    println(value.getStatus)
+  }
+  override def onError(t: Throwable): Unit = {
+    log.error(t.getMessage, t)
+    countDownLatch.countDown()
+  }
+  override def onCompleted(): Unit = {
+    log.info("BatchPut is complete")
+    countDownLatch.countDown()
+  }
+}
+
 object SuuchiClient extends App {
   private val log = LoggerFactory.getLogger(getClass)
   val client = new SuuchiClient("localhost", 5051)
+  //
+  //  (0 until 5).foreach { index =>
+  //    val status = client.put(Array((65 + index).toByte), Array((65 + index).toByte))
+  //    log.info("Put Status={}", status)
+  //  }
+  //
+  //  (0 until 5).foreach { index =>
+  //    val value = client.get(Array((65 + index).toByte))
+  //    log.info("Got value={}", new String(value.get))
+  //  }
 
-  (0 until 5).foreach { index =>
-    val status = client.put(Array((65 + index).toByte), Array((65 + index).toByte))
-    log.info("Put Status={}", status)
+  val finishLatch = new CountDownLatch(1)
+  val batch = client.bulkPut(new BulkPutListener(finishLatch))
+  log.info("Starting bulkPut")
+  (6 until 10).foreach { index =>
+    batch.onNext(
+      PutRequest.newBuilder()
+        .setKey(ByteString.copyFrom(Array((65 + index).toByte)))
+        .setValue(ByteString.copyFrom(Array((65 + index).toByte)))
+        .build()
+    )
   }
+  batch.onCompleted()
+  log.info("Completed bulkPut, waiting...")
+  finishLatch.await(1, TimeUnit.MINUTES)
+  log.info("BulkPut Complete")
 
-  (0 until 5).foreach { index =>
+  (6 until 10).foreach { index =>
     val value = client.get(Array((65 + index).toByte))
     log.info("Got value={}", new String(value.get))
   }

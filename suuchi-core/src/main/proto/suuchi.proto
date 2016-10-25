@@ -29,6 +29,7 @@ message GetResponse {
 // SuuchiPut service which can be used for taking in writes
 service SuuchiPut {
     rpc Put (PutRequest) returns (PutResponse);
+    rpc BulkPut (stream PutRequest) returns (PutResponse);
 }
 message PutRequest {
     bytes key = 1;
