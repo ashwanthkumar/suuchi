@@ -1,28 +1,24 @@
 package in.ashwanthkumar.suuchi.store.rocksdb
 
-import org.rocksdb.{DBOptions, Options}
+import org.rocksdb.Options
 
-case class RocksDbConfiguration(location:String,
+case class RocksDbConfiguration(location: String,
                                 batchSize: Int,
                                 readOnly: Boolean,
                                 memTableSize: Int,
                                 numFilesAtBase: Int,
                                 maxBytesForBaseLevel: Long,
                                 maxWriteBufferNumber: Int,
-                                maxBackgroundCompactions: Int) {
+                                maxBackgroundCompactions: Int,
+                                baseOptions: Options) {
   val perFileSizeAtBase = maxBytesForBaseLevel / numFilesAtBase
-  def baseOptions = new Options().setCreateIfMissing(true)
   def toOptions = {
     baseOptions
-    .setMaxBytesForLevelBase(maxBytesForBaseLevel)
-    .setTargetFileSizeBase(perFileSizeAtBase)
-    .setWriteBufferSize(memTableSize)
-    .setMaxWriteBufferNumber(maxWriteBufferNumber)
-    .setMaxBackgroundCompactions(maxBackgroundCompactions)
-  }
-
-  def asDBOptions = {
-    new DBOptions().setCreateIfMissing(true)
+      .setMaxBytesForLevelBase(maxBytesForBaseLevel)
+      .setTargetFileSizeBase(perFileSizeAtBase)
+      .setWriteBufferSize(memTableSize)
+      .setMaxWriteBufferNumber(maxWriteBufferNumber)
+      .setMaxBackgroundCompactions(maxBackgroundCompactions)
   }
 }
 
@@ -33,5 +29,10 @@ object RocksDbConfiguration {
   val MAX_BYTES_FOR_BASE_LEVEL = 4l * 1024 * 1024 * 1024
   val MAX_WRITE_BUFFER_NUMBER = 2
   val MAX_BG_COMPACTIONS = 2
-  def apply(location:String) = new RocksDbConfiguration(location,BATCH_SIZE, false, MEMTABLE_SIZE, DESIRED_NUM_FILES_AT_BASE_LEVEL, MAX_BYTES_FOR_BASE_LEVEL, MAX_WRITE_BUFFER_NUMBER, MAX_BG_COMPACTIONS)
+
+  def apply(location: String): RocksDbConfiguration = apply(location, new Options().setCreateIfMissing(true))
+
+  def apply(location: String, options: Options): RocksDbConfiguration = new RocksDbConfiguration(location, BATCH_SIZE,
+    false, MEMTABLE_SIZE, DESIRED_NUM_FILES_AT_BASE_LEVEL, MAX_BYTES_FOR_BASE_LEVEL, MAX_WRITE_BUFFER_NUMBER,
+    MAX_BG_COMPACTIONS, options)
 }

@@ -30,31 +30,21 @@ import in.ashwanthkumar.suuchi.store.rocksdb.{RocksDbConfiguration, RocksDbStore
 import io.grpc.netty.NettyServerBuilder
 
 object DistributedRocksDb extends App {
+  val port = args(0).toInt
+
   val REPLICATION_COUNT = 2
-  val routingStrategy = ConsistentHashingRouting(REPLICATION_COUNT, whoami(5051), whoami(5052))
+  val PARTITIONS_PER_NODE = 50
+  val routingStrategy = ConsistentHashingRouting(REPLICATION_COUNT, PARTITIONS_PER_NODE, whoami(5051), whoami(5052))
 
-  val path1 = Files.createTempDirectory("distributed-rocksdb").toFile
-  val store1 = new RocksDbStore(RocksDbConfiguration(path1.getAbsolutePath))
-  val server1 = Server(NettyServerBuilder.forPort(5051), whoami(5051))
-    .routeUsing(new SuuchiReadService(store1), routingStrategy)
-    .withReplication(new SuuchiPutService(store1), REPLICATION_COUNT, routingStrategy)
-  server1.start()
+  val path = Files.createTempDirectory("distributed-rocksdb").toFile
+  println(s"Using ${path.getAbsolutePath} for RocksDB")
+  val store = new RocksDbStore(RocksDbConfiguration(path.getAbsolutePath))
+  val server = Server(NettyServerBuilder.forPort(port), whoami(port))
+    .routeUsing(new SuuchiReadService(store), routingStrategy)
+    .withParallelReplication(new SuuchiPutService(store), REPLICATION_COUNT, routingStrategy)
+  server.start()
+  server.blockUntilShutdown()
 
-  val path2 = Files.createTempDirectory("distributed-rocksdb").toFile
-  val store2 = new RocksDbStore(RocksDbConfiguration(path2.getAbsolutePath))
-  val server2 = Server(NettyServerBuilder.forPort(5052), whoami(5052))
-    .routeUsing(new SuuchiReadService(store2), routingStrategy)
-    .withReplication(new SuuchiPutService(store2), REPLICATION_COUNT, routingStrategy)
-  server2.start()
-
-  server1.blockUntilShutdown()
-  server2.blockUntilShutdown()
-
-  /*
-    Optionally if want to delete the rocksdb directory
-      path1.delete()
-      path2.delete()
-  */
 }
 ```
 

@@ -87,7 +87,7 @@ class VersionedStore(store: Store, versionedBy: VersionedBy, numVersions: Int, c
 
   private def atomicUpdate(key: Array[Byte], version: Long) = {
     val versionKey = vkey(key)
-    val absHash = math.abs(MurmurHash3.bytesHash(versionKey))
+    val absHash = math.abs(MurmurHash3.arrayHash(versionKey))
     // Synchronizing the version metadata update part alone
     val monitor = SYNC_SLOTS(absHash % SYNC_SLOTS.length)
     val versions = monitor.synchronized {

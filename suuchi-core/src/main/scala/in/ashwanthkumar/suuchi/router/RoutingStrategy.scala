@@ -49,5 +49,7 @@ class ConsistentHashingRouting(partitioner: ConsistentHashPartitioner, nrReplica
 }
 
 object ConsistentHashingRouting {
-  def apply(replicas: Int, nodes: MemberAddress*) = new ConsistentHashingRouting(ConsistentHashPartitioner(nodes.toList), replicas)
+  def apply(nrReplicas: Int, partitionsPerNode: Int, nodes: MemberAddress*) = {
+    new ConsistentHashingRouting(ConsistentHashPartitioner(nodes.toList, partitionsPerNode), nrReplicas)
+  }
 }

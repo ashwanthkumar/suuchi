@@ -10,7 +10,7 @@ case class IntReq(i: Int) {
 }
 class RoutingStrategySpec extends FlatSpec {
   "ConsistentHashingRoutingStrategy" should "route incoming requests WithKey to appropriate nodes" in {
-    val routingStrategy = ConsistentHashingRouting(2, List(MemberAddress("host1:1"),MemberAddress("host2:2"),MemberAddress("host3:3")):_*)
+    val routingStrategy = ConsistentHashingRouting(2, 2, List(MemberAddress("host1:1"),MemberAddress("host2:2"),MemberAddress("host3:3")):_*)
     routingStrategy.route(IntReq(100)).size should be(2)
     routingStrategy.route(IntReq(100)).distinct.size should be(2)
   }

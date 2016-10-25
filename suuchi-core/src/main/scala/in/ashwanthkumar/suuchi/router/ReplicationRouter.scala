@@ -31,7 +31,7 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
       override def onMessage(incomingRequest: ReqT): Unit = {
         log.trace("onMessage in replicator")
         if (headers.containsKey(Headers.REPLICATION_REQUEST_KEY) && headers.get(Headers.REPLICATION_REQUEST_KEY).equals(self.toString)) {
-          log.info("Received replication request for {}, processing it", incomingRequest)
+          log.debug("Received replication request for {}, processing it", incomingRequest)
           delegate.onMessage(incomingRequest)
         } else if (headers.containsKey(Headers.ELIGIBLE_NODES_KEY)) {
           // since this isn't a replication request - replicate the request to list of nodes as defined in ELIGIBLE_NODES header
@@ -92,7 +92,7 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
         log.warn("We don't have enough nodes to satisfy the replication factor. Not processing this request")
         serverCall.close(Status.FAILED_PRECONDITION.withDescription("We don't have enough nodes to satisfy the replication factor. Not processing this request"), headers)
       case nodes if nodes.nonEmpty =>
-        log.info("Replication nodes for {} are {}", incomingRequest, nodes)
+        log.debug("Replication nodes for {} are {}", incomingRequest, nodes)
         doReplication(eligibleNodes, serverCall, headers, incomingRequest, delegate)
       case Nil =>
         log.error("This should never happen. No nodes found to place replica")
