@@ -59,17 +59,8 @@ class VersionedStore(store: Store, versionedBy: VersionedBy, numVersions: Int, c
   }
 
   override def put(key: Array[Byte], value: Array[Byte]): Boolean = {
-    val currentVersion = versionedBy.version(key, value)
-
-    // atomically update version metadata
-    val versions = atomicUpdate(key, currentVersion)
-
-    // remove oldest version, if we've exceeded max # of versions per record
-    if (versions.size > numVersions) removeData(key, versions.min)
-
-    // Write out the actual data record
-    store.put(dkey(key, currentVersion), value)
-
+    val currentVersion: Long = putAndPurgeVersions(key, value)
+    putData(key, value, currentVersion)
   }
 
   override def remove(key: Array[Byte]) = {
@@ -83,6 +74,21 @@ class VersionedStore(store: Store, versionedBy: VersionedBy, numVersions: Int, c
     vRecord
       .map(vr => Versions.fromBytes(vr))
       .getOrElse(List.empty[Long])
+  }
+
+  def putAndPurgeVersions(key: Array[Byte], value: Array[Byte]): Long = {
+    val currentVersion = versionedBy.version(key, value)
+    // atomically update version metadata
+    val versions = atomicUpdate(key, currentVersion)
+    // remove oldest version, if we've exceeded max # of versions per record
+    if (versions.size > numVersions) removeData(key, versions.min)
+
+    currentVersion
+  }
+
+  def putData(key: Array[Byte], value: Array[Byte], currentVersion: Long): Boolean = {
+    // Write out the actual data record
+    store.put(dkey(key, currentVersion), value)
   }
 
   private def atomicUpdate(key: Array[Byte], version: Long) = {
