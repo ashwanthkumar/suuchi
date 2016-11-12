@@ -2,7 +2,7 @@ package in.ashwanthkumar.suuchi.rpc
 
 import java.util.concurrent.{TimeUnit, ConcurrentHashMap}
 
-import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import io.grpc.{Channel, ManagedChannelBuilder, ManagedChannel}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers.{convertToAnyShouldWrapper, be, have, size}

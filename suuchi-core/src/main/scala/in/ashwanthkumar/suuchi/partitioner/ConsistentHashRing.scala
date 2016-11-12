@@ -2,7 +2,7 @@ package in.ashwanthkumar.suuchi.partitioner
 
 import java.util
 
-import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.cluster.MemberAddress
 
 import scala.collection.mutable
 

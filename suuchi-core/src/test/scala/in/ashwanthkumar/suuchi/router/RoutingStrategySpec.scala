@@ -1,7 +1,7 @@
 package in.ashwanthkumar.suuchi.router
 
 import com.google.protobuf.ByteString
-import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 

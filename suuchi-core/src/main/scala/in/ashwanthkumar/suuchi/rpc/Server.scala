@@ -1,9 +1,8 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import java.net.InetAddress
-import java.util.concurrent.Executor
 
-import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import in.ashwanthkumar.suuchi.router._
 import io.grpc.{Server => GServer, _}
 import org.slf4j.LoggerFactory
