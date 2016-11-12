@@ -24,5 +24,5 @@ trait Hash {
 }
 
 object SuuchiHash extends Hash {
-  override def hash(bytes: Array[Byte]): Integer = MurmurHash3.arrayHash(bytes)
+  override def hash(bytes: Array[Byte]): Integer = MurmurHash3.bytesHash(bytes)
 }

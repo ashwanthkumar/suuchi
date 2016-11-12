@@ -60,9 +60,9 @@ class ConsistentHashRingSpec extends FlatSpec {
     val ring = ConsistentHashRing(members, 3)
     val list = ring.find("1".getBytes, 3)
     list should have size 3
-    list.head should be(MemberAddress("host2", 2))
-    list(1) should be(MemberAddress("host2", 2))
-    list(2) should be(MemberAddress("host5", 5))
+    list.head should be(MemberAddress("host3", 3))
+    list(1) should be(MemberAddress("host3", 3))
+    list(2) should be(MemberAddress("host4", 4))
   }
 
   it should "not return the same node multiple times" in {
@@ -77,8 +77,33 @@ class ConsistentHashRingSpec extends FlatSpec {
     val ring = ConsistentHashRing(members, 3)
     val list = ring.findUnique("1".getBytes, 3)
     list should have size 3
-    list should contain(MemberAddress("host2", 2))
+    list should contain(MemberAddress("host3", 3))
     list should contain(MemberAddress("host4", 4))
-    list should contain(MemberAddress("host5", 5))
+    list should contain(MemberAddress("host1", 1))
+  }
+
+  it should "return the right ringState that wraps around the HashRing" in {
+    val ring = ConsistentHashRing(Nil, 2)
+    val host1 = MemberAddress("host1", 1)
+    val host2 = MemberAddress("host2", 2)
+    val host3 = MemberAddress("host3", 3)
+
+    ring.sortedMap.put(10, VNode(host1, 1))
+    ring.sortedMap.put(20, VNode(host2, 1))
+    ring.sortedMap.put(30, VNode(host3, 1))
+    ring.sortedMap.put(40, VNode(host3, 2))
+    ring.sortedMap.put(50, VNode(host2, 2))
+    ring.sortedMap.put(60, VNode(host1, 2))
+
+    val ringState = ring.ringState
+    ringState.ranges should have size(6)
+    ringState.byNodes(host1) should contain(TokenRange(10, 19, VNode(host1, 1)))
+    ringState.byNodes(host1) should contain(TokenRange(60, 9, VNode(host1, 2)))
+
+    ringState.byNodes(host2) should contain(TokenRange(20, 29, VNode(host2, 1)))
+    ringState.byNodes(host2) should contain(TokenRange(50, 59, VNode(host2, 2)))
+
+    ringState.byNodes(host3) should contain(TokenRange(30, 39, VNode(host3, 1)))
+    ringState.byNodes(host3) should contain(TokenRange(40, 49, VNode(host3, 2)))
   }
 }

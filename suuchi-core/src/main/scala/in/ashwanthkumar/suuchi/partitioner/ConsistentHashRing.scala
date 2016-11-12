@@ -10,6 +10,14 @@ case class VNode(node: MemberAddress, nodeReplicaId: Int) {
   def key = node.host + "_" + node.port + "_" + nodeReplicaId
 }
 
+case class TokenRange(start: Int, end: Int, node: VNode) {
+  def range = start -> end
+}
+
+case class RingState(private[partitioner] val lastKnown: Int, ranges: List[TokenRange]) {
+  def byNodes = ranges.groupBy(_.node.node)
+}
+
 // Ref - https://git.io/vPOP5
 class ConsistentHashRing(hashFn: Hash, paritionsPerNode: Int) {
   val sortedMap = new util.TreeMap[Integer, VNode]()
@@ -103,6 +111,21 @@ class ConsistentHashRing(hashFn: Hash, paritionsPerNode: Int) {
       val newHash = if (tailMap.isEmpty) sortedMap.firstKey() else tailMap.firstKey()
       newHash -> sortedMap.get(newHash).node
     }
+  }
+
+  /**
+   * Represent the ConsistentHashRing as [[RingState]] which is more easier to work with in terms of Ranges that each node manages.
+   *
+   * @return  RingState
+   */
+  def ringState = {
+    import scala.collection.JavaConversions._
+
+    val firstToken = sortedMap.firstKey()
+    val tokenRings = sortedMap.keysIterator.drop(1).foldLeft(RingState(firstToken, Nil)) { (state, token) =>
+      RingState(token, ranges = TokenRange(state.lastKnown, token - 1, sortedMap.get(state.lastKnown)) :: state.ranges)
+    }
+    RingState(Int.MaxValue, ranges = TokenRange(tokenRings.lastKnown, firstToken - 1, sortedMap.get(tokenRings.lastKnown)) :: tokenRings.ranges)
   }
 
   // USED ONLY FOR TESTS

@@ -21,9 +21,9 @@ class ConsistentHashPartitionerTest extends FlatSpec {
     val partitioner = ConsistentHashPartitioner(ConsistentHashRing(members, 3))
     val nodes = partitioner.find("1".getBytes, 3)
     nodes should have size 3
-    nodes should contain(MemberAddress("host2", 2))
+    nodes should contain(MemberAddress("host3", 3))
     nodes should contain(MemberAddress("host4", 4))
-    nodes should contain(MemberAddress("host5", 5))
+    nodes should contain(MemberAddress("host1", 1))
   }
 
 }
