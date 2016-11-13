@@ -104,6 +104,8 @@
                             <javacArgs>
                                 <javacArg>-source</javacArg>
                                 <javacArg>1.8</javacArg>
+                                <javacArg>-target</javacArg>
+                                <javacArg>1.8</javacArg>
                             </javacArgs>
                         </configuration>
                     </execution>

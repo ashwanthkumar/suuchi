@@ -42,7 +42,7 @@ class HandleOrForwardRouterSpec extends FlatSpec {
   it should "forward message when router says so" in {
     val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1)), MemberAddress("host2", 1)) {
       // mocking the actual forward implementation
-      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = 1.asInstanceOf[RespT]
+//      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = 1.asInstanceOf[RespT]
     }
     verifyInteractions(router, isForwarded = true, isHandledLocally = false)
   }
@@ -51,7 +51,7 @@ class HandleOrForwardRouterSpec extends FlatSpec {
     val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1), MemberAddress("host2", 2)), MemberAddress("host2", 1)) {
       var shouldFail = true
       // mocking the actual forward implementation
-      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
+      def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
         if (shouldFail) {
           shouldFail = false
           throw new RuntimeException("An exception happened while trying to forward the request")
@@ -66,7 +66,7 @@ class HandleOrForwardRouterSpec extends FlatSpec {
   it should "not forward message to any node in the ring if all node forwards fail" in {
     val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1), MemberAddress("host2", 2)), MemberAddress("host2", 1)) {
       // mocking the actual forward implementation
-      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
+      def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
         throw new RuntimeException("An exception happened while trying to forward the request")
       }
     }

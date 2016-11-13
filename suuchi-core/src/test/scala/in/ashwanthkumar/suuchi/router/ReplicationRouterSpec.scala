@@ -1,26 +1,26 @@
 package in.ashwanthkumar.suuchi.router
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
+import in.ashwanthkumar.suuchi.rpc.CachedChannelPool
 import io.grpc.ServerCall.Listener
 import io.grpc.{Metadata, MethodDescriptor, ServerCall, ServerCallHandler}
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 
-class NoReplicator(nrOfReplicas: Int, self: MemberAddress) extends ReplicationRouter(nrOfReplicas, self) {
-  override def replicate[ReqT, RespT](eligibleNodes: scala.List[MemberAddress], serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, delegate: ServerCall.Listener[ReqT]): Unit = {}
-  override def doReplication[ReqT, RespT](eligibleNodes: scala.List[_root_.in.ashwanthkumar.suuchi.membership.MemberAddress], serverCall: _root_.io.grpc.ServerCall[ReqT, RespT], headers: _root_.io.grpc.Metadata, incomingRequest: ReqT, delegate: _root_.io.grpc.ServerCall.Listener[ReqT]): Unit = ???
+object NoReplicatorFactory extends ReplicatorFactory {
+  override def create[ReqT](config: ReplicatorConfig, cachedChannelPool: CachedChannelPool): Replicator[ReqT] = new Replicator[ReqT](config) {
+    override def doReplication[RespT](eligibleNodes: scala.List[MemberAddress], serverCall: ServerCall[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, delegate: ServerCall.Listener[ReqT]): Unit = {}
+  }
 }
 
-class MockReplicator(nrOfReplicas: Int, self: MemberAddress, mock: ReplicationRouter) extends ReplicationRouter(nrOfReplicas, self) {
-  /**
-   * @inheritdoc
-   */
-  override def replicate[ReqT, RespT](eligibleNodes: scala.List[_root_.in.ashwanthkumar.suuchi.membership.MemberAddress], serverCall: _root_.io.grpc.ServerCall[ReqT, RespT], headers: _root_.io.grpc.Metadata, incomingRequest: ReqT, delegate: _root_.io.grpc.ServerCall.Listener[ReqT]): Unit = {
-    mock.replicate(eligibleNodes, serverCall, headers, incomingRequest, delegate)
-  }
-  override def doReplication[ReqT, RespT](eligibleNodes: scala.List[_root_.in.ashwanthkumar.suuchi.membership.MemberAddress], serverCall: _root_.io.grpc.ServerCall[ReqT, RespT], headers: _root_.io.grpc.Metadata, incomingRequest: ReqT, delegate: _root_.io.grpc.ServerCall.Listener[ReqT]): Unit = ???
+class NoReplicator(nrOfReplicas: Int, self: MemberAddress) extends ReplicationRouter(nrOfReplicas, self, NoReplicatorFactory) {}
+
+class MockReplicatorFactory(mock: Replicator[_]) extends ReplicatorFactory {
+  override def create[ReqT](config: ReplicatorConfig, cachedChannelPool: CachedChannelPool): Replicator[ReqT] = mock.asInstanceOf[Replicator[ReqT]]
 }
+
+class MockReplicator(nrOfReplicas: Int, self: MemberAddress, mock: Replicator[Int]) extends ReplicationRouter(nrOfReplicas, self, new MockReplicatorFactory(mock)) {}
 
 class ReplicationRouterSpec extends FlatSpec {
   "ReplicationRouter" should "delegate the message to the local node if it's a REPLICATION_REQUEST" in {
@@ -64,7 +64,7 @@ class ReplicationRouterSpec extends FlatSpec {
 
   it should "replicate the request as per replication strategy" in {
     val whoami = MemberAddress("host1", 1)
-    val mockReplicator = mock(classOf[ReplicationRouter])
+    val mockReplicator = mock(classOf[Replicator[Int]])
     val replicator = new MockReplicator(1, whoami, mockReplicator)
 
     setupAndVerify { (serverCall: ServerCall[Int, Int], delegate: ServerCall.Listener[Int], next: ServerCallHandler[Int, Int]) =>
@@ -79,7 +79,7 @@ class ReplicationRouterSpec extends FlatSpec {
 
       verify(delegate, times(1)).onReady()
       verify(delegate, times(0)).onMessage(1)
-      verify(mockReplicator, times(1)).replicate[Int, Int](any(classOf[List[MemberAddress]]), any(classOf[ServerCall[Int, Int]]), any(classOf[Metadata]), anyInt(), any(classOf[ServerCall.Listener[Int]]))
+      verify(mockReplicator, times(1)).replicate[Int](any(classOf[List[MemberAddress]]), anyInt(), any(classOf[ServerCall[Int, Int]]), any(classOf[ServerCall.Listener[Int]]))
     }
   }
 

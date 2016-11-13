@@ -6,8 +6,9 @@ import com.google.protobuf.ByteString
 import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{PutResponse, GetRequest, PutRequest}
 import in.ashwanthkumar.suuchi.rpc.generated.{SuuchiRPC, SuuchiPutGrpc, SuuchiReadGrpc}
 import in.ashwanthkumar.suuchi.utils.Logging
+import io.grpc.{ClientCall, CallOptions}
 import io.grpc.netty.NettyChannelBuilder
-import io.grpc.stub.StreamObserver
+import io.grpc.stub.{ClientCallStreamObserver, ClientCalls, StreamObserver}
 import org.slf4j.LoggerFactory
 
 class SuuchiClient(host: String, port: Int) {
@@ -36,7 +37,7 @@ class SuuchiClient(host: String, port: Int) {
   }
 
   def bulkPut(responseObserver: StreamObserver[SuuchiRPC.PutResponse]) = {
-    asyncWrite.bulkPut(responseObserver)
+    asyncWrite.bulkPut(responseObserver).asInstanceOf[ClientCallStreamObserver[PutRequest]]
   }
 
   def get(key: Array[Byte]): Option[Array[Byte]] = {
@@ -87,6 +88,11 @@ object SuuchiClient extends App {
   val batch = client.bulkPut(new BulkPutListener(finishLatch))
   log.info("Starting bulkPut")
   (6 until 10).foreach { index =>
+    while(!batch.isReady) {
+      log.trace("Sleeping for 1 sec while the batch is getting ready - " + batch.isReady)
+      Thread.sleep(1000)
+    }
+
     batch.onNext(
       PutRequest.newBuilder()
         .setKey(ByteString.copyFrom(Array((65 + index).toByte)))

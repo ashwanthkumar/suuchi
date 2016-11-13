@@ -1,10 +1,10 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import java.net.InetAddress
-import java.util.concurrent.Executor
 
 import in.ashwanthkumar.suuchi.membership.MemberAddress
 import in.ashwanthkumar.suuchi.router._
+import in.ashwanthkumar.suuchi.router.replication.{ParallelReplicator, ParallelReplicatorFactory}
 import io.grpc.{Server => GServer, _}
 import org.slf4j.LoggerFactory
 
@@ -59,35 +59,7 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
   }
 
   /**
-   * Enable [[SequentialReplicator]] for replicating requests to this service. [[RoutingStrategy]]
-   * defines the list of nodes we should replicate the request too.
-   *
-   * @param service Service to which we should hook into for replication.
-   *                Generally these're Write services.
-   * @param nrReplicas  Number of replicas to make for each request
-   * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
-   * @return  this object for chaining
-   */
-  def withSequentialReplication(service: ServerServiceDefinition, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
-    withReplication(service, new SequentialReplicator(nrReplicas, whoami), strategy)
-  }
-
-  /**
-   * Enable [[SequentialReplicator]] for replicating requests to this service. [[RoutingStrategy]]
-   * defines the list of nodes we should replicate the request too.
-   *
-   * @param service Service to which we should hook into for replication.
-   *                Generally these're Write services.
-   * @param nrReplicas  Number of replicas to make for each request
-   * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
-   * @return  this object for chaining
-   */
-  def withSequentialReplication(service: BindableService, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
-    withSequentialReplication(service.bindService(), nrReplicas, strategy)
-  }
-
-  /**
-   * Enable [[ParallelReplicator]] for replicating requets to this service. [[RoutingStrategy]]
+   * Enable [[in.ashwanthkumar.suuchi.router.replication.ParallelReplicator]] for replicating requets to this service. [[RoutingStrategy]]
    * defines the list of nodes we should replicate the request too.
    *
    * @param service Service to which we should hook into for replication.
@@ -98,7 +70,7 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
    * @return
    */
   def withParallelReplication(service: ServerServiceDefinition, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
-    withReplication(service, new ParallelReplicator(nrReplicas, whoami), strategy)
+    withReplication(service, new ReplicationRouter(nrReplicas, whoami, ParallelReplicatorFactory), strategy)
   }
 
   /**
