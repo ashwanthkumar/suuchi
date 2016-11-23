@@ -37,3 +37,14 @@ message PutRequest {
 message PutResponse {
     bool status = 1;
 }
+
+service SuuchiScan {
+    rpc Scan (ScanRequest) returns (stream ScanResponse);
+}
+message ScanRequest {
+    bytes from = 1;
+    bytes to = 2;
+}
+message ScanResponse {
+    bytes values = 1;
+}

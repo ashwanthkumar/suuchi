@@ -26,4 +26,28 @@ class InMemoryStore extends Store {
     store.remove(ByteBuffer.wrap(key))
     true
   }
+
+  def seek(iterator: Iterator[Array[Byte]]): Iterator[Array[Byte]] = {
+    iterator.buffered
+  }
+
+  override def scan(from: Array[Byte], to: Array[Byte]): Option[Iterator[Array[Byte]]] = {
+/*    val iterator = store.keySet().iterator()
+    val endOffset = new String(to)
+
+    var current: Array[Byte] = "0".getBytes()
+
+    val iter = new Iterator[Array[Byte]]() {
+
+      override def hasNext: Boolean = iterator.hasNext && (new String(current) <= endOffset)
+
+      override def next(): Array[Byte] = {
+        current = iterator.next().array()
+        current
+      }
+    }
+
+    Some(iter)*/
+    None
+  }
 }

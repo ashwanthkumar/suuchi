@@ -31,4 +31,26 @@ class RocksDbStore(config: RocksDbConfiguration) extends Store with Logging {
   override def remove(key: Array[Byte]): Boolean = {
     logOnError(() => db.remove(key)) isSuccess
   }
+
+  override def scan(from: Array[Byte], to: Array[Byte]): Option[Iterator[Array[Byte]]] = {
+    val rocksIterator = db.newIterator()
+    rocksIterator.seek(from)
+
+    val endOffset = new String(to)
+
+    val iter = new Iterator[Array[Byte]] {
+      override def hasNext: Boolean = rocksIterator.isValid && (new String(rocksIterator.key()) <= endOffset)
+
+      override def next(): Array[Byte] = {
+        val value = rocksIterator.value()
+        println("val: " + new String(value))
+        rocksIterator.next()
+        value
+      }
+    }
+
+    if (iter.isEmpty)
+      return None
+    Some(iter)
+  }
 }
