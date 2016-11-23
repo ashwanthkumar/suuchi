@@ -109,7 +109,7 @@ class ConsistentHashRingSpec extends FlatSpec {
     ringState.byNodes(host3) should contain(TokenRange(40, 49, VNode(host3, 2, Primary)))
   }
 
-  it should "return the right PartitionType for all partitions" in {
+  it should "assign the right PartitionType for all partitions in a node" in {
     val ring = new ConsistentHashRing(SuuchiHash, 3)
     ring.init(List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3)))
 
@@ -117,5 +117,14 @@ class ConsistentHashRingSpec extends FlatSpec {
 
     vNodes.filter(_.pType.equals(Primary)) should have size 3
     vNodes.filter(_.pType.equals(Follower)) should have size 6
+  }
+
+  it should "set vNode with replica id 1 as Primary partition, irrespective of replication factor" in {
+    val ring = new ConsistentHashRing(SuuchiHash, 2)
+    ring.init(List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3)))
+
+    val vNodes = ring.sortedMap.values().toList
+
+    vNodes.filter(_.pType.equals(Primary)).map(_.nodeReplicaId).reduce(_ & _) should be(1)
   }
 }
