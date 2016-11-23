@@ -6,7 +6,17 @@ import in.ashwanthkumar.suuchi.cluster.MemberAddress
 
 import scala.collection.mutable
 
-case class VNode(node: MemberAddress, nodeReplicaId: Int) {
+sealed trait PartitionType
+object PartitionType {
+  def apply(index: Int, rpf: Int) = {
+    if (index % rpf == 0) Primary
+    else Follower
+  }
+}
+case object Primary extends PartitionType
+case object Follower extends PartitionType
+
+case class VNode(node: MemberAddress, nodeReplicaId: Int, pType: PartitionType) {
   def key = node.host + "_" + node.port + "_" + nodeReplicaId
 }
 
@@ -19,7 +29,7 @@ case class RingState(private[partitioner] val lastKnown: Int, ranges: List[Token
 }
 
 // Ref - https://git.io/vPOP5
-class ConsistentHashRing(hashFn: Hash, paritionsPerNode: Int) {
+class ConsistentHashRing(hashFn: Hash, partitionsPerNode: Int, replicationFactor: Int = 2) {
   val sortedMap = new util.TreeMap[Integer, VNode]()
 
   // when looking for n unique nodes, give up after a streak of MAX_DUPES
@@ -33,15 +43,16 @@ class ConsistentHashRing(hashFn: Hash, paritionsPerNode: Int) {
 
   private def hash(vnode: VNode): Int = hashFn.hash(vnode.key.getBytes)
 
+  // FIXME: Partitions per node less than replication factor will result in zero primary partition
   def add(node: MemberAddress) = {
-    (1 to paritionsPerNode).map(i => VNode(node, i)).foreach { vnode =>
+    (1 to partitionsPerNode).map(i => VNode(node, i, PartitionType(i, replicationFactor))).foreach { vnode =>
       sortedMap.put(hash(vnode), vnode)
     }
     this
   }
 
   def remove(node: MemberAddress) = {
-    (1 to paritionsPerNode).map(i => VNode(node, i)).foreach { vnode =>
+    (1 to partitionsPerNode).map(i => VNode(node, i, PartitionType(i, replicationFactor))).foreach { vnode =>
       sortedMap.remove(hash(vnode))
     }
     this

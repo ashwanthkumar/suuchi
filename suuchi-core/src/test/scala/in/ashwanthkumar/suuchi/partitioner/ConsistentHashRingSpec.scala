@@ -4,6 +4,8 @@ import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 
+import scala.collection.JavaConversions._
+
 object IdentityHash extends Hash {
   override def hash(bytes: Array[Byte]): Integer = bytes.toString.toInt
 }
@@ -88,22 +90,32 @@ class ConsistentHashRingSpec extends FlatSpec {
     val host2 = MemberAddress("host2", 2)
     val host3 = MemberAddress("host3", 3)
 
-    ring.sortedMap.put(10, VNode(host1, 1))
-    ring.sortedMap.put(20, VNode(host2, 1))
-    ring.sortedMap.put(30, VNode(host3, 1))
-    ring.sortedMap.put(40, VNode(host3, 2))
-    ring.sortedMap.put(50, VNode(host2, 2))
-    ring.sortedMap.put(60, VNode(host1, 2))
+    ring.sortedMap.put(10, VNode(host1, 1, Primary))
+    ring.sortedMap.put(20, VNode(host2, 1, Primary))
+    ring.sortedMap.put(30, VNode(host3, 1, Primary))
+    ring.sortedMap.put(40, VNode(host3, 2, Primary))
+    ring.sortedMap.put(50, VNode(host2, 2, Primary))
+    ring.sortedMap.put(60, VNode(host1, 2, Primary))
 
     val ringState = ring.ringState
-    ringState.ranges should have size(6)
-    ringState.byNodes(host1) should contain(TokenRange(10, 19, VNode(host1, 1)))
-    ringState.byNodes(host1) should contain(TokenRange(60, 9, VNode(host1, 2)))
+    ringState.ranges should have size 6
+    ringState.byNodes(host1) should contain(TokenRange(10, 19, VNode(host1, 1, Primary)))
+    ringState.byNodes(host1) should contain(TokenRange(60, 9, VNode(host1, 2, Primary)))
 
-    ringState.byNodes(host2) should contain(TokenRange(20, 29, VNode(host2, 1)))
-    ringState.byNodes(host2) should contain(TokenRange(50, 59, VNode(host2, 2)))
+    ringState.byNodes(host2) should contain(TokenRange(20, 29, VNode(host2, 1, Primary)))
+    ringState.byNodes(host2) should contain(TokenRange(50, 59, VNode(host2, 2, Primary)))
 
-    ringState.byNodes(host3) should contain(TokenRange(30, 39, VNode(host3, 1)))
-    ringState.byNodes(host3) should contain(TokenRange(40, 49, VNode(host3, 2)))
+    ringState.byNodes(host3) should contain(TokenRange(30, 39, VNode(host3, 1, Primary)))
+    ringState.byNodes(host3) should contain(TokenRange(40, 49, VNode(host3, 2, Primary)))
+  }
+
+  it should "return the right PartitionType for all partitions" in {
+    val ring = new ConsistentHashRing(SuuchiHash, 3)
+    ring.init(List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3)))
+
+    val vNodes = ring.sortedMap.values().toList
+
+    vNodes.filter(_.pType.equals(Primary)) should have size 3
+    vNodes.filter(_.pType.equals(Follower)) should have size 6
   }
 }
