@@ -8,8 +8,8 @@ import scala.collection.mutable
 
 sealed trait PartitionType
 object PartitionType {
-  def apply(index: Int) = {
-    if (index == 1) Primary
+  def apply(index: Int, replicationFactor: Int) = {
+    if (index % replicationFactor == 1) Primary
     else Follower
   }
 }
@@ -44,14 +44,14 @@ class ConsistentHashRing(hashFn: Hash, partitionsPerNode: Int, replicationFactor
   private def hash(vnode: VNode): Int = hashFn.hash(vnode.key.getBytes)
 
   def add(node: MemberAddress) = {
-    (1 to partitionsPerNode).map(i => VNode(node, i, PartitionType(i))).foreach { vnode =>
+    (1 to partitionsPerNode).map(i => VNode(node, i, PartitionType(i, replicationFactor))).foreach { vnode =>
       sortedMap.put(hash(vnode), vnode)
     }
     this
   }
 
   def remove(node: MemberAddress) = {
-    (1 to partitionsPerNode).map(i => VNode(node, i, PartitionType(i))).foreach { vnode =>
+    (1 to partitionsPerNode).map(i => VNode(node, i, PartitionType(i, replicationFactor))).foreach { vnode =>
       sortedMap.remove(hash(vnode))
     }
     this

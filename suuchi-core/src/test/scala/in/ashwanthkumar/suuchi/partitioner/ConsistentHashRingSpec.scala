@@ -115,16 +115,17 @@ class ConsistentHashRingSpec extends FlatSpec {
 
     val vNodes = ring.sortedMap.values().toList
 
-    vNodes.filter(_.pType.equals(Primary)) should have size 3
-    vNodes.filter(_.pType.equals(Follower)) should have size 6
+    vNodes.filter(_.pType.equals(Primary)) should have size 6
+    vNodes.filter(_.pType.equals(Follower)) should have size 3
   }
 
-  it should "set vNode with replica id 1 as Primary partition, irrespective of replication factor" in {
-    val ring = new ConsistentHashRing(SuuchiHash, 2)
-    ring.init(List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3)))
+  it should "set a primary partition even if #partitions is less than rpf" in {
+    val ring = new ConsistentHashRing(SuuchiHash, 2, replicationFactor = 2 + 1)
+    val hosts = List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3))
+    ring.init(hosts)
 
     val vNodes = ring.sortedMap.values().toList
 
-    vNodes.filter(_.pType.equals(Primary)).map(_.nodeReplicaId).reduce(_ & _) should be(1)
+    vNodes.filter(_.pType.equals(Primary)) should have size 3
   }
 }
