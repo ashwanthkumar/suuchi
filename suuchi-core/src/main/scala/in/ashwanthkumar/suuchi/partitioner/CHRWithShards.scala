@@ -41,8 +41,8 @@ class CHRWithShards(hashFn: Hash, partitionsPerNode: Int, replicationFactor: Int
     }
   }
 
-  def find(key: Array[Byte]): Option[Shard] = {
-    if (sortedMap.isEmpty) return None
+  def find(key: Array[Byte]): List[MemberAddress] = {
+    if (sortedMap.isEmpty) return Nil
 
     val hashIdx = hashFn.hash(key)
     val (newHash, candidate) = findCandidate(hashIdx)
