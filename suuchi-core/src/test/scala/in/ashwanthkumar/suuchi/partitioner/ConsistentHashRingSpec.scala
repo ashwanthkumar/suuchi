@@ -13,7 +13,7 @@ object IdentityHash extends Hash {
 class ConsistentHashRingSpec extends FlatSpec {
   "ConsistentHashRing" should "pin nodes into the ring accounting for virtual nodes" in {
     val nodes = List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3))
-    val ring = ConsistentHashRing(nodes, 3)
+    val ring = ConsistentHashRing(nodes, partitionsPerNode = 3)
 
     ring.nodes.size() should be(9)
 
@@ -22,7 +22,7 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "remove nodes & its replica nodes on remove" in {
-    val ring = new ConsistentHashRing(SuuchiHash, 3)
+    val ring = new ConsistentHashRing(SuuchiHash, partitionsPerNode = 3)
     ring.init(List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3)))
 
     ring.remove(MemberAddress("host1", 1))
@@ -39,17 +39,17 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "return None when no nodes are present in the ring" in {
-    val ring = ConsistentHashRing(Nil, 3)
+    val ring = ConsistentHashRing(Nil, partitionsPerNode = 3)
     ring.find("1".getBytes) should be(None)
   }
 
   it should "return the only node on find when only 1 node is present in the ring" in {
-    val ring = ConsistentHashRing(List(MemberAddress("host1", 1)), 1)
+    val ring = ConsistentHashRing(List(MemberAddress("host1", 1)), partitionsPerNode = 1)
     ring.find("1".getBytes) should be(Some(MemberAddress("host1", 1)))
   }
 
   it should "return the same node multiple times when the number of unique nodes is less but requested bins are more" in {
-    val ring = ConsistentHashRing(List(MemberAddress("host1", 1)), 3)
+    val ring = ConsistentHashRing(List(MemberAddress("host1", 1)), partitionsPerNode = 3)
     val list = ring.find("1".getBytes, 3)
     list should have size 3
     list.head should be(MemberAddress("host1", 1))
@@ -59,7 +59,7 @@ class ConsistentHashRingSpec extends FlatSpec {
 
   it should "might return same node multiple times even when we have enough number of nodes" in {
     val members = (1 to 5).map { index => MemberAddress(s"host$index", index) }.toList
-    val ring = ConsistentHashRing(members, 3)
+    val ring = ConsistentHashRing(members, partitionsPerNode = 3)
     val list = ring.find("1".getBytes, 3)
     list should have size 3
     list.head should be(MemberAddress("host3", 3))
@@ -68,7 +68,7 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "not return the same node multiple times" in {
-    val ring = ConsistentHashRing(List(MemberAddress("host1", 1)), 3)
+    val ring = ConsistentHashRing(List(MemberAddress("host1", 1)), partitionsPerNode = 3)
     val list = ring.findUnique("1".getBytes, 3)
     list should have size 1
     list should contain(MemberAddress("host1", 1))
@@ -76,7 +76,7 @@ class ConsistentHashRingSpec extends FlatSpec {
 
   it should "return unique set of nodes when we've more then replica count nodes in the ring" in {
     val members = (1 to 5).map { index => MemberAddress(s"host$index", index) }.toList
-    val ring = ConsistentHashRing(members, 3)
+    val ring = ConsistentHashRing(members, partitionsPerNode = 3)
     val list = ring.findUnique("1".getBytes, 3)
     list should have size 3
     list should contain(MemberAddress("host3", 3))
@@ -85,7 +85,7 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "return the right ringState that wraps around the HashRing" in {
-    val ring = ConsistentHashRing(Nil, 2)
+    val ring = ConsistentHashRing(Nil, partitionsPerNode = 2)
     val host1 = MemberAddress("host1", 1)
     val host2 = MemberAddress("host2", 2)
     val host3 = MemberAddress("host3", 3)
@@ -110,22 +110,23 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "assign the right PartitionType for all partitions in a node" in {
-    val ring = new ConsistentHashRing(SuuchiHash, 3)
+    val ring = new ConsistentHashRing(SuuchiHash, partitionsPerNode = 3)
     ring.init(List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3)))
 
     val vNodes = ring.sortedMap.values().toList
 
-    vNodes.filter(_.pType.equals(Primary)) should have size 6
-    vNodes.filter(_.pType.equals(Follower)) should have size 3
+    vNodes.filter(_.pType == Primary) should have size 6
+    vNodes.filter(_.pType == Follower) should have size 3
   }
 
-  it should "set a primary partition even if #partitions is less than rpf" in {
-    val ring = new ConsistentHashRing(SuuchiHash, 2, replicationFactor = 2 + 1)
+  it should "set a primary partition even if #partitionsPerNode is less than replicationFactor" in {
+    val ring = new ConsistentHashRing(SuuchiHash, partitionsPerNode = 2, replicationFactor = 2 + 1)
     val hosts = List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3))
     ring.init(hosts)
 
     val vNodes = ring.sortedMap.values().toList
 
-    vNodes.filter(_.pType.equals(Primary)) should have size 3
+    vNodes should have size 6
+    vNodes.filter(_.pType == Primary) should have size hosts.size
   }
 }
