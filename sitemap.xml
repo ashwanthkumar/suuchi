@@ -4,7 +4,7 @@
     
     <url>
      <loc>None/</loc>
-     <lastmod>2016-11-12</lastmod>
+     <lastmod>2016-11-29</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -12,7 +12,7 @@
     
     <url>
      <loc>None/quick-start/</loc>
-     <lastmod>2016-11-12</lastmod>
+     <lastmod>2016-11-29</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -21,19 +21,19 @@
         
     <url>
      <loc>None/internals/partitioner/</loc>
-     <lastmod>2016-11-12</lastmod>
+     <lastmod>2016-11-29</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/internals/replication/</loc>
-     <lastmod>2016-11-12</lastmod>
+     <lastmod>2016-11-29</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/internals/router/</loc>
-     <lastmod>2016-11-12</lastmod>
+     <lastmod>2016-11-29</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -43,19 +43,19 @@
         
     <url>
      <loc>None/recipes/inmemorydb/</loc>
-     <lastmod>2016-11-12</lastmod>
+     <lastmod>2016-11-29</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/recipes/rocksdb/</loc>
-     <lastmod>2016-11-12</lastmod>
+     <lastmod>2016-11-29</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/recipes/kvclient/</loc>
-     <lastmod>2016-11-12</lastmod>
+     <lastmod>2016-11-29</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
