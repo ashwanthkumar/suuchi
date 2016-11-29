@@ -2,7 +2,6 @@ package in.ashwanthkumar.suuchi.store
 
 trait ReadStore {
   def get(key: Array[Byte]): Option[Array[Byte]]
-  def scan(from: Array[Byte], to: Array[Byte]): Option[Iterator[Array[Byte]]]
 }
 
 trait WriteStore {

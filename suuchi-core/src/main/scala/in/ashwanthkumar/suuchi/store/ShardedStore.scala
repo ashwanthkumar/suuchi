@@ -50,7 +50,4 @@ class ShardedStore(partitionsPerNode: Int, hashFn: Hash, createStore: (Int) => S
       }
     }
   }
-
-  override def scan(from: Array[Byte], to: Array[Byte]): Option[Iterator[Array[Byte]]] = None
-
 }

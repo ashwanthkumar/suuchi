@@ -107,6 +107,4 @@ class VersionedStore(store: Store, versionedBy: VersionedBy, numVersions: Int, c
 
   private def removeData(key: Array[Byte], version: Long) = store.remove(dkey(key, version))
   private def removeVersion(key: Array[Byte]) = store.remove(vkey(key))
-
-  override def scan(from: Array[Byte], to: Array[Byte]): Option[Iterator[Array[Byte]]] = None
 }
