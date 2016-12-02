@@ -4,6 +4,7 @@ import java.util
 
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 
 sealed trait PartitionType
@@ -21,11 +22,23 @@ case class VNode(node: MemberAddress, nodeReplicaId: Int, pType: PartitionType) 
 }
 
 case class TokenRange(start: Int, end: Int, node: VNode) {
-  def range = start -> end
+  def member = node.node
 }
 
 case class RingState(private[partitioner] val lastKnown: Int, ranges: List[TokenRange]) {
   def byNodes = ranges.groupBy(_.node.node)
+
+  def withReplication(replicationFactor: Int) = pick(ranges.length, replicationFactor, ranges ::: ranges, Map())
+
+  @tailrec
+  private final def pick(remaining: Int, replicationFactor: Int, ranges: List[TokenRange], result: Map[TokenRange, List[MemberAddress]]): Map[TokenRange, List[MemberAddress]] = {
+    if (remaining == 0) result
+    else {
+      val replicas = ranges.map(_.member).distinct.take(replicationFactor)
+      val tokens = Map(ranges.head -> replicas)
+      pick(remaining - 1, replicationFactor, ranges.tail, result ++ tokens)
+    }
+  }
 }
 
 // Ref - https://git.io/vPOP5
@@ -135,7 +148,7 @@ class ConsistentHashRing(hashFn: Hash, partitionsPerNode: Int, replicationFactor
     val tokenRings = sortedMap.keysIterator.drop(1).foldLeft(RingState(firstToken, Nil)) { (state, token) =>
       RingState(token, ranges = TokenRange(state.lastKnown, token - 1, sortedMap.get(state.lastKnown)) :: state.ranges)
     }
-    RingState(Int.MaxValue, ranges = TokenRange(tokenRings.lastKnown, firstToken - 1, sortedMap.get(tokenRings.lastKnown)) :: tokenRings.ranges)
+    RingState(Int.MaxValue, ranges = (TokenRange(tokenRings.lastKnown, firstToken - 1, sortedMap.get(tokenRings.lastKnown)) :: tokenRings.ranges).reverse)
   }
 
   // USED ONLY FOR TESTS
