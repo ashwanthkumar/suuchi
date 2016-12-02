@@ -90,43 +90,50 @@ class ConsistentHashRingSpec extends FlatSpec {
     val host2 = MemberAddress("host2", 2)
     val host3 = MemberAddress("host3", 3)
 
-    ring.sortedMap.put(10, VNode(host1, 1, Primary))
-    ring.sortedMap.put(20, VNode(host2, 1, Primary))
-    ring.sortedMap.put(30, VNode(host3, 1, Primary))
-    ring.sortedMap.put(40, VNode(host3, 2, Primary))
-    ring.sortedMap.put(50, VNode(host2, 2, Primary))
-    ring.sortedMap.put(60, VNode(host1, 2, Primary))
+    ring.sortedMap.put(10, VNode(host1, 1))
+    ring.sortedMap.put(20, VNode(host2, 1))
+    ring.sortedMap.put(30, VNode(host3, 1))
+    ring.sortedMap.put(40, VNode(host3, 2))
+    ring.sortedMap.put(50, VNode(host2, 2))
+    ring.sortedMap.put(60, VNode(host1, 2))
 
     val ringState = ring.ringState
     ringState.ranges should have size 6
-    ringState.byNodes(host1) should contain(TokenRange(10, 19, VNode(host1, 1, Primary)))
-    ringState.byNodes(host1) should contain(TokenRange(60, 9, VNode(host1, 2, Primary)))
+    ringState.byNodes(host1) should contain(TokenRange(10, 19, VNode(host1, 1)))
+    ringState.byNodes(host1) should contain(TokenRange(60, 9, VNode(host1, 2)))
 
-    ringState.byNodes(host2) should contain(TokenRange(20, 29, VNode(host2, 1, Primary)))
-    ringState.byNodes(host2) should contain(TokenRange(50, 59, VNode(host2, 2, Primary)))
+    ringState.byNodes(host2) should contain(TokenRange(20, 29, VNode(host2, 1)))
+    ringState.byNodes(host2) should contain(TokenRange(50, 59, VNode(host2, 2)))
 
-    ringState.byNodes(host3) should contain(TokenRange(30, 39, VNode(host3, 1, Primary)))
-    ringState.byNodes(host3) should contain(TokenRange(40, 49, VNode(host3, 2, Primary)))
+    ringState.byNodes(host3) should contain(TokenRange(30, 39, VNode(host3, 1)))
+    ringState.byNodes(host3) should contain(TokenRange(40, 49, VNode(host3, 2)))
   }
 
-  it should "assign the right PartitionType for all partitions in a node" in {
-    val ring = new ConsistentHashRing(SuuchiHash, partitionsPerNode = 3)
-    ring.init(List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3)))
+  it should "return list of token ranges for each VNode in a ring" in {
+    val ring = ConsistentHashRing(Nil, partitionsPerNode = 2)
+    val host1 = MemberAddress("host1", 1)
+    val host2 = MemberAddress("host2", 2)
+    val host3 = MemberAddress("host3", 3)
 
-    val vNodes = ring.sortedMap.values().toList
+    ring.sortedMap.put(10, VNode(host1, 1))
+    ring.sortedMap.put(20, VNode(host2, 1))
+    ring.sortedMap.put(30, VNode(host3, 1))
+    ring.sortedMap.put(40, VNode(host3, 2))
+    ring.sortedMap.put(50, VNode(host2, 2))
+    ring.sortedMap.put(60, VNode(host1, 2))
 
-    vNodes.filter(_.pType == Primary) should have size 6
-    vNodes.filter(_.pType == Follower) should have size 3
-  }
+    val ringState = ring.ringState
+    val totalShards = ringState.withReplication(2)
+    totalShards should have size 6
 
-  it should "set a primary partition even if #partitionsPerNode is less than replicationFactor" in {
-    val ring = new ConsistentHashRing(SuuchiHash, partitionsPerNode = 2, replicationFactor = 2 + 1)
-    val hosts = List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3))
-    ring.init(hosts)
+    val range1 = TokenRange(10, 19, VNode(host1, 1))
+    totalShards(range1) should have size 2
+    totalShards(range1) should be(List(host1, host2))
 
-    val vNodes = ring.sortedMap.values().toList
-
-    vNodes should have size 6
-    vNodes.filter(_.pType == Primary) should have size hosts.size
+    totalShards(TokenRange(20, 29, VNode(host2, 1))) should be(List(host2, host3))
+    totalShards(TokenRange(30, 39, VNode(host3, 1))) should be(List(host3, host2))
+    totalShards(TokenRange(40, 49, VNode(host3, 2))) should be(List(host3, host2))
+    totalShards(TokenRange(50, 59, VNode(host2, 2))) should be(List(host2, host1))
+    totalShards(TokenRange(60, 9, VNode(host1, 2))) should be(List(host1, host2))
   }
 }
