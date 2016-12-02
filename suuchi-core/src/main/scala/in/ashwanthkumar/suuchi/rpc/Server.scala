@@ -122,6 +122,26 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
     this
   }
 
+  /**
+   * Add a service without any routing logic
+   * @param service  Service which is handled locally by the node and not forwarded
+   * @return this object for chaining
+   */
+  def withService(service: ServerServiceDefinition) = {
+    serverBuilder.addService(service)
+    this
+  }
+
+  /**
+   * Add a service without any routing logic
+   * @param service  Service which is handled locally by the node and not forwarded
+   * @return this object for chaining
+   */
+  def withService(service: BindableService) = {
+    serverBuilder.addService(service)
+    this
+  }
+
   def stop() = {
     if (server != null) {
       server.shutdown()
