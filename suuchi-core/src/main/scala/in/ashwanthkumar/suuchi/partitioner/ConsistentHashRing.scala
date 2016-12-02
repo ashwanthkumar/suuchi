@@ -15,6 +15,35 @@ case class TokenRange(start: Int, end: Int, node: VNode) {
   def member = node.node
 }
 
+object RingState {
+  /**
+    * Check if `key` falls within the given range using the `hashFn`
+    *
+    * @param key        Key to check for
+    * @param tokenRange TokenRange to check against
+    * @param hashFn     HashFunction used in CHRing
+    * @return true if he key falls within the range
+    *         false otherwise
+    */
+  def contains(key: Array[Byte], tokenRange: TokenRange, hashFn: Hash): Boolean = contains(key, tokenRange.start, tokenRange.end, hashFn)
+
+  /**
+    * Check if `key` falls within the given range using the `hashFn`
+    *
+    * @param key    Key to check for
+    * @param start  Start range of the Token
+    * @param end    Last end of the Token
+    * @param hashFn HashFunction used in CHRing
+    * @return true if he key falls within the range
+    *         false otherwise
+    */
+  def contains(key: Array[Byte], start: Int, end: Int, hashFn: Hash): Boolean = {
+    val hash = hashFn.hash(key)
+
+    start <= hash && hash <= end
+  }
+}
+
 case class RingState(private[partitioner] val lastKnown: Int, ranges: List[TokenRange]) {
   def byNodes = ranges.groupBy(_.node.node)
 
