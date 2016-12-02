@@ -7,17 +7,7 @@ import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import scala.annotation.tailrec
 import scala.collection.mutable
 
-sealed trait PartitionType
-object PartitionType {
-  def apply(index: Int, replicationFactor: Int) = {
-    if (index % replicationFactor == 1) Primary
-    else Follower
-  }
-}
-case object Primary extends PartitionType
-case object Follower extends PartitionType
-
-case class VNode(node: MemberAddress, nodeReplicaId: Int, pType: PartitionType) {
+case class VNode(node: MemberAddress, nodeReplicaId: Int) {
   def key = node.host + "_" + node.port + "_" + nodeReplicaId
 }
 
@@ -57,14 +47,14 @@ class ConsistentHashRing(hashFn: Hash, partitionsPerNode: Int, replicationFactor
   private def hash(vnode: VNode): Int = hashFn.hash(vnode.key.getBytes)
 
   def add(node: MemberAddress) = {
-    (1 to partitionsPerNode).map(i => VNode(node, i, PartitionType(i, replicationFactor))).foreach { vnode =>
+    (1 to partitionsPerNode).map(i => VNode(node, i)).foreach { vnode =>
       sortedMap.put(hash(vnode), vnode)
     }
     this
   }
 
   def remove(node: MemberAddress) = {
-    (1 to partitionsPerNode).map(i => VNode(node, i, PartitionType(i, replicationFactor))).foreach { vnode =>
+    (1 to partitionsPerNode).map(i => VNode(node, i)).foreach { vnode =>
       sortedMap.remove(hash(vnode))
     }
     this
