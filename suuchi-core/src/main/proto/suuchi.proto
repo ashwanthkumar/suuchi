@@ -37,3 +37,24 @@ message PutRequest {
 message PutResponse {
     bool status = 1;
 }
+
+// SuuchiInfo service which can be used for getting all Shard details
+service Shards {
+    rpc Info (ShardInfoRequest) returns (ShardInfoResponse);
+}
+
+message ShardInfoRequest {
+}
+message ShardInfoResponse {
+    repeated Shard shard = 1;
+}
+message Shard {
+    int32 start = 1;
+    int32 end = 2;
+
+    repeated Node nodes = 3;
+}
+message Node {
+    string host = 1;
+    int32 port = 2;
+}
