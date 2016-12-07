@@ -73,39 +73,45 @@ class BulkPutListener(countDownLatch: CountDownLatch) extends StreamObserver[Put
 object SuuchiClient extends App {
   private val log = LoggerFactory.getLogger(getClass)
   val client = new SuuchiClient("localhost", 5051)
-  //
-  //  (0 until 5).foreach { index =>
-  //    val status = client.put(Array((65 + index).toByte), Array((65 + index).toByte))
-  //    log.info("Put Status={}", status)
-  //  }
-  //
-  //  (0 until 5).foreach { index =>
-  //    val value = client.get(Array((65 + index).toByte))
-  //    log.info("Got value={}", new String(value.get))
-  //  }
+
+    (0 until 5).foreach { index =>
+      val status = client.put(Array((65 + index).toByte), Array((65 + index).toByte))
+      log.info("Put Status={}", status)
+    }
+
+    (0 until 5).foreach { index =>
+      val value = client.get(Array((65 + index).toByte))
+      log.info("Got value={}", new String(value.get))
+    }
 
   val finishLatch = new CountDownLatch(1)
+
+  val serverCall: ClientCall[PutRequest, PutResponse] = client.channel.newCall(SuuchiPutGrpc.METHOD_BULK_PUT, CallOptions.DEFAULT)
   val batch = client.bulkPut(new BulkPutListener(finishLatch))
   log.info("Starting bulkPut")
-  (6 until 10).foreach { index =>
+
+  val startIndex: Int = 10
+  val endIndex: Int = 20
+  (startIndex until endIndex).foreach { index =>
     while(!batch.isReady) {
       log.trace("Sleeping for 1 sec while the batch is getting ready - " + batch.isReady)
       Thread.sleep(1000)
     }
-
+    log.info("Putting " + new String(Array((65 + index).toByte)))
     batch.onNext(
       PutRequest.newBuilder()
         .setKey(ByteString.copyFrom(Array((65 + index).toByte)))
         .setValue(ByteString.copyFrom(Array((65 + index).toByte)))
         .build()
     )
+    log.trace("" + batch.isReady)
   }
   batch.onCompleted()
   log.info("Completed bulkPut, waiting...")
-  finishLatch.await(1, TimeUnit.MINUTES)
+  finishLatch.await()
   log.info("BulkPut Complete")
 
-  (6 until 10).foreach { index =>
+  (startIndex until endIndex).foreach { index =>
     val value = client.get(Array((65 + index).toByte))
     log.info("Got value={}", new String(value.get))
   }
