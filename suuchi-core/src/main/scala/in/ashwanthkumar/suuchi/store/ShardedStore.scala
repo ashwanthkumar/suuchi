@@ -5,6 +5,8 @@ import java.util.concurrent.ConcurrentHashMap
 import in.ashwanthkumar.suuchi.partitioner.Hash
 import in.ashwanthkumar.suuchi.utils.Logging
 
+import scala.collection.JavaConversions._
+
 /**
  * SharedStore shards the keys equally into [[partitionsPerNode]] stores and proxies store operations
  * against them for a given key.
@@ -50,4 +52,8 @@ class ShardedStore(partitionsPerNode: Int, hashFn: Hash, createStore: (Int) => S
       }
     }
   }
+
+  override def scan(): Iterator[KV] = map.values().flatMap(_.scan()).iterator
+
+  override def scan(prefix: Array[Byte]): Iterator[KV] = map.values().flatMap(_.scan(prefix)).iterator
 }
