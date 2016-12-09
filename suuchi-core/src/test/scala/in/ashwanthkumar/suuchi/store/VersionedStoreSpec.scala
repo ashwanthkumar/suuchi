@@ -3,7 +3,7 @@ package in.ashwanthkumar.suuchi.store
 import java.nio.ByteBuffer
 
 import in.ashwanthkumar.suuchi.store.PrimitivesSerDeUtils.{bytesToLong, longToBytes}
-import in.ashwanthkumar.suuchi.utils.DateUtils
+import in.ashwanthkumar.suuchi.utils.{ByteArrayUtils, DateUtils}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 
@@ -71,4 +71,41 @@ class VersionedStoreSpec extends FlatSpec {
     store.put(Array(1.toByte), Array(103.toByte))
     inMemoryStore.get(VersionedStore.dkey(Array(1.toByte), 1)) should be(None)
   }
+
+  it should "support full store scan" in {
+    val store = new VersionedStore(new InMemoryStore, new ByWriteTimestampMocked, 3)
+    val inputs = List(("one".getBytes, "1".getBytes), ("two".getBytes, "2".getBytes), ("three".getBytes, "3".getBytes), ("four".getBytes, "4".getBytes), ("five".getBytes, "5".getBytes))
+    val fn = store.put _
+    val put = fn.tupled
+    inputs.foreach(put)
+
+    val scannedResult = store.scan().toList
+
+    scannedResult should have size 5
+    scannedResult.sortBy(kv => new String(kv.value)).zip(inputs).foreach{ case (kv, (inputKey, inputValue)) =>
+        ByteArrayUtils.hasPrefix(kv.key, VersionedStore.dkey(inputKey)) should be(true)
+        kv.value should be(inputValue)
+    }
+  }
+
+  it should "support prefix scan" in {
+    val store = new VersionedStore(new InMemoryStore, new ByWriteTimestampMocked, 3)
+    val inputs = List(("prefix1/one".getBytes, "1".getBytes), ("prefix1/two".getBytes, "2".getBytes), ("prefix1/three".getBytes, "3".getBytes), ("prefix2/one".getBytes, "1".getBytes), ("prefix2/two".getBytes, "2".getBytes), ("prefix2/three".getBytes, "3".getBytes))
+    val fn = store.put _
+    val put = fn.tupled
+    inputs.foreach(put)
+    val prefix = "prefix1".getBytes
+
+    val scannedResult = store.scan(prefix).toList
+
+    scannedResult should have size 3
+    scannedResult.foreach{kv =>
+      new String(kv.key) should startWith(prefixWithDkey(prefix))
+    }
+  }
+
+  def prefixWithDkey(prefix: Array[Byte]) = new String(VersionedStore.dkey(prefix))
+
+  def kv(key: String, value: String) = KV(key.getBytes, value.getBytes)
 }
+

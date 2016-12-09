@@ -3,7 +3,7 @@ package in.ashwanthkumar.suuchi.store.rocksdb
 import java.util.{Arrays => JArrays}
 
 import in.ashwanthkumar.suuchi.store.{KV, Store}
-import in.ashwanthkumar.suuchi.utils.Logging
+import in.ashwanthkumar.suuchi.utils.{ByteArrayUtils, Logging}
 import org.rocksdb._
 
 import scala.language.postfixOps
@@ -40,19 +40,15 @@ class RocksDbStore(config: RocksDbConfiguration) extends Store with Logging {
     val rocksIterator: RocksIterator = db.newIterator()
     rocksIterator.seek(prefix)
 
-    val iterator = new Iterator[KV] {
-      override def hasNext: Boolean = rocksIterator.isValid && hasPrefix(rocksIterator.key(), prefix)
+    new Iterator[KV] {
+      override def hasNext: Boolean = rocksIterator.isValid && ByteArrayUtils.hasPrefix(rocksIterator.key(), prefix)
+
       override def next(): KV = {
         val kv = KV(rocksIterator.key(), rocksIterator.value())
         rocksIterator.next()
         kv
       }
-
-      private def hasPrefix(key: Array[Byte], prefix: Array[Byte]) = {
-        key.length >= prefix.length && JArrays.equals(key.take(prefix.length), prefix)
-      }
     }
-    iterator
   }
 
 }

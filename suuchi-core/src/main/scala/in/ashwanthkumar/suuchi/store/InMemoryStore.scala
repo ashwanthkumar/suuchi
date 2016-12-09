@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 import java.util.{Arrays => JArrays}
 import java.util.concurrent.ConcurrentSkipListMap
 
+import in.ashwanthkumar.suuchi.utils.ByteArrayUtils
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
@@ -35,13 +36,9 @@ class InMemoryStore extends Store {
     store.entrySet().map(kv => KV(kv.getKey.array(), kv.getValue)).iterator
   }
 
-  private def hasPrefix(key: Array[Byte], prefix: Array[Byte]) = {
-    key.length >= prefix.length && JArrays.equals(key.take(prefix.length), prefix)
-  }
-
   override def scan(prefix: Array[Byte]): Iterator[KV] = {
     store.tailMap(ByteBuffer.wrap(prefix))
-      .takeWhile{case (k, v) => hasPrefix(k.array(), prefix)}
+      .takeWhile{case (k, v) => ByteArrayUtils.hasPrefix(k.array(), prefix)}
       .map{case (k, v) => KV(k.array(), v)}
       .iterator
   }

@@ -37,6 +37,7 @@ object VersionedStore {
 
   def isDataKey(key: Array[Byte]) = util.Arrays.equals(key.take(DATA_PREFIX.length), DATA_PREFIX)
   def vkey(key: Array[Byte]) = VERSION_PREFIX ++ key
+  def dkey(key: Array[Byte]): Array[Byte] = DATA_PREFIX ++ key
   def dkey(key: Array[Byte], version: Array[Byte]): Array[Byte] = DATA_PREFIX ++ key ++ version
   def dkey(key: Array[Byte], version: Long): Array[Byte] = DATA_PREFIX ++ key ++ PrimitivesSerDeUtils.longToBytes(version)
 }
@@ -113,5 +114,5 @@ class VersionedStore(store: Store, versionedBy: VersionedBy, numVersions: Int, c
 
   override def scan(): Iterator[KV] = store.scan().filter(kv => VersionedStore.isDataKey(kv.key))
 
-  override def scan(prefix: Array[Byte]): Iterator[KV] = store.scan(prefix).filter(kv => VersionedStore.isDataKey(kv.key))
+  override def scan(prefix: Array[Byte]): Iterator[KV] = store.scan(dkey(prefix))
 }
