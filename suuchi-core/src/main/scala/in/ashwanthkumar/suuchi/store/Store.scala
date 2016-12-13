@@ -16,8 +16,6 @@ case class KV(key: Array[Byte], value: Array[Byte]) {
     case o: KV => util.Arrays.equals(key, o.key) && util.Arrays.equals(value, o.value)
     case _ => false
   }
-
-  override def toString: String = new String(key) + " " + new String(value)
 }
 trait Scannable {
   def scan(): Iterator[KV]
