@@ -19,7 +19,7 @@ class SuuchiScanService(store: Store) extends SuuchiScanGrpc.SuuchiScanImplBase 
 
   private def buildResponse(response: KV): ScanResponse = {
     SuuchiRPC.ScanResponse.newBuilder()
-      .setIterator(buildKV(response))
+      .setKv(buildKV(response))
       .build()
   }
 

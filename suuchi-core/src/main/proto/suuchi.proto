@@ -67,7 +67,7 @@ message ScanRequest {
     int32 end = 2;
 }
 message ScanResponse {
-    KV iterator = 1;
+    KV kv = 1;
 }
 message KV {
     bytes key = 1;

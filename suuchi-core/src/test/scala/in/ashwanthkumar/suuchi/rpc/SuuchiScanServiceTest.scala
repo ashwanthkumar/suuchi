@@ -14,7 +14,7 @@ class SuuchiScanServiceTest extends FlatSpec {
 
   private def populateStore(num: Int, store: Store) = 1 to num foreach (i => store.put(i.toString.getBytes, (i * 100).toString.getBytes))
 
-  private def extractKey(response: ScanResponse) = new String(response.getIterator.getKey.toByteArray).toInt
+  private def extractKey(response: ScanResponse) = new String(response.getKv.getKey.toByteArray).toInt
 
   "SuuchiScanService" should "support scan for a given token range" in {
 
