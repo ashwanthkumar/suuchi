@@ -3,6 +3,7 @@ package in.ashwanthkumar.suuchi.partitioner
 import java.util
 
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
+import in.ashwanthkumar.suuchi.utils.ByteArrayUtils
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -38,9 +39,7 @@ object RingState {
     *         false otherwise
     */
   def contains(key: Array[Byte], start: Int, end: Int, hashFn: Hash): Boolean = {
-    val hash = hashFn.hash(key)
-
-    start <= hash && hash <= end
+    ByteArrayUtils.isHashKeyWithinRange(start, end, key, hashFn)
   }
 }
 
