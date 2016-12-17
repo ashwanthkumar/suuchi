@@ -1,5 +1,7 @@
 package in.ashwanthkumar.suuchi.router
 
+import java.util.concurrent.TimeUnit
+
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import in.ashwanthkumar.suuchi.rpc.CachedChannelPool
 import io.grpc.ServerCall.Listener
@@ -83,7 +85,7 @@ class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddres
     ClientCalls.blockingUnaryCall(
       ClientInterceptors.interceptForward(channel, MetadataUtils.newAttachHeadersInterceptor(headers)),
       method,
-      CallOptions.DEFAULT,
+      CallOptions.DEFAULT.withDeadlineAfter(10, TimeUnit.MINUTES), // TODO (ashwanthkumar): Make this deadline configurable
       incomingRequest)
   }
 }
