@@ -1,6 +1,6 @@
 package in.ashwanthkumar.suuchi.router
 
-import java.util.concurrent.{Executor, Executors}
+import java.util.concurrent.{Executor, Executors, TimeUnit}
 
 import com.google.common.util.concurrent.{Futures, ListenableFuture}
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
@@ -66,7 +66,7 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
     ClientCalls.blockingUnaryCall(
       ClientInterceptors.interceptForward(channel, MetadataUtils.newAttachHeadersInterceptor(headers)),
       methodDescriptor,
-      CallOptions.DEFAULT,
+      CallOptions.DEFAULT.withDeadlineAfter(10, TimeUnit.MINUTES), // TODO (ashwanthkumar): Make this deadline configurable
       incomingRequest)
   }
 
@@ -77,7 +77,7 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
     headers.put(Headers.REPLICATION_REQUEST_KEY, destination.toString)
     val channel = channelPool.get(destination, insecure = true)
     val clientCall = ClientInterceptors.interceptForward(channel, MetadataUtils.newAttachHeadersInterceptor(headers))
-      .newCall(methodDescriptor, CallOptions.DEFAULT)
+      .newCall(methodDescriptor, CallOptions.DEFAULT.withDeadlineAfter(10, TimeUnit.MINUTES)) // TODO (ashwanthkumar): Make this deadline configurable
     ClientCalls.futureUnaryCall(clientCall, incomingRequest)
   }
 
