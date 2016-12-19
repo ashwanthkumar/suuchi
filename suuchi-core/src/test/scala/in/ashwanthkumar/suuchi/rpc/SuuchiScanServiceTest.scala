@@ -12,21 +12,14 @@ import scala.collection.JavaConversions._
 
 class SuuchiScanServiceTest extends FlatSpec {
 
-  private def populateStore(num: Int, store: Store) = 1 to num foreach (i => store.put(i.toString.getBytes, (i * 100).toString.getBytes))
-
-  private def extractKey(response: ScanResponse) = new String(response.getKv.getKey.toByteArray).toInt
-
   "SuuchiScanService" should "support scan for a given token range" in {
 
-    val store = new InMemoryStore
-    lazy val service = new SuuchiScanService(store)
+    val service = new SuuchiScanService(getPopulatedStore(10))
 
     val request = ScanRequest.newBuilder()
       .setStart(Integer.MIN_VALUE)
       .setEnd(Integer.MAX_VALUE)
       .build()
-
-    populateStore(10, store)
 
     val observer = mock(classOf[ServerCallStreamObserver[ScanResponse]])
     val captor = ArgumentCaptor.forClass(classOf[ScanResponse])
@@ -41,16 +34,11 @@ class SuuchiScanServiceTest extends FlatSpec {
   }
 
   it should "not include key which are out of the given toekn range" in {
-    val store = new InMemoryStore
-    lazy val service = new SuuchiScanService(store)
-
+    val service = new SuuchiScanService(getPopulatedStore(10))
     val request = ScanRequest.newBuilder()
       .setStart(1)
       .setEnd(10)
       .build()
-
-    populateStore(10, store)
-
     val observer = mock(classOf[ServerCallStreamObserver[ScanResponse]])
     val captor = ArgumentCaptor.forClass(classOf[ScanResponse])
     val values = captor.getAllValues
@@ -59,6 +47,14 @@ class SuuchiScanServiceTest extends FlatSpec {
 
     verify(observer, times(0)).onNext(captor.capture())
     verify(observer, times(1)).onCompleted()
+    values should have size 0
   }
 
+  private def getPopulatedStore(num: Int) = {
+    val store = new InMemoryStore
+    1 to num foreach (i => store.put(i.toString.getBytes, (i * 100).toString.getBytes))
+    store
+  }
+
+  private def extractKey(response: ScanResponse) = new String(response.getKv.getKey.toByteArray).toInt
 }

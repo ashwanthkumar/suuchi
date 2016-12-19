@@ -30,9 +30,12 @@ class ByteArrayUtilsSpec extends FlatSpec {
     val hashFn = mock(classOf[Hash])
     val key = "1".getBytes
 
-    when(hashFn.hash(key)).thenReturn(1).thenReturn(100)
+    when(hashFn.hash(key)).thenReturn(1)
 
     ByteArrayUtils.isHashKeyWithinRange(10, 100, key, hashFn) should be(false)
+
+    when(hashFn.hash(key)).thenReturn(100)
+
     ByteArrayUtils.isHashKeyWithinRange(1, 10, key, hashFn) should be(false)
   }
 

@@ -10,13 +10,6 @@ import io.grpc.stub.{ServerCallStreamObserver, StreamObserver}
 
 class SuuchiScanService(store: Store) extends SuuchiScanGrpc.SuuchiScanImplBase {
 
-  private def buildKV(kv: KV) = {
-    SuuchiRPC.KV.newBuilder()
-      .setKey(ByteString.copyFrom(kv.key))
-      .setValue(ByteString.copyFrom(kv.value))
-      .build()
-  }
-
   private def buildResponse(response: KV): ScanResponse = {
     SuuchiRPC.ScanResponse.newBuilder()
       .setKv(buildKV(response))
@@ -35,5 +28,12 @@ class SuuchiScanService(store: Store) extends SuuchiScanGrpc.SuuchiScanImplBase 
         observer.onNext(buildResponse(response))
     }
     observer.onCompleted()
+  }
+
+  private def buildKV(kv: KV) = {
+    SuuchiRPC.KV.newBuilder()
+      .setKey(ByteString.copyFrom(kv.key))
+      .setValue(ByteString.copyFrom(kv.value))
+      .build()
   }
 }
