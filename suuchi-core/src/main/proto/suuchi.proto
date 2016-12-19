@@ -58,3 +58,18 @@ message Node {
     string host = 1;
     int32 port = 2;
 }
+
+service SuuchiScan {
+    rpc Scan (ScanRequest) returns (stream ScanResponse);
+}
+message ScanRequest {
+    int32 start = 1;
+    int32 end = 2;
+}
+message ScanResponse {
+    KV kv = 1;
+}
+message KV {
+    bytes key = 1;
+    bytes value = 2;
+}

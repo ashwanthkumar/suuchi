@@ -54,7 +54,7 @@ class ShardedStoreSpec extends FlatSpec {
     verify(store, times(1)).put("2".getBytes, "3".getBytes)
   }
 
-  it should "call get / put / remove on the delegate store when corresponding methods are called" in {
+  it should "call get / put / remove / scan / scan with prefix on the delegate store when corresponding methods are called" in {
     val hash = mock(classOf[Hash])
     when(hash.hash("1".getBytes)).thenReturn(1)
 
@@ -62,6 +62,8 @@ class ShardedStoreSpec extends FlatSpec {
     when(store.get("1".getBytes)).thenReturn(None)
     when(store.put("1".getBytes, "2".getBytes)).thenReturn(true)
     when(store.remove("1".getBytes)).thenReturn(true)
+    when(store.scan()).thenReturn(Iterator.empty)
+    when(store.scan("1".getBytes)).thenReturn(Iterator.empty)
 
     val createStore = mock(classOf[(Int) => Store])
     when(createStore.apply(1)).thenReturn(store)
@@ -70,10 +72,14 @@ class ShardedStoreSpec extends FlatSpec {
     shardedStore.get("1".getBytes) should be(None)
     shardedStore.put("1".getBytes, "2".getBytes) should be(true)
     shardedStore.remove("1".getBytes) should be(true)
+    shardedStore.scan().toList should be(List.empty)
+    shardedStore.scan("1".getBytes).toList should be(List.empty)
 
     verify(store, times(1)).get("1".getBytes)
     verify(store, times(1)).put("1".getBytes, "2".getBytes)
     verify(store, times(1)).remove("1".getBytes)
+    verify(store, times(1)).scan()
+    verify(store, times(1)).scan("1".getBytes)
   }
 
   it should "return None for store.get when underlying store throws an Exception" in {

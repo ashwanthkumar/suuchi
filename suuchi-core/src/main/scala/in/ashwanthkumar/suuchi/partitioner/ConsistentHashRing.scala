@@ -3,6 +3,7 @@ package in.ashwanthkumar.suuchi.partitioner
 import java.util
 
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
+import in.ashwanthkumar.suuchi.utils.ByteArrayUtils
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -38,9 +39,7 @@ object RingState {
     *         false otherwise
     */
   def contains(key: Array[Byte], start: Int, end: Int, hashFn: Hash): Boolean = {
-    val hash = hashFn.hash(key)
-
-    start <= hash && hash <= end
+    ByteArrayUtils.isHashKeyWithinRange(start, end, key, hashFn)
   }
 }
 
@@ -145,16 +144,6 @@ class ConsistentHashRing(hashFn: Hash, partitionsPerNode: Int, replicationFactor
     }
   }
 
-  private[partitioner] def findCandidate(hash: Integer) = {
-    if (sortedMap.containsKey(hash)) {
-      hash -> sortedMap.get(hash).node
-    } else {
-      val tailMap = sortedMap.tailMap(hash)
-      val newHash = if (tailMap.isEmpty) sortedMap.firstKey() else tailMap.firstKey()
-      newHash -> sortedMap.get(newHash).node
-    }
-  }
-
   /**
    * Represent the ConsistentHashRing as [[RingState]] which is more easier to work with in terms of Ranges that each node manages.
    *
@@ -168,6 +157,16 @@ class ConsistentHashRing(hashFn: Hash, partitionsPerNode: Int, replicationFactor
       RingState(token, ranges = TokenRange(state.lastKnown, token - 1, sortedMap.get(state.lastKnown)) :: state.ranges)
     }
     RingState(Int.MaxValue, ranges = (TokenRange(tokenRings.lastKnown, firstToken - 1, sortedMap.get(tokenRings.lastKnown)) :: tokenRings.ranges).reverse)
+  }
+
+  private[partitioner] def findCandidate(hash: Integer) = {
+    if (sortedMap.containsKey(hash)) {
+      hash -> sortedMap.get(hash).node
+    } else {
+      val tailMap = sortedMap.tailMap(hash)
+      val newHash = if (tailMap.isEmpty) sortedMap.firstKey() else tailMap.firstKey()
+      newHash -> sortedMap.get(newHash).node
+    }
   }
 
   // USED ONLY FOR TESTS

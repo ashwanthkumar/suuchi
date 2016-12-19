@@ -1,8 +1,10 @@
 package in.ashwanthkumar.suuchi.store
 
-import in.ashwanthkumar.suuchi.utils.DateUtils
-import scala.util.hashing.MurmurHash3
+import java.util
 
+import in.ashwanthkumar.suuchi.utils.DateUtils
+
+import scala.util.hashing.MurmurHash3
 import scala.language.postfixOps
 
 
@@ -33,10 +35,14 @@ object VersionedStore {
   val VERSION_PREFIX = "V_".getBytes
   val DATA_PREFIX = "D_".getBytes
 
+  def isDataKey(key: Array[Byte]) = util.Arrays.equals(key.take(DATA_PREFIX.length), DATA_PREFIX)
   def vkey(key: Array[Byte]) = VERSION_PREFIX ++ key
+  def dkey(key: Array[Byte]): Array[Byte] = DATA_PREFIX ++ key
   def dkey(key: Array[Byte], version: Array[Byte]): Array[Byte] = DATA_PREFIX ++ key ++ version
   def dkey(key: Array[Byte], version: Long): Array[Byte] = DATA_PREFIX ++ key ++ PrimitivesSerDeUtils.longToBytes(version)
 }
+
+case class VRecord(key: Array[Byte], versions: List[Long])
 
 class VersionedStore(store: Store, versionedBy: VersionedBy, numVersions: Int, concurrencyFactor: Int = 8192) extends Store with DateUtils {
 
@@ -107,4 +113,12 @@ class VersionedStore(store: Store, versionedBy: VersionedBy, numVersions: Int, c
 
   private def removeData(key: Array[Byte], version: Long) = store.remove(dkey(key, version))
   private def removeVersion(key: Array[Byte]) = store.remove(vkey(key))
+
+  override def scan(): Iterator[KV] = store.scan().filter(kv => VersionedStore.isDataKey(kv.key))
+
+  override def scan(prefix: Array[Byte]): Iterator[KV] = store.scan(dkey(prefix))
+
+  def toVRecord(kv: KV) = VRecord(kv.key, Versions.fromBytes(kv.value))
+
+  def scanVersions(prefix: Array[Byte]): Iterator[VRecord] = store.scan(vkey(prefix)).map(toVRecord)
 }

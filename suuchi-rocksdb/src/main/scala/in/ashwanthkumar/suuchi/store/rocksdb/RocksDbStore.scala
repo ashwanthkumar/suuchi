@@ -1,7 +1,9 @@
 package in.ashwanthkumar.suuchi.store.rocksdb
 
-import in.ashwanthkumar.suuchi.store.Store
-import in.ashwanthkumar.suuchi.utils.Logging
+import java.util.{Arrays => JArrays}
+
+import in.ashwanthkumar.suuchi.store.{KV, Store}
+import in.ashwanthkumar.suuchi.utils.{ByteArrayUtils, Logging}
 import org.rocksdb._
 
 import scala.language.postfixOps
@@ -31,4 +33,22 @@ class RocksDbStore(config: RocksDbConfiguration) extends Store with Logging {
   override def remove(key: Array[Byte]): Boolean = {
     logOnError(() => db.remove(key)) isSuccess
   }
+
+  def scan(): Iterator[KV] = scan(Array.ofDim[Byte](0))
+
+  def scan(prefix: Array[Byte]): Iterator[KV] = {
+    val rocksIterator: RocksIterator = db.newIterator()
+    rocksIterator.seek(prefix)
+
+    new Iterator[KV] {
+      override def hasNext: Boolean = rocksIterator.isValid && ByteArrayUtils.hasPrefix(rocksIterator.key(), prefix)
+
+      override def next(): KV = {
+        val kv = KV(rocksIterator.key(), rocksIterator.value())
+        rocksIterator.next()
+        kv
+      }
+    }
+  }
+
 }
