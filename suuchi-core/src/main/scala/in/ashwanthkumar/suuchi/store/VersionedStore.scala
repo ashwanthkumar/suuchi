@@ -42,6 +42,8 @@ object VersionedStore {
   def dkey(key: Array[Byte], version: Long): Array[Byte] = DATA_PREFIX ++ key ++ PrimitivesSerDeUtils.longToBytes(version)
 }
 
+case class VRecord(key: Array[Byte], versions: List[Long])
+
 class VersionedStore(store: Store, versionedBy: VersionedBy, numVersions: Int, concurrencyFactor: Int = 8192) extends Store with DateUtils {
 
   import VersionedStore._
@@ -115,4 +117,8 @@ class VersionedStore(store: Store, versionedBy: VersionedBy, numVersions: Int, c
   override def scan(): Iterator[KV] = store.scan().filter(kv => VersionedStore.isDataKey(kv.key))
 
   override def scan(prefix: Array[Byte]): Iterator[KV] = store.scan(dkey(prefix))
+
+  def toVRecord(kv: KV) = VRecord(kv.key, Versions.fromBytes(kv.value))
+
+  def scanVersions(prefix: Array[Byte]): Iterator[VRecord] = store.scan(vkey(prefix)).map(toVRecord)
 }

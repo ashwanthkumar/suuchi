@@ -104,8 +104,21 @@ class VersionedStoreSpec extends FlatSpec {
     }
   }
 
-  def prefixWithDkey(prefix: Array[Byte]) = new String(VersionedStore.dkey(prefix))
+  it should "support version scan based on prefix" in {
+    val store = new VersionedStore(new InMemoryStore, new ByWriteTimestampMocked, 3)
+    store.put("prefix1/one".getBytes, "1".getBytes)
+    store.put("prefix2/two".getBytes, "2".getBytes)
+    store.put("prefix3/three".getBytes, "3".getBytes)
+    store.put("prefix1/one".getBytes, "11".getBytes)
+    store.put("prefix2/two".getBytes, "22".getBytes)
+    store.put("prefix1/one".getBytes, "111".getBytes)
 
-  def kv(key: String, value: String) = KV(key.getBytes, value.getBytes)
+    store.scanVersions("prefix1".getBytes).flatMap(_.versions) should have size 3
+    store.scanVersions("prefix2".getBytes).flatMap(_.versions) should have size 2
+    store.scanVersions("prefix3".getBytes).flatMap(_.versions) should have size 1
+    store.scanVersions("prefix4".getBytes).flatMap(_.versions) should have size 0
+  }
+
+  private def prefixWithDkey(prefix: Array[Byte]) = new String(VersionedStore.dkey(prefix))
 }
 
