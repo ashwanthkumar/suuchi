@@ -8,7 +8,7 @@ import in.ashwanthkumar.suuchi.store.{KV, Store}
 import in.ashwanthkumar.suuchi.utils.{ByteArrayUtils, ConnectionUtils}
 import io.grpc.stub.{ServerCallStreamObserver, StreamObserver}
 
-class SuuchiScanService(store: Store) extends SuuchiScanGrpc.SuuchiScanImplBase {
+class SuuchiScanService(store: Store) extends SuuchiScanGrpc.SuuchiScanImplBase with ConnectionUtils {
 
   private def buildResponse(response: KV): ScanResponse = {
     SuuchiRPC.ScanResponse.newBuilder()
@@ -24,7 +24,7 @@ class SuuchiScanService(store: Store) extends SuuchiScanGrpc.SuuchiScanImplBase 
     val iterator = store.scan()
     for(response <- iterator) {
       if (ByteArrayUtils.isHashKeyWithinRange(start, end, response.key, SuuchiHash)) {
-        ConnectionUtils.waitForReady(observer) // block until the channel is ready to send messages
+        exponentialBackoffTill(observer.isReady, "Waiting for client to get ready")
         observer.onNext(buildResponse(response))
       }
     }
