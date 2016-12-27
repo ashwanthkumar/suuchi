@@ -23,8 +23,9 @@ class SuuchiScanService(store: Store) extends SuuchiScanGrpc.SuuchiScanImplBase 
 
     val iterator = store.scan()
     for(response <- iterator) {
+      //TODO: Is observer.isCancelled needed to checked before observer.onNext?
       if (ByteArrayUtils.isHashKeyWithinRange(start, end, response.key, SuuchiHash)) {
-        exponentialBackoffTill(observer.isReady, "Waiting for client to get ready")
+        exponentialBackoffTill(observer.isReady, message = "Waiting for client to get ready")
         observer.onNext(buildResponse(response))
       }
     }
