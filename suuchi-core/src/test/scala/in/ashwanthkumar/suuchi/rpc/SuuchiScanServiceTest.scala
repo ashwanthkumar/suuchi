@@ -25,6 +25,8 @@ class SuuchiScanServiceTest extends FlatSpec {
     val captor = ArgumentCaptor.forClass(classOf[ScanResponse])
     val values = captor.getAllValues
 
+    when(observer.isReady).thenReturn(true)
+
     service.scan(request, observer)
 
     verify(observer, times(10)).onNext(captor.capture())
@@ -42,6 +44,8 @@ class SuuchiScanServiceTest extends FlatSpec {
     val observer = mock(classOf[ServerCallStreamObserver[ScanResponse]])
     val captor = ArgumentCaptor.forClass(classOf[ScanResponse])
     val values = captor.getAllValues
+
+    when(observer.isReady).thenReturn(true)
 
     service.scan(request, observer)
 

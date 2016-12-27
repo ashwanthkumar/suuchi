@@ -5,7 +5,7 @@ import in.ashwanthkumar.suuchi.partitioner.SuuchiHash
 import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{ScanRequest, ScanResponse}
 import in.ashwanthkumar.suuchi.rpc.generated.{SuuchiRPC, SuuchiScanGrpc}
 import in.ashwanthkumar.suuchi.store.{KV, Store}
-import in.ashwanthkumar.suuchi.utils.ByteArrayUtils
+import in.ashwanthkumar.suuchi.utils.{ByteArrayUtils, ConnectionUtils}
 import io.grpc.stub.{ServerCallStreamObserver, StreamObserver}
 
 class SuuchiScanService(store: Store) extends SuuchiScanGrpc.SuuchiScanImplBase {
@@ -23,9 +23,10 @@ class SuuchiScanService(store: Store) extends SuuchiScanGrpc.SuuchiScanImplBase 
 
     val iterator = store.scan()
     for(response <- iterator) {
-//      ConnectionUtils.waitForReady(observer) // block until the channel is ready to send messages
-      if (ByteArrayUtils.isHashKeyWithinRange(start, end, response.key, SuuchiHash))
+      if (ByteArrayUtils.isHashKeyWithinRange(start, end, response.key, SuuchiHash)) {
+        ConnectionUtils.waitForReady(observer) // block until the channel is ready to send messages
         observer.onNext(buildResponse(response))
+      }
     }
     observer.onCompleted()
   }
