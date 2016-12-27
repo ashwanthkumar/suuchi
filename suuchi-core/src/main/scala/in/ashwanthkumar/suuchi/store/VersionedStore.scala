@@ -35,6 +35,7 @@ object VersionedStore {
   val VERSION_PREFIX = "V_".getBytes
   val DATA_PREFIX = "D_".getBytes
 
+  def isVkeyKey(key: Array[Byte]) = util.Arrays.equals(key.take(VERSION_PREFIX.length), VERSION_PREFIX)
   def isDataKey(key: Array[Byte]) = util.Arrays.equals(key.take(DATA_PREFIX.length), DATA_PREFIX)
   def vkey(key: Array[Byte]) = VERSION_PREFIX ++ key
   def dkey(key: Array[Byte]): Array[Byte] = DATA_PREFIX ++ key
@@ -120,5 +121,6 @@ class VersionedStore(store: Store, versionedBy: VersionedBy, numVersions: Int, c
 
   def toVRecord(kv: KV) = VRecord(kv.key, Versions.fromBytes(kv.value))
 
+  def scanVersions(): Iterator[VRecord] = store.scan().filter(kv => VersionedStore.isVkeyKey(kv.key)).map(toVRecord)
   def scanVersions(prefix: Array[Byte]): Iterator[VRecord] = store.scan(vkey(prefix)).map(toVRecord)
 }

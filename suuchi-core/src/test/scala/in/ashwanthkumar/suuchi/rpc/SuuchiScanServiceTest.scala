@@ -33,7 +33,7 @@ class SuuchiScanServiceTest extends FlatSpec {
     values.toList.map(extractKey).toSet should be(1 to 10 toSet)
   }
 
-  it should "not include key which are out of the given toekn range" in {
+  it should "not include key which are out of the given token range" in {
     val service = new SuuchiScanService(getPopulatedStore(10))
     val request = ScanRequest.newBuilder()
       .setStart(1)
