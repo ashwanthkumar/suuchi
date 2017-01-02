@@ -53,7 +53,7 @@ class ShardedStore(partitionsPerNode: Int, hashFn: Hash, createStore: (Int) => S
     }
   }
 
-  override def scan(): Iterator[KV] = map.values().flatMap(_.scan()).iterator
+  override def scan(): Iterator[KV] = map.values().iterator().flatMap(_.scan())
 
-  override def scan(prefix: Array[Byte]): Iterator[KV] = map.values().flatMap(_.scan(prefix)).iterator
+  override def scan(prefix: Array[Byte]): Iterator[KV] = map.values().iterator().flatMap(_.scan(prefix))
 }
