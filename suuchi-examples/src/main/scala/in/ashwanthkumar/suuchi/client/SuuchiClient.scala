@@ -3,10 +3,12 @@ package in.ashwanthkumar.suuchi.client
 import java.util.concurrent.TimeUnit
 
 import com.google.protobuf.ByteString
-import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{GetRequest, PutRequest}
-import in.ashwanthkumar.suuchi.rpc.generated.{SuuchiPutGrpc, SuuchiReadGrpc}
+import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{GetRequest, PutRequest, ScanRequest}
+import in.ashwanthkumar.suuchi.rpc.generated.{SuuchiPutGrpc, SuuchiReadGrpc, SuuchiScanGrpc}
 import io.grpc.netty.NettyChannelBuilder
 import org.slf4j.LoggerFactory
+
+import scala.collection.JavaConversions._
 
 class SuuchiClient(host: String, port: Int) {
   private val log = LoggerFactory.getLogger(getClass)
@@ -17,6 +19,7 @@ class SuuchiClient(host: String, port: Int) {
 
   private val writeStub = SuuchiPutGrpc.newBlockingStub(channel)
   private val readStub = SuuchiReadGrpc.newBlockingStub(channel)
+  private val scanStub = SuuchiScanGrpc.newBlockingStub(channel)
 
   def shutdown() = {
     channel.awaitTermination(5, TimeUnit.SECONDS)
@@ -45,6 +48,10 @@ class SuuchiClient(host: String, port: Int) {
       Some(response.getValue.toByteArray)
     }
   }
+
+  def scan() = {
+    scanStub.scan(ScanRequest.newBuilder().setStart(Int.MinValue).setEnd(Int.MaxValue).build())
+  }
 }
 
 object SuuchiClient extends App {
@@ -59,6 +66,16 @@ object SuuchiClient extends App {
   (0 until 5).foreach { index =>
     val value = client.get(Array((65 + index).toByte))
     log.info("Got value={}", new String(value.get))
+  }
+
+  (0 to 5).foreach{ i =>
+    client.put(s"prefix/$i".getBytes, s"$i".getBytes)
+  }
+
+  val iterator = client.scan()
+
+  iterator.foreach{ response =>
+    println(new String(response.getKv.getKey.toByteArray))
   }
 
   client.shutdown()
