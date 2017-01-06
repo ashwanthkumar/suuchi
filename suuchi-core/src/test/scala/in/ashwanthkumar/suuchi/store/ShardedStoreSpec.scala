@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 
 import in.ashwanthkumar.suuchi.partitioner.Hash
 import org.mockito.Mockito.{mock, times, verify, when}
+import org.mockito.Matchers.{anyInt}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers.{be, convertToAnyShouldWrapper}
 
@@ -66,9 +67,9 @@ class ShardedStoreSpec extends FlatSpec {
     when(store.scan("1".getBytes)).thenReturn(Iterator.empty)
 
     val createStore = mock(classOf[(Int) => Store])
-    when(createStore.apply(1)).thenReturn(store)
+    when(createStore.apply(0)).thenReturn(store)
 
-    val shardedStore = new ShardedStore(3, hash, createStore)
+    val shardedStore = new ShardedStore(1, hash, createStore)
     shardedStore.get("1".getBytes) should be(None)
     shardedStore.put("1".getBytes, "2".getBytes) should be(true)
     shardedStore.remove("1".getBytes) should be(true)
@@ -119,6 +120,20 @@ class ShardedStoreSpec extends FlatSpec {
 
     val shardedStore = new ShardedStore(3, hash, createStore)
     shardedStore.remove("1".getBytes) should be(false)
+  }
+
+  it should "initialize all store references during scan() if we already don't have them open" in {
+    val hash = mock(classOf[Hash])
+    val createStore = mock(classOf[(Int) => Store])
+    val store = mock(classOf[Store])
+    when(createStore.apply(anyInt())).thenReturn(store)
+    val shardedStore = new ShardedStore(3, hash, createStore)
+
+    shardedStore.scan()
+    verify(createStore, times(3)).apply(anyInt())
+
+    shardedStore.scan("prefix".getBytes)
+    verify(createStore, times(3)).apply(anyInt())
   }
 
   // TODO - Write tests for the synchronized {} in getStore.

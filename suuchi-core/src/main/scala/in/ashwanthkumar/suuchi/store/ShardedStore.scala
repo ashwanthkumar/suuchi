@@ -34,8 +34,25 @@ class ShardedStore(partitionsPerNode: Int, hashFn: Hash, createStore: (Int) => S
   override def put(key: Array[Byte], value: Array[Byte]): Boolean = logOnError(() => getStore(key).put(key, value)).isSuccess
   override def remove(key: Array[Byte]): Boolean = logOnError(() => getStore(key).remove(key)).isSuccess
 
+  override def scan(): Iterator[KV] = {
+    initializeStoresIfNot()
+    map.values().iterator().flatMap(_.scan())
+  }
+
+  override def scan(prefix: Array[Byte]): Iterator[KV] = {
+    initializeStoresIfNot()
+    map.values().iterator().flatMap(_.scan(prefix))
+  }
+
   protected def getStore(key: Array[Byte]): Store = {
-    val partition = math.abs(hashFn.hash(key)) % partitionsPerNode
+    openStore(getPartition(key))
+  }
+
+  protected def getPartition(key: Array[Byte]): Int = {
+    math.abs(hashFn.hash(key)) % partitionsPerNode
+  }
+
+  protected def openStore(partition: Int): Store = {
     if (map.containsKey(partition)) {
       map.get(partition)
     } else {
@@ -53,7 +70,7 @@ class ShardedStore(partitionsPerNode: Int, hashFn: Hash, createStore: (Int) => S
     }
   }
 
-  override def scan(): Iterator[KV] = map.values().iterator().flatMap(_.scan())
-
-  override def scan(prefix: Array[Byte]): Iterator[KV] = map.values().iterator().flatMap(_.scan(prefix))
+  protected def initializeStoresIfNot() = {
+    if (map.size() != partitionsPerNode) (0 until partitionsPerNode).foreach(openStore)
+  }
 }
