@@ -67,9 +67,9 @@ class ShardedStoreSpec extends FlatSpec {
     when(store.scan("1".getBytes)).thenReturn(Iterator.empty)
 
     val createStore = mock(classOf[(Int) => Store])
-    when(createStore.apply(1)).thenReturn(store)
+    when(createStore.apply(0)).thenReturn(store)
 
-    val shardedStore = new ShardedStore(3, hash, createStore)
+    val shardedStore = new ShardedStore(1, hash, createStore)
     shardedStore.get("1".getBytes) should be(None)
     shardedStore.put("1".getBytes, "2".getBytes) should be(true)
     shardedStore.remove("1".getBytes) should be(true)
