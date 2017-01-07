@@ -6,7 +6,7 @@ Suuchi is toolkit to build distributed data systems, that uses [gRPC](http://www
 
 > This project is alpha quality and not meant to be used in any production setting. We welcome all kinds of feedback to help improve the library.
 
-Current version of Suuchi is `"0.2.1"`.
+Current version of Suuchi is `"0.2.16"`.
 
 ### Dependencies
 #### Maven
