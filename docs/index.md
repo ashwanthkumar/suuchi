@@ -49,6 +49,7 @@ We try to document the internal workings of some core pieces of Suuchi for devel
 
 ## Presentations
 Following presentations / videos explain motivation behind Suuchi
+
 - [Suuchi - Distributed Data Systems Toolkit](https://speakerdeck.com/ashwanthkumar/suuchi-distributed-data-systems-toolkit/)
 - [Suuchi - Application Layer Sharding](https://speakerdeck.com/ashwanthkumar/suuchi-application-layer-sharding)
 
