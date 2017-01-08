@@ -13,6 +13,11 @@ Read the Documentation at [http://ashwanthkumar.github.io/suuchi](http://ashwant
 
 Suuchi in sanskrit means an Index<sup>[1](http://spokensanskrit.de/index.php?tinput=sUci&direction=SE&script=HK&link=yes&beginning=0)</sup>.
 
+## Presentations
+Following presentations / videos explain motivation behind Suuchi
+- [Suuchi - Distributed Data Systems Toolkit](https://speakerdeck.com/ashwanthkumar/suuchi-distributed-data-systems-toolkit/)
+- [Suuchi - Application Layer Sharding](https://speakerdeck.com/ashwanthkumar/suuchi-application-layer-sharding)
+
 ## Notes
 If you're getting `ClassNotFound` exception, please run `mvn clean compile` once to generate from the java classes from protoc files. Also, if you're using IntelliJ it helps to close the project when running the above command. It seems to auto-detect sources in `target/` at startup but not afterwards. 
 

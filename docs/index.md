@@ -47,5 +47,10 @@ We try to document the internal workings of some core pieces of Suuchi for devel
 - [Replication](internals/replication.md)
 - [Router](internals/router.md)
 
+## Presentations
+Following presentations / videos explain motivation behind Suuchi
+- [Suuchi - Distributed Data Systems Toolkit](https://speakerdeck.com/ashwanthkumar/suuchi-distributed-data-systems-toolkit/)
+- [Suuchi - Application Layer Sharding](https://speakerdeck.com/ashwanthkumar/suuchi-application-layer-sharding)
+
 ## License
 [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
