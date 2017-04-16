@@ -2,6 +2,7 @@ package in.ashwanthkumar.suuchi.router
 
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import io.grpc.ServerCall.Listener
+import io.grpc.testing.TestMethodDescriptors
 import io.grpc.{Metadata, MethodDescriptor, ServerCall, ServerCallHandler}
 import org.mockito.Matchers._
 import org.mockito.Mockito._
@@ -85,9 +86,8 @@ class ReplicationRouterSpec extends FlatSpec {
 
   def setupAndVerify(verify: (ServerCall[Int, Int], ServerCall.Listener[Int], ServerCallHandler[Int, Int]) => Unit): Unit = {
     val serverCall = mock(classOf[ServerCall[Int, Int]])
-    val serverMethodDesc = mock(classOf[MethodDescriptor[Int, Int]])
+    val serverMethodDesc = TestMethodDescriptors.noopMethod[Int, Int]()
     when(serverCall.getMethodDescriptor).thenReturn(serverMethodDesc)
-    when(serverMethodDesc.getFullMethodName).thenReturn("TestService/Test")
 
     val delegate = mock(classOf[Listener[Int]])
     val next = mock(classOf[ServerCallHandler[Int, Int]])
