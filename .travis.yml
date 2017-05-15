@@ -1,7 +1,15 @@
 language: java
-
 jdk:
- - oraclejdk8
-
-script: 
- - "mvn clean install"
+- oraclejdk8
+env:
+  global:
+    secure: MmyMAHnhCNXJIclWXIZIIb2ZpJZknvaqZ2HUpxf+LIsr0dSwg3OhULc6hOEsktusio4rf7/mK5FihOEz4Lb4FFAzTuTn23YyPjjNY4BHIoqF+v5sgy0z8EGUl+DymoJExQ02CRwy6gyIk0MUYbcuZMbUEg5S8v/JvLL1hgEhv+8eAN3dGrMoog8NsDuYlhzZlFXXm8DN83PZ/9boagWq+WGHajNCUC7Ra7y4TfhRUKEDZfoln39xeazQwdUFq9iZ0urGM+QhZxL6wf2G68DAHfTmor/ahVZlOMcbmhakVqxVYz17f0ovKlvD2ybBDzaqae5j/AiTkEmHTEvXzXeSJT0VHE0/JuSHH+r+1tJxnrT+zg6s9YSOUDaZRkIWmLFe/jWV3X8AZ9MwETZDQptyTgxHqIYM8HBQA8j3CkjzgLMFkZfqwVgJRc2QjUwKKttmLEM7mJlxuyNoqD5fNHhFJCJBnJtJQAV3J6CEse4a1qOQRJoFBGIp8u5l/ej9Bwdf+WVp+mXt3uQOfr6L6PgYE+Ll9gy/gAPwn8IgllYN9q/ypGc9BO2fe77uWfDgQsTjwNfNnA0wKf3YYYunNnMN58oFBjukpZZKiyUOjgEdrrcCX/I6zMRDaA2YrW4s+JG1Idr2przEouPTbNjanw0hqQzz96Gslsv6FNhRYJaJicw=
+script:
+- mvn clean install
+after_success:
+- git config user.name "Ashwanth Kumar"
+- git config user.email "ashwanthkumar@googlemail.com"
+- git remote add gh-token "https://${GH_TOKEN}@github.com/ashwanthkumar/suuchi.git";
+- git fetch gh-token && git fetch gh-token gh-pages:gh-pages;
+- pip install mkdocs==0.15.3
+- mkdocs gh-deploy -v --clean --remote-name gh-token;
