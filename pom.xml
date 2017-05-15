@@ -11,6 +11,7 @@
         <module>suuchi-core</module>
         <module>suuchi-examples</module>
         <module>suuchi-rocksdb</module>
+        <module>suuchi-cluster-atomix</module>
         <module>suuchi-cluster-scalecube</module>
     </modules>
 
@@ -102,10 +103,6 @@
                             <compileOrder>Mixed</compileOrder>
                             <addScalacArgs>-feature</addScalacArgs>
                             <scalaVersion>${scala.version}</scalaVersion>
-                            <javacArgs>
-                                <javacArg>-source</javacArg>
-                                <javacArg>1.7</javacArg>
-                            </javacArgs>
                         </configuration>
                     </execution>
                     <execution>
