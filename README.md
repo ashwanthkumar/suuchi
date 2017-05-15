@@ -1,4 +1,5 @@
 [![Build Status](https://snap-ci.com/ashwanthkumar/suuchi/branch/master/build_image)](https://snap-ci.com/ashwanthkumar/suuchi/branch/master)
+[![Build Status](https://travis-ci.org/ashwanthkumar/suuchi.svg?branch=master)](https://travis-ci.org/ashwanthkumar/suuchi)
 [![codecov](https://codecov.io/gh/ashwanthkumar/suuchi/branch/master/graph/badge.svg)](https://codecov.io/gh/ashwanthkumar/suuchi)
 
 # Suuchi - सूचि
