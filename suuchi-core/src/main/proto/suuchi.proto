@@ -73,3 +73,24 @@ message KV {
     bytes key = 1;
     bytes value = 2;
 }
+
+message ScatterRequest {
+    bytes input = 1;
+}
+
+message ScatterResponse {
+    bytes output = 1;
+}
+
+message GatherResponse {
+    bytes output = 1;
+}
+
+service Aggregator {
+    rpc Reduce(ScatterRequest) returns (stream ScatterResponse);
+    rpc ReReduce(stream ScatterResponse) returns (stream GatherResponse);
+}
+
+/*
+    Gather(gatherImpl)
+*/

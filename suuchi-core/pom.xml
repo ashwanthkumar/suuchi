@@ -26,6 +26,18 @@
         </dependency>
 
         <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>algebird-core_${scala.lib.version}</artifactId>
+            <version>0.13.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>bijection-core_${scala.lib.version}</artifactId>
+            <version>0.9.5</version>
+        </dependency>
+
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
