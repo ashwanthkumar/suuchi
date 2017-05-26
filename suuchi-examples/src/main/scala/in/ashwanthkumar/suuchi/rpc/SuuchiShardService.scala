@@ -1,9 +1,9 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
+import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC.{Node, Shard, ShardInfoRequest, ShardInfoResponse}
+import in.ashwanthkumar.suuchi.examples.rpc.generated.{ShardsGrpc, SuuchiRPC}
 import in.ashwanthkumar.suuchi.partitioner.ConsistentHashRing
-import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{Node, Shard, ShardInfoRequest, ShardInfoResponse}
-import in.ashwanthkumar.suuchi.rpc.generated.{ShardsGrpc, SuuchiRPC}
 import io.grpc.stub.StreamObserver
 
 import scala.collection.JavaConverters._

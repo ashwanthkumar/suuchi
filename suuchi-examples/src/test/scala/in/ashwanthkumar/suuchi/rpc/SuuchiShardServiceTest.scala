@@ -1,8 +1,8 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
+import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC.{ShardInfoRequest, ShardInfoResponse}
 import in.ashwanthkumar.suuchi.partitioner.ConsistentHashRing
-import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{ShardInfoRequest, ShardInfoResponse}
 import io.grpc.stub.StreamObserver
 import org.mockito.ArgumentCaptor
 import org.mockito.Mockito._
