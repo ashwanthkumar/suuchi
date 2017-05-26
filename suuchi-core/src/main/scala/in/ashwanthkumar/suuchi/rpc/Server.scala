@@ -124,11 +124,11 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
     this
   }
 
-  def aggregate(allNodes: List[MemberAddress], service: BindableService, agg: Aggregation) = {
+  def aggregate(allNodes: List[MemberAddress], service: BindableService, agg: Aggregation): Server[T] = {
     aggregate(allNodes, service.bindService(), agg)
   }
 
-  def aggregate(allNodes: List[MemberAddress], service: ServerServiceDefinition, agg: Aggregation) = {
+  def aggregate(allNodes: List[MemberAddress], service: ServerServiceDefinition, agg: Aggregation): Server[T] = {
     val aggregator = new AggregationRouter(allNodes, agg)
     serverBuilder.addService(ServerInterceptors.interceptForward(service, aggregator))
     this
