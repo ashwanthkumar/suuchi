@@ -9,6 +9,8 @@ import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import in.ashwanthkumar.suuchi.rpc.CachedChannelPool
 import io.grpc._
 import io.grpc.stub.{ClientCalls, MetadataUtils, StreamObserver, StreamObservers}
+import org.slf4j.LoggerFactory
+
 import scala.collection.JavaConverters._
 
 trait Aggregation {
@@ -17,6 +19,7 @@ trait Aggregation {
 
 class AggregationRouter(members: List[MemberAddress], agg: Aggregation) extends ServerInterceptor {
   val channelPool = CachedChannelPool()
+  val log = LoggerFactory.getLogger(classOf[AggregationRouter])
 
   override def interceptCall[ReqT, RespT](incomingRequest: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): ServerCall.Listener[ReqT] = {
     val isBroadcastRequest = headers.containsKey(Headers.BROADCAST_REQUEST_KEY)
@@ -33,11 +36,11 @@ class AggregationRouter(members: List[MemberAddress], agg: Aggregation) extends 
         var request: ReqT = _
 
         override def onCancel() = {
-          println("AggregationRouter#onCancel")
+          log.debug("AggregationRouter#onCancel")
           incomingRequest.close(Status.CANCELLED, headers)
         }
         override def onHalfClose() = {
-          println("AggregationRouter#onHalfClose")
+          log.debug("AggregationRouter#onHalfClose")
           val gathered = AggregationRouter.scatter(members, channelPool, incomingRequest.getMethodDescriptor, headers, request)
           reduced = aggregator.apply(gathered.asScala)
           incomingRequest.sendHeaders(headers)
@@ -45,15 +48,15 @@ class AggregationRouter(members: List[MemberAddress], agg: Aggregation) extends 
           incomingRequest.close(Status.OK, headers)
         }
         override def onReady() = {
-          println("AggregationRouter#onReady")
+          log.debug("AggregationRouter#onReady")
         }
         override def onMessage(message: ReqT) = {
-          println("AggregationRouter#onMessage")
+          log.debug("AggregationRouter#onMessage")
           // We don't do the aggregation here but on onHalfClose()
           request = message
         }
         override def onComplete() = {
-          println("AggregationRouter#onComplete")
+          log.debug("AggregationRouter#onComplete")
         }
       }
     }
