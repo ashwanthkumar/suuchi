@@ -31,8 +31,6 @@ class AggregationRouter(members: List[MemberAddress], agg: Aggregation) extends 
       incomingRequest.request(2)
       new ServerCall.Listener[ReqT] {
         val aggregator = agg.aggregator.apply(incomingRequest.getMethodDescriptor)
-        var reduced: RespT = _
-
         var request: ReqT = _
 
         override def onCancel() = {
@@ -42,7 +40,7 @@ class AggregationRouter(members: List[MemberAddress], agg: Aggregation) extends 
         override def onHalfClose() = {
           log.debug("AggregationRouter#onHalfClose")
           val gathered = AggregationRouter.scatter(members, channelPool, incomingRequest.getMethodDescriptor, headers, request)
-          reduced = aggregator.apply(gathered.asScala)
+          val reduced = aggregator.apply(gathered.asScala)
           incomingRequest.sendHeaders(headers)
           incomingRequest.sendMessage(reduced)
           incomingRequest.close(Status.OK, headers)
