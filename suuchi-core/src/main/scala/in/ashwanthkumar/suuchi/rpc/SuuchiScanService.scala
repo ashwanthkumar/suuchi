@@ -21,7 +21,9 @@ class SuuchiScanService(store: Store) extends SuuchiScanGrpc.SuuchiScanImplBase 
     val start = request.getStart
     val end = request.getEnd
 
-    val iterator = store.scan()
+    val scanner = store.scanner()
+    scanner.prepare()
+    val iterator = scanner.scan()
     for(response <- iterator) {
       //TODO: Is observer.isCancelled needed to checked before observer.onNext?
       if (ByteArrayUtils.isHashKeyWithinRange(start, end, response.key, SuuchiHash)) {
@@ -30,6 +32,7 @@ class SuuchiScanService(store: Store) extends SuuchiScanGrpc.SuuchiScanImplBase 
       }
     }
     observer.onCompleted()
+    scanner.close()
   }
 
   private def buildKV(kv: KV) = {

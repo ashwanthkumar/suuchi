@@ -18,8 +18,14 @@ case class KV(key: Array[Byte], value: Array[Byte]) {
   }
 }
 trait Scannable {
-  def scan(): Iterator[KV]
-  def scan(prefix: Array[Byte]): Iterator[KV]
+  def scanner(): Scanner[KV]
+}
+
+trait Scanner[T] {
+  def prepare(): Unit
+  def scan(prefix: Array[Byte]): Iterator[T]
+  def scan(): Iterator[T]
+  def close(): Unit
 }
 
 trait Store extends ReadStore with WriteStore with Scannable

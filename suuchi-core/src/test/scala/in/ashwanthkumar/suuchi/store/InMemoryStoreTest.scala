@@ -18,7 +18,10 @@ class InMemoryStoreTest extends FlatSpec {
     store.put("4".getBytes, "four".getBytes)
     store.put("5".getBytes, "five".getBytes)
 
-    val kVs = store.scan().toList
+    val scanner = store.scanner()
+    scanner.prepare()
+    val kVs = scanner.scan().toList
+    scanner.close()
     kVs should have size 5
     kVs.sortBy(kv => new String(kv.key)) should be(List(kv("1", "one"), kv("2", "two"), kv("3", "three"), kv("4", "four"), kv("5", "five")))
   }
@@ -32,7 +35,10 @@ class InMemoryStoreTest extends FlatSpec {
     store.put("prefix2/2".getBytes, "twelve".getBytes)
     store.put("prefix2/3".getBytes, "thirteen".getBytes)
 
-    val kVs = store.scan("prefix1".getBytes).toList
+    val scanner = store.scanner()
+    scanner.prepare()
+    val kVs = scanner.scan("prefix1".getBytes).toList
+    scanner.close()
 
     kVs.foreach{kv =>
       new String(kv.key) should startWith("prefix1")

@@ -32,14 +32,18 @@ class InMemoryStore extends Store {
     true
   }
 
-  override def scan(): Iterator[KV] = {
-    store.entrySet().map(kv => KV(kv.getKey.array(), kv.getValue)).iterator
-  }
+  override def scanner(): Scanner[KV] = new Scanner[KV] {
+    override def prepare(): Unit = {}
 
-  override def scan(prefix: Array[Byte]): Iterator[KV] = {
-    store.tailMap(ByteBuffer.wrap(prefix))
-      .takeWhile{case (k, v) => ByteArrayUtils.hasPrefix(k.array(), prefix)}
-      .map{case (k, v) => KV(k.array(), v)}
-      .iterator
+    override def scan(prefix: Array[Byte]): Iterator[KV] = {
+      store.tailMap(ByteBuffer.wrap(prefix))
+        .takeWhile { case (k, v) => ByteArrayUtils.hasPrefix(k.array(), prefix) }
+        .map { case (k, v) => KV(k.array(), v) }
+        .iterator
+    }
+
+    override def scan(): Iterator[KV] = store.entrySet().map(kv => KV(kv.getKey.array(), kv.getValue)).iterator
+
+    override def close(): Unit = {}
   }
 }
