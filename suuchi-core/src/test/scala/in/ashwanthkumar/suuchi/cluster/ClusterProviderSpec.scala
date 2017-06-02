@@ -1,5 +1,6 @@
 package in.ashwanthkumar.suuchi.cluster
 
+import com.typesafe.config.Config
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers.{be, convertToAnyShouldWrapper, have}
@@ -12,7 +13,8 @@ class ClusterProviderSpec extends FlatSpec {
     when(listener.onJoin).thenReturn(emptyFn)
     when(listener.onLeave).thenReturn(emptyFn)
 
-    val cluster = ClusterProvider(MemberAddress("host1", 1), List(listener))
+    val config = mock[Config]
+    val cluster = ClusterProvider(MemberAddress("host1", 1), config, List(listener))
     cluster.start(InMemorySeedProvider(List(MemberAddress("host1", 1), MemberAddress("host2", 2))))
 
     cluster.nodes should have size 2
