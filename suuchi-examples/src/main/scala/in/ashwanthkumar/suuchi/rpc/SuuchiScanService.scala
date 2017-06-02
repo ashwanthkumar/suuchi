@@ -22,6 +22,11 @@ class SuuchiScanService(store: Store) extends ScanGrpc.ScanImplBase {
       .filter(kv => ByteArrayUtils.isHashKeyWithinRange(start, end, kv.key, SuuchiHash))
       .map(buildResponse)
 
+    observer.setOnCancelHandler(new Runnable() {
+      override def run() = {
+        scanner.close()
+      }
+    })
     observer.setOnReadyHandler(new Runnable() {
       override def run() = {
         while (observer.isReady && it.hasNext) {
