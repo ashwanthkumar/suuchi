@@ -1,7 +1,7 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{ScanRequest, ScanResponse}
-import in.ashwanthkumar.suuchi.store.{InMemoryStore, Store}
+import in.ashwanthkumar.suuchi.store.InMemoryStore
 import io.grpc.stub.ServerCallStreamObserver
 import org.mockito.ArgumentCaptor
 import org.mockito.Mockito._
@@ -22,15 +22,17 @@ class SuuchiScanServiceTest extends FlatSpec {
       .build()
 
     val observer = mock(classOf[ServerCallStreamObserver[ScanResponse]])
+    val runnable = ArgumentCaptor.forClass(classOf[Runnable])
+    when(observer.isReady).thenReturn(true)
+    service.scan(request, observer)
+    verify(observer, times(1)).setOnReadyHandler(runnable.capture())
+    runnable.getValue.run() // run the stream observer
+
     val captor = ArgumentCaptor.forClass(classOf[ScanResponse])
     val values = captor.getAllValues
-
-    when(observer.isReady).thenReturn(true)
-
-    service.scan(request, observer)
-
     verify(observer, times(10)).onNext(captor.capture())
     verify(observer, times(1)).onCompleted()
+
     values should have size 10
     values.toList.map(extractKey).toSet should be(1 to 10 toSet)
   }
@@ -41,13 +43,17 @@ class SuuchiScanServiceTest extends FlatSpec {
       .setStart(1)
       .setEnd(10)
       .build()
+
     val observer = mock(classOf[ServerCallStreamObserver[ScanResponse]])
+    val runnable = ArgumentCaptor.forClass(classOf[Runnable])
+    when(observer.isReady).thenReturn(true)
+    service.scan(request, observer)
+    verify(observer, times(1)).setOnReadyHandler(runnable.capture())
+    runnable.getValue.run() // run the stream observer
+
     val captor = ArgumentCaptor.forClass(classOf[ScanResponse])
     val values = captor.getAllValues
-
     when(observer.isReady).thenReturn(true)
-
-    service.scan(request, observer)
 
     verify(observer, times(0)).onNext(captor.capture())
     verify(observer, times(1)).onCompleted()
