@@ -1,4 +1,3 @@
-[![Build Status](https://snap-ci.com/ashwanthkumar/suuchi/branch/master/build_image)](https://snap-ci.com/ashwanthkumar/suuchi/branch/master)
 [![Build Status](https://travis-ci.org/ashwanthkumar/suuchi.svg?branch=master)](https://travis-ci.org/ashwanthkumar/suuchi)
 [![codecov](https://codecov.io/gh/ashwanthkumar/suuchi/branch/master/graph/badge.svg)](https://codecov.io/gh/ashwanthkumar/suuchi)
 
@@ -8,7 +7,7 @@ Having inspired from tools like [Uber's Ringpop](https://ringpop.readthedocs.io/
 
 Suuchi is toolkit to build distributed data systems, that uses [gRPC](http://www.grpc.io/) under the hood as the communication medium. The overall goal of this project is to build pluggable components that can be easily composed by the developer to build a data system of desired characteristics.
 
-> This project is alpha quality and not meant to be used in any production setting. We welcome all kinds of feedback to help improve the library.
+> This project is in beta quality and it's currently running couple of systems in production setting [@indix](https://twitter.com/indix). We welcome all kinds of feedback to help improve the library.
 
 Read the Documentation at [http://ashwanthkumar.github.io/suuchi](http://ashwanthkumar.github.io/suuchi).
 
