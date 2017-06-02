@@ -9,12 +9,13 @@ import io.grpc.netty.NettyServerBuilder
 // Start the app with either / one each of 5051, 5052 or/and 5053 port numbers
 object DistributedKVServer extends App {
 
-  val port = args(0).toInt
+  val port                = args(0).toInt
   val PARTITIONS_PER_NODE = 100
-  val REPLICATION_FACTOR = 2
+  val REPLICATION_FACTOR  = 2
 
   val allNodes = List(whoami(5051), whoami(5052), whoami(5053))
-  val routingStrategy = ConsistentHashingRouting(REPLICATION_FACTOR, PARTITIONS_PER_NODE, allNodes:_*)
+  val routingStrategy =
+    ConsistentHashingRouting(REPLICATION_FACTOR, PARTITIONS_PER_NODE, allNodes: _*)
 
   val store = new InMemoryStore
   val server = Server(NettyServerBuilder.forPort(port), whoami(port))

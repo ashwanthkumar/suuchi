@@ -4,7 +4,8 @@ import java.io.File
 import java.time.Duration
 import java.util.function.Consumer
 
-import in.ashwanthkumar.suuchi.cluster.{MemberListener, SeedProvider, MemberAddress, Cluster}
+import com.typesafe.config.Config
+import in.ashwanthkumar.suuchi.cluster.{Cluster, MemberAddress, MemberListener, SeedProvider}
 import io.atomix.AtomixReplica
 import io.atomix.catalyst.transport.Address
 import io.atomix.catalyst.transport.netty.NettyTransport
@@ -22,14 +23,23 @@ import scala.collection.JavaConversions._
  */
 case class MemberState(address: MemberAddress)
 
-class AtomixCluster(host: String, port: Int, workDir: String, clusterIdentifier: String, listeners: List[MemberListener] = Nil) extends Cluster(listeners) {
+class AtomixCluster(host: String,
+                    atomixPort: Int,
+                    rpcPort: Int,
+                    workDir: String,
+                    clusterIdentifier: String,
+                    config: Config,
+                    listeners: List[MemberListener] = Nil)
+    extends Cluster(config, listeners) {
   private val log = LoggerFactory.getLogger(classOf[AtomixCluster])
 
-  var atomix = AtomixReplica.builder(new Address(host, port))
+  var atomix = AtomixReplica
+    .builder(new Address(host, atomixPort))
     .withTransport(NettyTransport.builder().build())
     .withStorage(
-      Storage.builder()
-        .withDirectory(new File(workDir, host + "_" + port))
+      Storage
+        .builder()
+        .withDirectory(new File(workDir, host + "_" + atomixPort))
         .withStorageLevel(StorageLevel.DISK)
         .withMinorCompactionInterval(Duration.ofSeconds(30))
         .withMajorCompactionInterval(Duration.ofMinutes(10))
@@ -48,8 +58,8 @@ class AtomixCluster(host: String, port: Int, workDir: String, clusterIdentifier:
     }
 
     val group = atomix.getGroup(clusterIdentifier).join()
-    me = group.join(MemberState(MemberAddress(host, port))).join()
-    // register a shutdown hook right away
+    me = group.join(MemberState(MemberAddress(host, atomixPort))).join()
+    // register a shutdown hook to gracefully leave the cluster
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run(): Unit = {
         me.leave()
@@ -82,7 +92,9 @@ class AtomixCluster(host: String, port: Int, workDir: String, clusterIdentifier:
   }
 
   override def nodes: Iterable[MemberAddress] = {
-    atomix.getGroup(clusterIdentifier).get()
+    atomix
+      .getGroup(clusterIdentifier)
+      .get()
       .members()
       .map(t => t.metadata[MemberState]())
       .filter(_.isPresent)
@@ -93,5 +105,5 @@ class AtomixCluster(host: String, port: Int, workDir: String, clusterIdentifier:
     me.leave().join()
   }
 
-  override def whoami: MemberAddress = MemberAddress(host, port)
+  override def whoami: MemberAddress = MemberAddress(host, atomixPort)
 }

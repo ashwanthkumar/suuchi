@@ -18,14 +18,18 @@ import scala.util.Try
  *
  * @param routingStrategy
  */
-class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddress) extends ServerInterceptor {
+class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddress)
+    extends ServerInterceptor {
   private val log = LoggerFactory.getLogger(getClass)
   val channelPool = CachedChannelPool()
 
-  override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
-    log.trace("Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self + ", headers= " + headers.toString)
+  override def interceptCall[ReqT, RespT](serverCall: ServerCall[ReqT, RespT],
+                                          headers: Metadata,
+                                          next: ServerCallHandler[ReqT, RespT]): Listener[ReqT] = {
+    log.trace(
+      "Intercepting " + serverCall.getMethodDescriptor.getFullMethodName + " method in " + self + ", headers= " + headers.toString)
     new Listener[ReqT] {
-      val delegate = next.startCall(serverCall, headers)
+      val delegate  = next.startCall(serverCall, headers)
       var forwarded = false
 
       override def onReady(): Unit = delegate.onReady()
@@ -41,7 +45,8 @@ class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddres
               forwarded = nodes.exists(destination =>
                 Try {
                   log.trace(s"Forwarding request to $destination")
-                  val clientResponse: RespT = forward(serverCall.getMethodDescriptor, headers, incomingRequest, destination)
+                  val clientResponse: RespT =
+                    forward(serverCall.getMethodDescriptor, headers, incomingRequest, destination)
                   // sendHeaders is very important and should be called before sendMessage
                   // else client wouldn't receive any data at all
                   serverCall.sendHeaders(headers)
@@ -51,17 +56,19 @@ class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddres
                   case r: RuntimeException =>
                     log.error(r.getMessage, r)
                     false
-                } get
-              )
+                } get)
 
               if (!forwarded) {
-                serverCall.close(Status.FAILED_PRECONDITION.withDescription("No alive nodes to handle traffic."), headers)
+                serverCall.close(
+                  Status.FAILED_PRECONDITION.withDescription("No alive nodes to handle traffic."),
+                  headers)
               }
             case nodes if nodes.nonEmpty && nodes.exists(_.equals(self)) =>
               log.trace("Calling delegate's onMessage")
               delegate.onMessage(incomingRequest)
             case Nil =>
-              log.trace("Couldn't locate the right node for this request. Returning a NOT_FOUND response")
+              log.trace(
+                "Couldn't locate the right node for this request. Returning a NOT_FOUND response")
               serverCall.close(Status.NOT_FOUND, headers)
           }
         } else {
@@ -75,17 +82,23 @@ class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddres
         // here and client fails with an exception message -- Half-closed without a request
         if (forwarded) serverCall.close(Status.OK, headers) else delegate.onHalfClose()
       }
-      override def onCancel(): Unit = delegate.onCancel()
+      override def onCancel(): Unit   = delegate.onCancel()
       override def onComplete(): Unit = delegate.onComplete()
     }
   }
 
-  def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
+  def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT],
+                           headers: Metadata,
+                           incomingRequest: ReqT,
+                           destination: MemberAddress): RespT = {
     val channel = channelPool.get(destination, insecure = true)
     ClientCalls.blockingUnaryCall(
-      ClientInterceptors.interceptForward(channel, MetadataUtils.newAttachHeadersInterceptor(headers)),
+      ClientInterceptors.interceptForward(channel,
+                                          MetadataUtils.newAttachHeadersInterceptor(headers)),
       method,
-      CallOptions.DEFAULT.withDeadlineAfter(10, TimeUnit.MINUTES), // TODO (ashwanthkumar): Make this deadline configurable
-      incomingRequest)
+      CallOptions.DEFAULT
+        .withDeadlineAfter(10, TimeUnit.MINUTES), // TODO (ashwanthkumar): Make this deadline configurable
+      incomingRequest
+    )
   }
 }

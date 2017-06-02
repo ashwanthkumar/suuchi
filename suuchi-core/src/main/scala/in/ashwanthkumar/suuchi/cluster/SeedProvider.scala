@@ -1,6 +1,7 @@
 package in.ashwanthkumar.suuchi.cluster
 
 trait SeedProvider {
+
   /**
    * Returns a list of host that're used to connect to form a cluster. These nodes always represent the
    * initial seed nodes. While different [[Cluster]] implementations might have different guarantees,

@@ -25,14 +25,19 @@ import scala.collection.JavaConversions._
  *                     Take care to not throw exceptions in this method. If it does,
  *                     we propagate that error back to the service who invoked us.
  */
-class ShardedStore(partitionsPerNode: Int, hashFn: Hash, createStore: (Int) => Store) extends Store with Logging {
+class ShardedStore(partitionsPerNode: Int, hashFn: Hash, createStore: (Int) => Store)
+    extends Store
+    with Logging {
   private val map = new ConcurrentHashMap[Integer, Store](partitionsPerNode)
 
   private val locks = Array.fill(partitionsPerNode)(new Object)
 
-  override def get(key: Array[Byte]): Option[Array[Byte]] = logOnError(() => getStore(key).get(key)).getOrElse(None)
-  override def put(key: Array[Byte], value: Array[Byte]): Boolean = logOnError(() => getStore(key).put(key, value)).isSuccess
-  override def remove(key: Array[Byte]): Boolean = logOnError(() => getStore(key).remove(key)).isSuccess
+  override def get(key: Array[Byte]): Option[Array[Byte]] =
+    logOnError(() => getStore(key).get(key)).getOrElse(None)
+  override def put(key: Array[Byte], value: Array[Byte]): Boolean =
+    logOnError(() => getStore(key).put(key, value)).isSuccess
+  override def remove(key: Array[Byte]): Boolean =
+    logOnError(() => getStore(key).remove(key)).isSuccess
 
   override def scan(): Iterator[KV] = {
     initializeStoresIfNot()

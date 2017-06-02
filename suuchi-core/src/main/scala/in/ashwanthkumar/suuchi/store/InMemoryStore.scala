@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConversions._
 
 class InMemoryStore extends Store {
-  private val log = LoggerFactory.getLogger(getClass)
+  private val log   = LoggerFactory.getLogger(getClass)
   private val store = new ConcurrentSkipListMap[ByteBuffer, Array[Byte]]()
 
   override def put(key: Array[Byte], value: Array[Byte]): Boolean = {
@@ -37,9 +37,10 @@ class InMemoryStore extends Store {
   }
 
   override def scan(prefix: Array[Byte]): Iterator[KV] = {
-    store.tailMap(ByteBuffer.wrap(prefix))
-      .takeWhile{case (k, v) => ByteArrayUtils.hasPrefix(k.array(), prefix)}
-      .map{case (k, v) => KV(k.array(), v)}
+    store
+      .tailMap(ByteBuffer.wrap(prefix))
+      .takeWhile { case (k, v) => ByteArrayUtils.hasPrefix(k.array(), prefix) }
+      .map { case (k, v) => KV(k.array(), v) }
       .iterator
   }
 }

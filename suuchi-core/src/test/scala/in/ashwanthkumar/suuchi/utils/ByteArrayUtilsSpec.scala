@@ -19,7 +19,7 @@ class ByteArrayUtilsSpec extends FlatSpec {
 
   it should "return true if hash of the given key within start, end range" in {
     val hashFn = mock(classOf[Hash])
-    val key = "1".getBytes
+    val key    = "1".getBytes
 
     when(hashFn.hash(key)).thenReturn(10)
 
@@ -28,7 +28,7 @@ class ByteArrayUtilsSpec extends FlatSpec {
 
   it should "return false if hash of the given key is not within start, end range" in {
     val hashFn = mock(classOf[Hash])
-    val key = "1".getBytes
+    val key    = "1".getBytes
 
     when(hashFn.hash(key)).thenReturn(1)
 
