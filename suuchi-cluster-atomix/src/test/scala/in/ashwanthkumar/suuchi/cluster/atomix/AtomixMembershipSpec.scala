@@ -2,7 +2,8 @@ package in.ashwanthkumar.suuchi.cluster.atomix
 
 import java.nio.file.Files
 
-import in.ashwanthkumar.suuchi.cluster.{MemberAddress, InMemorySeedProvider}
+import com.typesafe.config.ConfigFactory
+import in.ashwanthkumar.suuchi.cluster.{InMemorySeedProvider, MemberAddress}
 import org.apache.commons.io.FileUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.Matchers.{convertToAnyShouldWrapper, have}
@@ -23,7 +24,7 @@ class AtomixMembershipSpec extends FlatSpec with BeforeAndAfter {
     val bootstrapper = InMemorySeedProvider(List(MemberAddress("localhost", BASE_PORT + 1)))
     (1 to 5).foreach { i =>
       val memberPort = BASE_PORT + i
-      val member = new AtomixCluster("localhost", memberPort, raftDir.toString, "succhi-test-group")
+      val member = new AtomixCluster("localhost", memberPort, memberPort, raftDir.toString, "succhi-test-group", ConfigFactory.load())
       if (i > 1) {
         members = members ++ List(member.start(bootstrapper))
       } else {

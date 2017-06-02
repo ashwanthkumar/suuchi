@@ -1,5 +1,7 @@
 package in.ashwanthkumar.suuchi.cluster
 
+import com.typesafe.config.Config
+
 /**
  * Listeners are notified whenever there are new nodes joining the cluster
  * or existing nodes removed from the cluster
@@ -9,6 +11,7 @@ trait MemberListener {
    * Triggered when a node represented by [[MemberAddress]] is added to the cluster
    */
   def onJoin: MemberAddress => Unit
+
   /**
    * Triggered when a node represented by [[MemberAddress]] is removed from the cluster
    */
@@ -27,10 +30,11 @@ trait MemberListener {
  *
  * @param listeners List[MemberListener] who would be notified about changes in cluster membership
  */
-abstract class Cluster(listeners: List[MemberListener]) {
+abstract class Cluster(config: Config, listeners: List[MemberListener]) {
+
   /**
    * Start / Join a given cluster instance, given a [[SeedProvider]] instance
-   * to identify the intial list of nodes. If you're starting a single node
+   * to identify the initial list of nodes. If you're starting a single node
    * cluster, consider using [[InMemorySeedProvider.EMPTY]].
    *
    * The List[MemberAddress] in SeedProvider.nodes represents the address of the cluster
@@ -39,7 +43,7 @@ abstract class Cluster(listeners: List[MemberListener]) {
    * find / build implementations that does it. Hence we assume the [[Cluster]] implementations
    * are free to choose any transport they deem fit for the type of cluster membership they provide.
    *
-   * Anothe reason for making the assumption is systems like Apache Gossip (http://gossip.incubator.apache.org/)
+   * Another reason for making the assumption is systems like Apache Gossip (http://gossip.incubator.apache.org/)
    * uses UDP based transport while gRPC needs a reliable transport and hence uses TCP.
    *
    * @param seedProvider
