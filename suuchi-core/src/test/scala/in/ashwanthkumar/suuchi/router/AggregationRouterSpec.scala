@@ -158,15 +158,3 @@ class AggregationRouterSpec extends FlatSpec {
   }
 
 }
-
-class MockScatterAggregationRouter[T](members: List[MemberAddress],
-                                      agg: Aggregation,
-                                      scatterResponses: JList[T])
-    extends AggregationRouter(members, agg) {
-  override protected def scatter[ReqT, RespT](nodes: List[MemberAddress],
-                                              channelPool: CachedChannelPool,
-                                              methodDescriptor: MethodDescriptor[ReqT, RespT],
-                                              headers: Metadata,
-                                              input: ReqT) =
-    scatterResponses.asInstanceOf[JList[RespT]]
-}
