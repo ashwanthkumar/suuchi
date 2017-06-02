@@ -39,7 +39,9 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
    * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
    * @return  this object for chaining
    */
-  def withReplication(service: ServerServiceDefinition, replicator: ReplicationRouter, strategy: RoutingStrategy): Server[T] = {
+  def withReplication(service: ServerServiceDefinition,
+                      replicator: ReplicationRouter,
+                      strategy: RoutingStrategy): Server[T] = {
     val router = new HandleOrForwardRouter(strategy, whoami)
     serverBuilder.addService(ServerInterceptors.interceptForward(service, router, replicator))
     this
@@ -55,7 +57,9 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
    * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
    * @return  this object for chaining
    */
-  def withReplication(service: BindableService, replicator: ReplicationRouter, strategy: RoutingStrategy): Server[T] = {
+  def withReplication(service: BindableService,
+                      replicator: ReplicationRouter,
+                      strategy: RoutingStrategy): Server[T] = {
     withReplication(service.bindService(), replicator, strategy)
   }
 
@@ -69,7 +73,9 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
    * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
    * @return  this object for chaining
    */
-  def withSequentialReplication(service: ServerServiceDefinition, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
+  def withSequentialReplication(service: ServerServiceDefinition,
+                                nrReplicas: Int,
+                                strategy: RoutingStrategy): Server[T] = {
     withReplication(service, new SequentialReplicator(nrReplicas, whoami), strategy)
   }
 
@@ -83,7 +89,9 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
    * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
    * @return  this object for chaining
    */
-  def withSequentialReplication(service: BindableService, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
+  def withSequentialReplication(service: BindableService,
+                                nrReplicas: Int,
+                                strategy: RoutingStrategy): Server[T] = {
     withSequentialReplication(service.bindService(), nrReplicas, strategy)
   }
 
@@ -98,7 +106,9 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
    * @return  this object for chaining
    * @return
    */
-  def withParallelReplication(service: ServerServiceDefinition, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
+  def withParallelReplication(service: ServerServiceDefinition,
+                              nrReplicas: Int,
+                              strategy: RoutingStrategy): Server[T] = {
     withReplication(service, new ParallelReplicator(nrReplicas, whoami), strategy)
   }
 
@@ -112,11 +122,14 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
    * @param strategy  [[RoutingStrategy]] for deciding what nodes we should replicate to
    * @return  this object for chaining
    */
-  def withParallelReplication(service: BindableService, nrReplicas: Int, strategy: RoutingStrategy): Server[T] = {
+  def withParallelReplication(service: BindableService,
+                              nrReplicas: Int,
+                              strategy: RoutingStrategy): Server[T] = {
     withParallelReplication(service.bindService(), nrReplicas, strategy)
   }
 
-  def routeUsing(service: BindableService, strategy: RoutingStrategy): Server[T] = routeUsing(service.bindService(), strategy)
+  def routeUsing(service: BindableService, strategy: RoutingStrategy): Server[T] =
+    routeUsing(service.bindService(), strategy)
 
   def routeUsing(service: ServerServiceDefinition, strategy: RoutingStrategy) = {
     val router = new HandleOrForwardRouter(strategy, whoami)
@@ -124,7 +137,11 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
     this
   }
 
-  def aggregate(allNodes: List[MemberAddress], service: BindableService, agg: Aggregation) = {
+  def aggregate(allNodes: List[MemberAddress], service: BindableService, agg: Aggregation): Server[T] = {
+    aggregate(allNodes, service.bindService(), agg)
+  }
+
+  def aggregate(allNodes: List[MemberAddress], service: ServerServiceDefinition, agg: Aggregation): Server[T] = {
     val aggregator = new AggregationRouter(allNodes, agg)
     serverBuilder.addService(ServerInterceptors.interceptForward(service, aggregator))
     this
@@ -164,7 +181,8 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
 }
 
 object Server {
-  def apply[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: MemberAddress) = new Server[T](serverBuilder, whoami)
+  def apply[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: MemberAddress) =
+    new Server[T](serverBuilder, whoami)
 
   /**
    * Helper to generate a MemberAddress that would identify the hostname of the node and use the given port
@@ -174,5 +192,3 @@ object Server {
    */
   def whoami(port: Int) = MemberAddress(InetAddress.getLocalHost.getCanonicalHostName, port)
 }
-
-

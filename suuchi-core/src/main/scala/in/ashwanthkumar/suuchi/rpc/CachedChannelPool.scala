@@ -33,4 +33,3 @@ object CachedChannelPool {
 
   def apply(): CachedChannelPool = _default
 }
-

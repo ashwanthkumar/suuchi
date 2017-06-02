@@ -16,38 +16,46 @@ class SuuchiScanServiceTest extends FlatSpec {
 
     val service = new SuuchiScanService(getPopulatedStore(10))
 
-    val request = ScanRequest.newBuilder()
+    val request = ScanRequest
+      .newBuilder()
       .setStart(Integer.MIN_VALUE)
       .setEnd(Integer.MAX_VALUE)
       .build()
 
     val observer = mock(classOf[ServerCallStreamObserver[ScanResponse]])
+    val runnable = ArgumentCaptor.forClass(classOf[Runnable])
+    when(observer.isReady).thenReturn(true)
+    service.scan(request, observer)
+    verify(observer, times(1)).setOnReadyHandler(runnable.capture())
+    runnable.getValue.run() // run the stream observer
+
     val captor = ArgumentCaptor.forClass(classOf[ScanResponse])
     val values = captor.getAllValues
-
-    when(observer.isReady).thenReturn(true)
-
-    service.scan(request, observer)
-
     verify(observer, times(10)).onNext(captor.capture())
     verify(observer, times(1)).onCompleted()
+
     values should have size 10
     values.toList.map(extractKey).toSet should be(1 to 10 toSet)
   }
 
   it should "not include key which are out of the given token range" in {
     val service = new SuuchiScanService(getPopulatedStore(10))
-    val request = ScanRequest.newBuilder()
+    val request = ScanRequest
+      .newBuilder()
       .setStart(1)
       .setEnd(10)
       .build()
+
     val observer = mock(classOf[ServerCallStreamObserver[ScanResponse]])
+    val runnable = ArgumentCaptor.forClass(classOf[Runnable])
+    when(observer.isReady).thenReturn(true)
+    service.scan(request, observer)
+    verify(observer, times(1)).setOnReadyHandler(runnable.capture())
+    runnable.getValue.run() // run the stream observer
+
     val captor = ArgumentCaptor.forClass(classOf[ScanResponse])
     val values = captor.getAllValues
-
     when(observer.isReady).thenReturn(true)
-
-    service.scan(request, observer)
 
     verify(observer, times(0)).onNext(captor.capture())
     verify(observer, times(1)).onCompleted()
@@ -60,5 +68,6 @@ class SuuchiScanServiceTest extends FlatSpec {
     store
   }
 
-  private def extractKey(response: ScanResponse) = new String(response.getKv.getKey.toByteArray).toInt
+  private def extractKey(response: ScanResponse) =
+    new String(response.getKv.getKey.toByteArray).toInt
 }

@@ -41,7 +41,8 @@ class RocksDbStore(config: RocksDbConfiguration) extends Store with Logging {
     rocksIterator.seek(prefix)
 
     new Iterator[KV] {
-      override def hasNext: Boolean = rocksIterator.isValid && ByteArrayUtils.hasPrefix(rocksIterator.key(), prefix)
+      override def hasNext: Boolean =
+        rocksIterator.isValid && ByteArrayUtils.hasPrefix(rocksIterator.key(), prefix)
 
       override def next(): KV = {
         val kv = KV(rocksIterator.key(), rocksIterator.value())
