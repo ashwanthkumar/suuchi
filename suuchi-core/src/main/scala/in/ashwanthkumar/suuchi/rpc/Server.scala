@@ -2,6 +2,8 @@ package in.ashwanthkumar.suuchi.rpc
 
 import java.net.InetAddress
 
+import com.google.protobuf.Message
+import com.twitter.algebird.Aggregator
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import in.ashwanthkumar.suuchi.router._
 import io.grpc.{Server => GServer, _}
@@ -132,6 +134,16 @@ class Server[T <: ServerBuilder[T]](serverBuilder: ServerBuilder[T], whoami: Mem
   def routeUsing(service: ServerServiceDefinition, strategy: RoutingStrategy) = {
     val router = new HandleOrForwardRouter(strategy, whoami)
     serverBuilder.addService(ServerInterceptors.interceptForward(service, router))
+    this
+  }
+
+  def aggregate(allNodes: List[MemberAddress], service: BindableService, agg: Aggregation): Server[T] = {
+    aggregate(allNodes, service.bindService(), agg)
+  }
+
+  def aggregate(allNodes: List[MemberAddress], service: ServerServiceDefinition, agg: Aggregation): Server[T] = {
+    val aggregator = new AggregationRouter(allNodes, agg)
+    serverBuilder.addService(ServerInterceptors.interceptForward(service, aggregator))
     this
   }
 

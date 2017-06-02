@@ -223,6 +223,7 @@
                         <configuration>
                             <excludes>
                                 <exclude>in/ashwanthkumar/suuchi/rpc/generated/*</exclude>
+                                <exclude>in/ashwanthkumar/suuchi/core/tests/*</exclude>
                             </excludes>
                         </configuration>
                     </execution>

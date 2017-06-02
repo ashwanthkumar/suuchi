@@ -73,3 +73,14 @@ message KV {
     bytes key = 1;
     bytes value = 2;
 }
+
+message ReduceRequest {
+}
+
+message ReduceResponse {
+    int64 output = 1;
+}
+
+service Aggregator {
+    rpc Reduce (ReduceRequest) returns (ReduceResponse);
+}
