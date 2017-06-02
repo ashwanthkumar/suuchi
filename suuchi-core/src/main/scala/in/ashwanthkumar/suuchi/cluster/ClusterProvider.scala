@@ -5,6 +5,7 @@ import java.util.ServiceLoader
 import com.typesafe.config.Config
 
 abstract class ClusterProvider {
+
   /**
    * Create Membership implementation using a [[MemberAddress]] for cluster communication and [[MemberListener]]
    *
@@ -16,7 +17,7 @@ abstract class ClusterProvider {
    *                    cluster implementation
    * @return            A Cluster implementation that's configured
    */
-  def createCluster(self: MemberAddress, config: Config,  listeners: List[MemberListener]): Cluster
+  def createCluster(self: MemberAddress, config: Config, listeners: List[MemberListener]): Cluster
 
   /**
    * We use this method to sort when multiple providers are found. We'll pick the provider with highest value.
@@ -29,14 +30,17 @@ object ClusterProvider {
   def apply(self: MemberAddress, clusterConfig: Config, listeners: List[MemberListener]) = {
     import scala.collection.JavaConversions._
 
-    val providers = ServiceLoader.load(classOf[ClusterProvider])
+    val providers = ServiceLoader
+      .load(classOf[ClusterProvider])
       .iterator()
-      .toList.sortBy(_.priority)(Ordering[Int].reverse)
+      .toList
+      .sortBy(_.priority)(Ordering[Int].reverse)
 
     providers.headOption
       .map(_.createCluster(self, clusterConfig, listeners))
       .getOrElse(
-        throw new RuntimeException("No Cluster implementations found. Consider adding suuchi-cluster-atomix or suuchi-cluster-scalecube modules to your dependencies")
+        throw new RuntimeException(
+          "No Cluster implementations found. Consider adding suuchi-cluster-atomix or suuchi-cluster-scalecube modules to your dependencies")
       )
   }
 }

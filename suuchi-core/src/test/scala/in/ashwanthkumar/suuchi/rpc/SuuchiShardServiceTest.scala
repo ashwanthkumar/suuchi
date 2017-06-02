@@ -11,7 +11,8 @@ import org.scalatest.Matchers.{be, convertToAnyShouldWrapper}
 
 class SuuchiShardServiceTest extends FlatSpec {
   "SuuchiShardService" should "return shardInfo details for a given CHRing" in {
-    val nodes = List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3))
+    val nodes =
+      List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3))
     val ring = ConsistentHashRing(nodes, partitionsPerNode = 3)
 
     val observer = mock(classOf[StreamObserver[ShardInfoResponse]])

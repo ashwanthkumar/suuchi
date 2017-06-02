@@ -1,7 +1,12 @@
 package in.ashwanthkumar.suuchi.cluster.scalecube
 
 import com.typesafe.config.Config
-import in.ashwanthkumar.suuchi.cluster.{MemberAddress, MemberListener, SeedProvider, Cluster => SuuchiCluster}
+import in.ashwanthkumar.suuchi.cluster.{
+  MemberAddress,
+  MemberListener,
+  SeedProvider,
+  Cluster => SuuchiCluster
+}
 import io.scalecube.cluster.gossip.GossipConfig
 import io.scalecube.cluster.membership.{MembershipConfig, MembershipEvent}
 import io.scalecube.cluster.{Cluster, ClusterConfig, ICluster}
@@ -23,13 +28,13 @@ object ScaleCubeConfig {
   }
 
   private[this] def toGossipConfig(scalecube: Config): Option[GossipConfig] = {
-    if(scalecube.hasPath("gossip")) {
-      val gConfig = scalecube.getConfig("gossip")
+    if (scalecube.hasPath("gossip")) {
+      val gConfig             = scalecube.getConfig("gossip")
       val gossipConfigBuilder = GossipConfig.builder()
-      if(gConfig.hasPath("interval"))  {
+      if (gConfig.hasPath("interval")) {
         gossipConfigBuilder.gossipInterval(gConfig.getInt("interval"))
       }
-      if(gConfig.hasPath("fanout")) {
+      if (gConfig.hasPath("fanout")) {
         gossipConfigBuilder.gossipFanout(gConfig.getInt("fanout"))
       }
       Some(gossipConfigBuilder.build())
@@ -38,17 +43,21 @@ object ScaleCubeConfig {
 
 }
 
-class ScaleCubeCluster(clusterConfig: Config, listeners: List[MemberListener]) extends SuuchiCluster(clusterConfig, listeners) {
+class ScaleCubeCluster(clusterConfig: Config, listeners: List[MemberListener])
+    extends SuuchiCluster(clusterConfig, listeners) {
   protected val log = LoggerFactory.getLogger(getClass)
-  lazy val config = ScaleCubeConfig.apply(clusterConfig)
+  lazy val config   = ScaleCubeConfig.apply(clusterConfig)
 
   var cluster: ICluster = _
 
   override def start(seedProvider: SeedProvider): SuuchiCluster = {
-    val clusterConfig = ClusterConfig.builder()
+    val clusterConfig = ClusterConfig
+      .builder()
       .transportConfig(
-        TransportConfig.builder()
-          .port(config.port).build()
+        TransportConfig
+          .builder()
+          .port(config.port)
+          .build()
       )
     config.gossipConfig.foreach(clusterConfig.gossipConfig)
     if (seedProvider.nodes.isEmpty) {
@@ -61,18 +70,29 @@ class ScaleCubeCluster(clusterConfig: Config, listeners: List[MemberListener]) e
           .build()
       )
     }
-    cluster.listenMembership()
-      .filter({ m: MembershipEvent => m.isAdded })
-      .map[MemberAddress]({ m: MembershipEvent => MemberAddress(m.member().address().toString) })
+    cluster
+      .listenMembership()
+      .filter({ m: MembershipEvent =>
+        m.isAdded
+      })
+      .map[MemberAddress]({ m: MembershipEvent =>
+        MemberAddress(m.member().address().toString)
+      })
       .subscribe(this.onJoin)
 
-    cluster.listenMembership()
-      .filter({ m: MembershipEvent => m.isRemoved })
-      .map[MemberAddress]({ m: MembershipEvent => MemberAddress(m.member().address().toString) })
+    cluster
+      .listenMembership()
+      .filter({ m: MembershipEvent =>
+        m.isRemoved
+      })
+      .map[MemberAddress]({ m: MembershipEvent =>
+        MemberAddress(m.member().address().toString)
+      })
       .subscribe(this.onLeave)
     this
   }
   override def stop(): Unit = cluster.shutdown().get()
-  override def nodes: Iterable[MemberAddress] = cluster.members().map(m => MemberAddress(m.address().toString))
+  override def nodes: Iterable[MemberAddress] =
+    cluster.members().map(m => MemberAddress(m.address().toString))
   override def whoami: MemberAddress = MemberAddress(cluster.address().toString)
 }

@@ -7,6 +7,7 @@ import com.typesafe.config.Config
  * or existing nodes removed from the cluster
  */
 trait MemberListener {
+
   /**
    * Triggered when a node represented by [[MemberAddress]] is added to the cluster
    */

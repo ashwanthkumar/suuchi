@@ -24,7 +24,7 @@ class ShardedStoreSpec extends FlatSpec {
     when(createStore.apply(2)).thenReturn(store2)
 
     val shardedStore = new ShardedStore(3, hash, createStore)
-    val response = shardedStore.get("1".getBytes)
+    val response     = shardedStore.get("1".getBytes)
     verify(hash, times(1)).hash("1".getBytes)
     verify(createStore, times(1)).apply(1)
     verify(store1, times(1)).get("1".getBytes)
@@ -123,9 +123,9 @@ class ShardedStoreSpec extends FlatSpec {
   }
 
   it should "initialize all store references during scan() if we already don't have them open" in {
-    val hash = mock(classOf[Hash])
+    val hash        = mock(classOf[Hash])
     val createStore = mock(classOf[(Int) => Store])
-    val store = mock(classOf[Store])
+    val store       = mock(classOf[Store])
     when(createStore.apply(anyInt())).thenReturn(store)
     val shardedStore = new ShardedStore(3, hash, createStore)
 

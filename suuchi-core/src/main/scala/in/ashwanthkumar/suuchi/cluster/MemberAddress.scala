@@ -5,6 +5,7 @@ case class MemberAddress(host: String, port: Int) {
 }
 
 object MemberAddress {
+
   /**
    * Constructs a MemberAddress from host:port string format
    *

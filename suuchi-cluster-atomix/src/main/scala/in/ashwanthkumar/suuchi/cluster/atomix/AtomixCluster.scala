@@ -23,13 +23,22 @@ import scala.collection.JavaConversions._
  */
 case class MemberState(address: MemberAddress)
 
-class AtomixCluster(host: String, atomixPort: Int, rpcPort: Int, workDir: String, clusterIdentifier: String, config: Config, listeners: List[MemberListener] = Nil) extends Cluster(config, listeners) {
+class AtomixCluster(host: String,
+                    atomixPort: Int,
+                    rpcPort: Int,
+                    workDir: String,
+                    clusterIdentifier: String,
+                    config: Config,
+                    listeners: List[MemberListener] = Nil)
+    extends Cluster(config, listeners) {
   private val log = LoggerFactory.getLogger(classOf[AtomixCluster])
 
-  var atomix = AtomixReplica.builder(new Address(host, atomixPort))
+  var atomix = AtomixReplica
+    .builder(new Address(host, atomixPort))
     .withTransport(NettyTransport.builder().build())
     .withStorage(
-      Storage.builder()
+      Storage
+        .builder()
         .withDirectory(new File(workDir, host + "_" + atomixPort))
         .withStorageLevel(StorageLevel.DISK)
         .withMinorCompactionInterval(Duration.ofSeconds(30))
@@ -83,7 +92,9 @@ class AtomixCluster(host: String, atomixPort: Int, rpcPort: Int, workDir: String
   }
 
   override def nodes: Iterable[MemberAddress] = {
-    atomix.getGroup(clusterIdentifier).get()
+    atomix
+      .getGroup(clusterIdentifier)
+      .get()
       .members()
       .map(t => t.metadata[MemberState]())
       .filter(_.isPresent)

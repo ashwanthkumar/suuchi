@@ -14,7 +14,7 @@ trait WriteStore {
 case class KV(key: Array[Byte], value: Array[Byte]) {
   override def equals(obj: scala.Any): Boolean = obj match {
     case o: KV => util.Arrays.equals(key, o.key) && util.Arrays.equals(value, o.value)
-    case _ => false
+    case _     => false
   }
 }
 trait Scannable {

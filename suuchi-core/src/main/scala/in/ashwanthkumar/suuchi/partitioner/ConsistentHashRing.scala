@@ -17,27 +17,29 @@ case class TokenRange(start: Int, end: Int, node: VNode) {
 }
 
 object RingState {
-  /**
-    * Check if `key` falls within the given range using the `hashFn`
-    *
-    * @param key        Key to check for
-    * @param tokenRange TokenRange to check against
-    * @param hashFn     HashFunction used in CHRing
-    * @return true if he key falls within the range
-    *         false otherwise
-    */
-  def contains(key: Array[Byte], tokenRange: TokenRange, hashFn: Hash): Boolean = contains(key, tokenRange.start, tokenRange.end, hashFn)
 
   /**
-    * Check if `key` falls within the given range using the `hashFn`
-    *
-    * @param key    Key to check for
-    * @param start  Start range of the Token
-    * @param end    Last end of the Token
-    * @param hashFn HashFunction used in CHRing
-    * @return true if he key falls within the range
-    *         false otherwise
-    */
+   * Check if `key` falls within the given range using the `hashFn`
+   *
+   * @param key        Key to check for
+   * @param tokenRange TokenRange to check against
+   * @param hashFn     HashFunction used in CHRing
+   * @return true if he key falls within the range
+   *         false otherwise
+   */
+  def contains(key: Array[Byte], tokenRange: TokenRange, hashFn: Hash): Boolean =
+    contains(key, tokenRange.start, tokenRange.end, hashFn)
+
+  /**
+   * Check if `key` falls within the given range using the `hashFn`
+   *
+   * @param key    Key to check for
+   * @param start  Start range of the Token
+   * @param end    Last end of the Token
+   * @param hashFn HashFunction used in CHRing
+   * @return true if he key falls within the range
+   *         false otherwise
+   */
   def contains(key: Array[Byte], start: Int, end: Int, hashFn: Hash): Boolean = {
     ByteArrayUtils.isHashKeyWithinRange(start, end, key, hashFn)
   }
@@ -46,14 +48,19 @@ object RingState {
 case class RingState(private[partitioner] val lastKnown: Int, ranges: List[TokenRange]) {
   def byNodes = ranges.groupBy(_.node.node)
 
-  def withReplication(replicationFactor: Int) = pick(ranges.length, replicationFactor, ranges ::: ranges, Map())
+  def withReplication(replicationFactor: Int) =
+    pick(ranges.length, replicationFactor, ranges ::: ranges, Map())
 
   @tailrec
-  private final def pick(remaining: Int, replicationFactor: Int, ranges: List[TokenRange], result: Map[TokenRange, List[MemberAddress]]): Map[TokenRange, List[MemberAddress]] = {
+  private final def pick(
+      remaining: Int,
+      replicationFactor: Int,
+      ranges: List[TokenRange],
+      result: Map[TokenRange, List[MemberAddress]]): Map[TokenRange, List[MemberAddress]] = {
     if (remaining == 0) result
     else {
       val replicas = ranges.map(_.member).distinct.take(replicationFactor)
-      val tokens = Map(ranges.head -> replicas)
+      val tokens   = Map(ranges.head -> replicas)
       pick(remaining - 1, replicationFactor, ranges.tail, result ++ tokens)
     }
   }
@@ -99,9 +106,10 @@ class ConsistentHashRing(hashFn: Hash, partitionsPerNode: Int, replicationFactor
   def find(key: Array[Byte], n: Int) = {
     if (sortedMap.isEmpty) Nil
     else {
-      val (_, nodes) = (0 until n).foldLeft((hashFn.hash(key), List.empty[MemberAddress])) { case ((hash, members), idx) =>
-        val (newHash, candidate) = findCandidate(hash)
-        (newHash + 1, candidate :: members)
+      val (_, nodes) = (0 until n).foldLeft((hashFn.hash(key), List.empty[MemberAddress])) {
+        case ((hash, members), idx) =>
+          val (newHash, candidate) = findCandidate(hash)
+          (newHash + 1, candidate :: members)
       }
       nodes.reverse
     }
@@ -117,10 +125,10 @@ class ConsistentHashRing(hashFn: Hash, partitionsPerNode: Int, replicationFactor
   def findUnique(key: Array[Byte], n: Int) = {
     if (sortedMap.isEmpty) Nil
     else {
-      var duped = 0
-      var hashIdx = hashFn.hash(key)
+      var duped       = 0
+      var hashIdx     = hashFn.hash(key)
       val uniqueNodes = mutable.MutableList[MemberAddress]()
-      var index = 0
+      var index       = 0
       while (index < n) {
         val (newHash, candidate) = findCandidate(hashIdx)
         hashIdx = newHash
@@ -153,10 +161,17 @@ class ConsistentHashRing(hashFn: Hash, partitionsPerNode: Int, replicationFactor
     import scala.collection.JavaConversions._
 
     val firstToken = sortedMap.firstKey()
-    val tokenRings = sortedMap.keysIterator.drop(1).foldLeft(RingState(firstToken, Nil)) { (state, token) =>
-      RingState(token, ranges = TokenRange(state.lastKnown, token - 1, sortedMap.get(state.lastKnown)) :: state.ranges)
+    val tokenRings = sortedMap.keysIterator.drop(1).foldLeft(RingState(firstToken, Nil)) {
+      (state, token) =>
+        RingState(
+          token,
+          ranges = TokenRange(state.lastKnown, token - 1, sortedMap.get(state.lastKnown)) :: state.ranges)
     }
-    RingState(Int.MaxValue, ranges = (TokenRange(tokenRings.lastKnown, firstToken - 1, sortedMap.get(tokenRings.lastKnown)) :: tokenRings.ranges).reverse)
+    RingState(Int.MaxValue,
+              ranges =
+                (TokenRange(tokenRings.lastKnown,
+                            firstToken - 1,
+                            sortedMap.get(tokenRings.lastKnown)) :: tokenRings.ranges).reverse)
   }
 
   private[partitioner] def findCandidate(hash: Integer) = {
@@ -174,7 +189,9 @@ class ConsistentHashRing(hashFn: Hash, partitionsPerNode: Int, replicationFactor
 }
 
 object ConsistentHashRing {
-  def apply(hashFn: Hash, nodes: List[MemberAddress], partitionsPerNode: Int): ConsistentHashRing = new ConsistentHashRing(SuuchiHash, partitionsPerNode).init(nodes)
+  def apply(hashFn: Hash, nodes: List[MemberAddress], partitionsPerNode: Int): ConsistentHashRing =
+    new ConsistentHashRing(SuuchiHash, partitionsPerNode).init(nodes)
 
-  def apply(nodes: List[MemberAddress], partitionsPerNode: Int): ConsistentHashRing = apply(SuuchiHash, nodes, partitionsPerNode)
+  def apply(nodes: List[MemberAddress], partitionsPerNode: Int): ConsistentHashRing =
+    apply(SuuchiHash, nodes, partitionsPerNode)
 }

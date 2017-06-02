@@ -10,27 +10,32 @@ import io.grpc.stub.{ServerCallStreamObserver, StreamObserver, StreamObservers}
 
 import scala.collection.JavaConverters._
 
-class SuuchiScanService(store: Store) extends SuuchiScanGrpc.SuuchiScanImplBase with ConnectionUtils {
+class SuuchiScanService(store: Store)
+    extends SuuchiScanGrpc.SuuchiScanImplBase
+    with ConnectionUtils {
 
   private def buildResponse(response: KV): ScanResponse = {
-    SuuchiRPC.ScanResponse.newBuilder()
+    SuuchiRPC.ScanResponse
+      .newBuilder()
       .setKv(buildKV(response))
       .build()
   }
 
   override def scan(request: ScanRequest, responseObserver: StreamObserver[ScanResponse]): Unit = {
     val observer = responseObserver.asInstanceOf[ServerCallStreamObserver[ScanResponse]]
-    val start = request.getStart
-    val end = request.getEnd
+    val start    = request.getStart
+    val end      = request.getEnd
 
-    val it = store.scan()
+    val it = store
+      .scan()
       .filter(kv => ByteArrayUtils.isHashKeyWithinRange(start, end, kv.key, SuuchiHash))
       .map(buildResponse)
     StreamObservers.copyWithFlowControl[ScanResponse](it.asJava, observer)
   }
 
   private def buildKV(kv: KV) = {
-    SuuchiRPC.KV.newBuilder()
+    SuuchiRPC.KV
+      .newBuilder()
       .setKey(ByteString.copyFrom(kv.key))
       .setValue(ByteString.copyFrom(kv.value))
       .build()

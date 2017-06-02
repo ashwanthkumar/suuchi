@@ -13,13 +13,14 @@ import scala.collection.JavaConversions._
 class SuuchiClient(host: String, port: Int) {
   private val log = LoggerFactory.getLogger(getClass)
 
-  private val channel = NettyChannelBuilder.forAddress(host, port)
+  private val channel = NettyChannelBuilder
+    .forAddress(host, port)
     .usePlaintext(true)
     .build()
 
   private val writeStub = SuuchiPutGrpc.newBlockingStub(channel)
-  private val readStub = SuuchiReadGrpc.newBlockingStub(channel)
-  private val scanStub = SuuchiScanGrpc.newBlockingStub(channel)
+  private val readStub  = SuuchiReadGrpc.newBlockingStub(channel)
+  private val scanStub  = SuuchiScanGrpc.newBlockingStub(channel)
 
   def shutdown() = {
     channel.awaitTermination(5, TimeUnit.SECONDS)
@@ -27,7 +28,8 @@ class SuuchiClient(host: String, port: Int) {
 
   def put(key: Array[Byte], value: Array[Byte]): Boolean = {
     log.info(s"Doing Put with key=${new String(key)} value=${new String(value)}")
-    val request = PutRequest.newBuilder()
+    val request = PutRequest
+      .newBuilder()
       .setKey(ByteString.copyFrom(key))
       .setValue(ByteString.copyFrom(value))
       .build()
@@ -37,7 +39,8 @@ class SuuchiClient(host: String, port: Int) {
 
   def get(key: Array[Byte]): Option[Array[Byte]] = {
     log.info("Doing Get with key={}", new String(key))
-    val request = GetRequest.newBuilder()
+    val request = GetRequest
+      .newBuilder()
       .setKey(ByteString.copyFrom(key))
       .build()
 
@@ -56,7 +59,7 @@ class SuuchiClient(host: String, port: Int) {
 
 object SuuchiClient extends App {
   private val log = LoggerFactory.getLogger(getClass)
-  val client = new SuuchiClient("localhost", 5051)
+  val client      = new SuuchiClient("localhost", 5051)
 
   (0 until 5).foreach { index =>
     val status = client.put(Array((65 + index).toByte), Array((65 + index).toByte))
@@ -68,13 +71,13 @@ object SuuchiClient extends App {
     log.info("Got value={}", new String(value.get))
   }
 
-  (0 to 5).foreach{ i =>
+  (0 to 5).foreach { i =>
     client.put(s"prefix/$i".getBytes, s"$i".getBytes)
   }
 
   val iterator = client.scan()
 
-  iterator.foreach{ response =>
+  iterator.foreach { response =>
     println(new String(response.getKv.getKey.toByteArray))
   }
 

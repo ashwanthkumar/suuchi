@@ -13,7 +13,8 @@ class SuuchiReadService(store: ReadStore) extends SuuchiReadGrpc.SuuchiReadImplB
     store.get(key) match {
       case Some(value) =>
         responseObserver.onNext(
-          SuuchiRPC.GetResponse.newBuilder()
+          SuuchiRPC.GetResponse
+            .newBuilder()
             .setKey(ByteString.copyFrom(key))
             .setValue(ByteString.copyFrom(value))
             .build()
@@ -21,7 +22,8 @@ class SuuchiReadService(store: ReadStore) extends SuuchiReadGrpc.SuuchiReadImplB
         responseObserver.onCompleted()
       case None =>
         responseObserver.onNext(
-          SuuchiRPC.GetResponse.newBuilder()
+          SuuchiRPC.GetResponse
+            .newBuilder()
             .setKey(ByteString.copyFrom(key))
             .build()
         )
