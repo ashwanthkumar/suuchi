@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_package = "in.ashwanthkumar.suuchi.core.tests";
+option java_outer_classname = "SuuchiTestRPC";
+
+message ReduceRequest {
+}
+
+message ReduceResponse {
+    int64 output = 1;
+}
+
+service Aggregator {
+    rpc Reduce (ReduceRequest) returns (ReduceResponse);
+}
+
+message FooRequest {
+}
+message FooResponse {
+}
+
+service Random {
+    rpc Foo (FooRequest) returns (FooResponse);
+}
