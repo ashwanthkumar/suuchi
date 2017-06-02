@@ -39,17 +39,22 @@ class AggregationRouter(members: List[MemberAddress], agg: Aggregation) extends 
         }
         override def onHalfClose() = {
           log.debug("AggregationRouter#onHalfClose")
-          val gathered = AggregationRouter.scatter(members, channelPool, incomingRequest.getMethodDescriptor, headers, request)
-          val reduced = aggregator.apply(gathered.asScala)
-          incomingRequest.sendHeaders(headers)
-          incomingRequest.sendMessage(reduced)
-          incomingRequest.close(Status.OK, headers)
+          try {
+            val gathered = scatter(members, channelPool, incomingRequest.getMethodDescriptor, headers, request)
+            val reduced = aggregator.apply(gathered.asScala)
+            incomingRequest.sendHeaders(headers)
+            incomingRequest.sendMessage(reduced)
+            incomingRequest.close(Status.OK, headers)
+          } catch {
+            case e: Throwable =>
+              log.error(e.getMessage, e)
+              incomingRequest.close(Status.INTERNAL.withCause(e), headers)
+          }
         }
         override def onReady() = {
           log.debug("AggregationRouter#onReady")
         }
         override def onMessage(message: ReqT) = {
-          log.debug("AggregationRouter#onMessage")
           // We don't do the aggregation here but on onHalfClose()
           request = message
         }
@@ -58,6 +63,10 @@ class AggregationRouter(members: List[MemberAddress], agg: Aggregation) extends 
         }
       }
     }
+  }
+
+  protected def scatter[ReqT, RespT](nodes: List[MemberAddress], channelPool: CachedChannelPool, methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata, input: ReqT): util.List[RespT] = {
+    AggregationRouter.scatter(nodes, channelPool, methodDescriptor, headers, input)
   }
 }
 

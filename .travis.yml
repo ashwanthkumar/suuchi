@@ -1,4 +1,5 @@
 language: java
+sudo: false
 jdk:
 - oraclejdk8
 env:
@@ -9,6 +10,7 @@ env:
 cache:
   directories:
   - $HOME/.m2
+  - $HOME/DENV
 after_success:
 - bash bin/hooks_publish_docs.sh
 - bash <(curl -s https://codecov.io/bash)
