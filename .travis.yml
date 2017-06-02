@@ -16,3 +16,4 @@ after_success:
 - git fetch gh-token && git fetch gh-token gh-pages:gh-pages;
 - sudo pip install mkdocs==0.15.3
 - mkdocs gh-deploy -v --clean --remote-name gh-token;
+- bash <(curl -s https://codecov.io/bash)
