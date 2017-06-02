@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option java_package = "in.ashwanthkumar.suuchi.rpc.generated";
+option java_package = "in.ashwanthkumar.suuchi.examples.rpc.generated";
 option java_outer_classname = "SuuchiRPC";
 
 // The Ping service definition.
@@ -13,10 +13,9 @@ message PingResponse {
     bool status = 1;
 }
 
-// SuuchiRead service which can be used for serving read-only datasets
-service SuuchiRead {
+// Read service which can be used for serving read-only datasets
+service Read {
     rpc Get (GetRequest) returns (GetResponse);
-    // TODO - Add scan method to this service
 }
 message GetRequest {
     bytes key = 1;
@@ -26,8 +25,8 @@ message GetResponse {
     bytes value = 2;
 }
 
-// SuuchiPut service which can be used for taking in writes
-service SuuchiPut {
+// Put service which can be used for taking in writes
+service Put {
     rpc Put (PutRequest) returns (PutResponse);
 }
 message PutRequest {
@@ -38,7 +37,7 @@ message PutResponse {
     bool status = 1;
 }
 
-// SuuchiInfo service which can be used for getting all Shard details
+// Shards service which can be used for getting all Shard details
 service Shards {
     rpc Info (ShardInfoRequest) returns (ShardInfoResponse);
 }
@@ -59,7 +58,8 @@ message Node {
     int32 port = 2;
 }
 
-service SuuchiScan {
+// Scan service is used for doing streaming Reads over a range of data
+service Scan {
     rpc Scan (ScanRequest) returns (stream ScanResponse);
 }
 message ScanRequest {
@@ -72,4 +72,15 @@ message ScanResponse {
 message KV {
     bytes key = 1;
     bytes value = 2;
+}
+
+// Aggregator service is used for doing reduce and re-reduce operations; otherwise also known as scatter-gather
+// request paradigm.
+service Aggregator {
+    rpc aggregate (AggregateRequest) returns (AggregateResponse);
+}
+message AggregateRequest {
+}
+message AggregateResponse {
+    int64 output = 1;
 }

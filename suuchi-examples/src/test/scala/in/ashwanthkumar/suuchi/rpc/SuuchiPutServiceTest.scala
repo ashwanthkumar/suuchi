@@ -1,7 +1,7 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import com.google.protobuf.ByteString
-import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{PutRequest, PutResponse}
+import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC.{PutRequest, PutResponse}
 import in.ashwanthkumar.suuchi.store.InMemoryStore
 import io.grpc.stub.StreamObserver
 import org.mockito.ArgumentCaptor
@@ -10,11 +10,12 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers.{be, convertToAnyShouldWrapper}
 
 class SuuchiPutServiceTest extends FlatSpec {
-  val store = new InMemoryStore
+  val store   = new InMemoryStore
   val service = new SuuchiPutService(store)
 
   "SuuchiPutService" should "support put for a Key-Value to the store" in {
-    val request = PutRequest.newBuilder()
+    val request = PutRequest
+      .newBuilder()
       .setKey(ByteString.copyFrom("1".getBytes))
       .setValue(ByteString.copyFrom("2".getBytes))
       .build()

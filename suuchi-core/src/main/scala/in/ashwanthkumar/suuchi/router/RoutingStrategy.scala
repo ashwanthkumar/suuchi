@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import scala.language.reflectiveCalls
 
 trait RoutingStrategy {
+
   /**
    * Decides if the incoming message should be forwarded or handled by the current node itself.
    *
@@ -20,7 +21,7 @@ trait RoutingStrategy {
   def route[ReqT]: PartialFunction[ReqT, List[MemberAddress]]
 }
 object RoutingStrategy {
-  type WithKey = {def getKey: ByteString}
+  type WithKey = { def getKey: ByteString }
 }
 
 /**
@@ -29,6 +30,7 @@ object RoutingStrategy {
  */
 class AlwaysRouteTo(members: MemberAddress*) extends RoutingStrategy {
   private val log = LoggerFactory.getLogger(getClass)
+
   /**
    * @inheritdoc
    */
@@ -42,7 +44,8 @@ class AlwaysRouteTo(members: MemberAddress*) extends RoutingStrategy {
  * Uses a ConsistentHash based Partitioner to find the right node for the incoming message.
  * @param partitioner - which is an implementation of ConsistentHashPartitioner
  **/
-class ConsistentHashingRouting(partitioner: ConsistentHashPartitioner, nrReplicas: Int) extends RoutingStrategy {
+class ConsistentHashingRouting(partitioner: ConsistentHashPartitioner, nrReplicas: Int)
+    extends RoutingStrategy {
   override def route[ReqT]: PartialFunction[ReqT, List[MemberAddress]] = {
     case msg: RoutingStrategy.WithKey => partitioner.find(msg.getKey.toByteArray, nrReplicas)
   }
@@ -50,6 +53,7 @@ class ConsistentHashingRouting(partitioner: ConsistentHashPartitioner, nrReplica
 
 object ConsistentHashingRouting {
   def apply(nrReplicas: Int, partitionsPerNode: Int, nodes: MemberAddress*) = {
-    new ConsistentHashingRouting(ConsistentHashPartitioner(nodes.toList, partitionsPerNode), nrReplicas)
+    new ConsistentHashingRouting(ConsistentHashPartitioner(nodes.toList, partitionsPerNode),
+                                 nrReplicas)
   }
 }

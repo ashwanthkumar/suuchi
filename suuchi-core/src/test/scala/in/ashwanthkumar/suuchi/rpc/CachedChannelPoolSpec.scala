@@ -9,17 +9,19 @@ import org.scalatest.Matchers.{convertToAnyShouldWrapper, be, have, size}
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 
-class MockCachedPool(map: ConcurrentHashMap[String, ManagedChannel], mockBuilder: ManagedChannelBuilder[_ <: ManagedChannelBuilder[_]]) extends CachedChannelPool(map) {
+class MockCachedPool(map: ConcurrentHashMap[String, ManagedChannel],
+                     mockBuilder: ManagedChannelBuilder[_ <: ManagedChannelBuilder[_]])
+    extends CachedChannelPool(map) {
   override private[rpc] def builderFrom(key: String): ManagedChannelBuilder[_] = mockBuilder
 }
 
 class CachedChannelPoolSpec extends FlatSpec {
   "CachedChannelPool" should "build a new channel if no cache is available" in {
     val mockChannel = mock(classOf[ManagedChannel])
-    val builder = mock(classOf[ManagedChannelBuilder[_ <: ManagedChannelBuilder[_]]])
+    val builder     = mock(classOf[ManagedChannelBuilder[_ <: ManagedChannelBuilder[_]]])
     when(builder.build()).thenReturn(mockChannel)
 
-    val map = new ConcurrentHashMap[String, ManagedChannel]()
+    val map  = new ConcurrentHashMap[String, ManagedChannel]()
     val pool = new MockCachedPool(map, builder)
     map should have size 0
     val channel = pool.get(MemberAddress("host1", 1))
@@ -32,10 +34,10 @@ class CachedChannelPoolSpec extends FlatSpec {
 
   it should "build a new channel using plainText if insecure=true" in {
     val mockChannel = mock(classOf[ManagedChannel])
-    val builder = mock(classOf[ManagedChannelBuilder[_ <: ManagedChannelBuilder[_]]])
+    val builder     = mock(classOf[ManagedChannelBuilder[_ <: ManagedChannelBuilder[_]]])
     when(builder.build()).thenReturn(mockChannel)
 
-    val map = new ConcurrentHashMap[String, ManagedChannel]()
+    val map  = new ConcurrentHashMap[String, ManagedChannel]()
     val pool = new MockCachedPool(map, builder)
     map should have size 0
     val channel = pool.get(MemberAddress("host1", 1), insecure = true)
@@ -49,10 +51,10 @@ class CachedChannelPoolSpec extends FlatSpec {
 
   it should "return the same channel if it's already cached" in {
     val mockChannel = mock(classOf[ManagedChannel])
-    val builder = mock(classOf[ManagedChannelBuilder[_ <: ManagedChannelBuilder[_]]])
+    val builder     = mock(classOf[ManagedChannelBuilder[_ <: ManagedChannelBuilder[_]]])
     when(builder.build()).thenReturn(mockChannel)
 
-    val map = new ConcurrentHashMap[String, ManagedChannel]()
+    val map  = new ConcurrentHashMap[String, ManagedChannel]()
     val pool = new MockCachedPool(map, builder)
     map should have size 0
     val channel = pool.get(MemberAddress("host1", 1))

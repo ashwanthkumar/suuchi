@@ -23,7 +23,8 @@ class InMemoryStoreTest extends FlatSpec {
     val kVs = scanner.scan().toList
     scanner.close()
     kVs should have size 5
-    kVs.sortBy(kv => new String(kv.key)) should be(List(kv("1", "one"), kv("2", "two"), kv("3", "three"), kv("4", "four"), kv("5", "five")))
+    kVs.sortBy(kv => new String(kv.key)) should be(
+      List(kv("1", "one"), kv("2", "two"), kv("3", "three"), kv("4", "four"), kv("5", "five")))
   }
 
   it should "support prefix scan" in {
@@ -40,7 +41,7 @@ class InMemoryStoreTest extends FlatSpec {
     val kVs = scanner.scan("prefix1".getBytes).toList
     scanner.close()
 
-    kVs.foreach{kv =>
+    kVs.foreach { kv =>
       new String(kv.key) should startWith("prefix1")
     }
   }

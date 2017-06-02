@@ -12,7 +12,8 @@ object IdentityHash extends Hash {
 
 class ConsistentHashRingSpec extends FlatSpec {
   "ConsistentHashRing" should "pin nodes into the ring accounting for virtual nodes" in {
-    val nodes = List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3))
+    val nodes =
+      List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3))
     val ring = ConsistentHashRing(nodes, partitionsPerNode = 3)
 
     ring.nodes.size() should be(9)
@@ -23,7 +24,8 @@ class ConsistentHashRingSpec extends FlatSpec {
 
   it should "remove nodes & its replica nodes on remove" in {
     val ring = new ConsistentHashRing(SuuchiHash, partitionsPerNode = 3)
-    ring.init(List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3)))
+    ring.init(
+      List(MemberAddress("host1", 1), MemberAddress("host2", 2), MemberAddress("host3", 3)))
 
     ring.remove(MemberAddress("host1", 1))
     ring.nodes.size should be(6)
@@ -58,7 +60,9 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "might return same node multiple times even when we have enough number of nodes" in {
-    val members = (1 to 5).map { index => MemberAddress(s"host$index", index) }.toList
+    val members = (1 to 5).map { index =>
+      MemberAddress(s"host$index", index)
+    }.toList
     val ring = ConsistentHashRing(members, partitionsPerNode = 3)
     val list = ring.find("1".getBytes, 3)
     list should have size 3
@@ -75,7 +79,9 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "return unique set of nodes when we've more then replica count nodes in the ring" in {
-    val members = (1 to 5).map { index => MemberAddress(s"host$index", index) }.toList
+    val members = (1 to 5).map { index =>
+      MemberAddress(s"host$index", index)
+    }.toList
     val ring = ConsistentHashRing(members, partitionsPerNode = 3)
     val list = ring.findUnique("1".getBytes, 3)
     list should have size 3
@@ -85,7 +91,7 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "return the right ringState that wraps around the HashRing" in {
-    val ring = ConsistentHashRing(Nil, partitionsPerNode = 2)
+    val ring  = ConsistentHashRing(Nil, partitionsPerNode = 2)
     val host1 = MemberAddress("host1", 1)
     val host2 = MemberAddress("host2", 2)
     val host3 = MemberAddress("host3", 3)
@@ -110,7 +116,7 @@ class ConsistentHashRingSpec extends FlatSpec {
   }
 
   it should "return list of token ranges for each VNode in a ring" in {
-    val ring = ConsistentHashRing(Nil, partitionsPerNode = 2)
+    val ring  = ConsistentHashRing(Nil, partitionsPerNode = 2)
     val host1 = MemberAddress("host1", 1)
     val host2 = MemberAddress("host2", 2)
     val host3 = MemberAddress("host3", 3)
@@ -122,7 +128,7 @@ class ConsistentHashRingSpec extends FlatSpec {
     ring.sortedMap.put(50, VNode(host2, 2))
     ring.sortedMap.put(60, VNode(host1, 2))
 
-    val ringState = ring.ringState
+    val ringState   = ring.ringState
     val totalShards = ringState.withReplication(2)
     totalShards should have size 6
 

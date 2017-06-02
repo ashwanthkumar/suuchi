@@ -9,6 +9,7 @@ import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 
 class NeverRoute extends RoutingStrategy {
+
   /**
    * @inheritdoc
    */
@@ -16,6 +17,7 @@ class NeverRoute extends RoutingStrategy {
 }
 
 class NoAliveNodes extends RoutingStrategy {
+
   /**
    * @inheritdoc
    */
@@ -36,23 +38,33 @@ class HandleOrForwardRouterSpec extends FlatSpec {
   }
 
   it should "not forward message when router emits node to self" in {
-    val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host2", 1)), MemberAddress("host2", 1))
+    val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host2", 1)),
+                                           MemberAddress("host2", 1))
     verifyInteractions(router, isForwarded = false, isHandledLocally = true)
   }
 
   it should "forward message when router says so" in {
-    val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1)), MemberAddress("host2", 1)) {
+    val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1)),
+                                           MemberAddress("host2", 1)) {
       // mocking the actual forward implementation
-      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = 1.asInstanceOf[RespT]
+      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT],
+                                        headers: Metadata,
+                                        incomingRequest: ReqT,
+                                        destination: MemberAddress): RespT = 1.asInstanceOf[RespT]
     }
     verifyInteractions(router, isForwarded = true, isHandledLocally = false)
   }
 
   it should "forward message to next node in the ring if the first one fails" in {
-    val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1), MemberAddress("host2", 2)), MemberAddress("host2", 1)) {
+    val router = new HandleOrForwardRouter(
+      new AlwaysRouteTo(MemberAddress("host1", 1), MemberAddress("host2", 2)),
+      MemberAddress("host2", 1)) {
       var shouldFail = true
       // mocking the actual forward implementation
-      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
+      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT],
+                                        headers: Metadata,
+                                        incomingRequest: ReqT,
+                                        destination: MemberAddress): RespT = {
         if (shouldFail) {
           shouldFail = false
           throw new RuntimeException("An exception happened while trying to forward the request")
@@ -65,23 +77,31 @@ class HandleOrForwardRouterSpec extends FlatSpec {
   }
 
   it should "not forward message to any node in the ring if all node forwards fail" in {
-    val router = new HandleOrForwardRouter(new AlwaysRouteTo(MemberAddress("host1", 1), MemberAddress("host2", 2)), MemberAddress("host2", 1)) {
+    val router = new HandleOrForwardRouter(
+      new AlwaysRouteTo(MemberAddress("host1", 1), MemberAddress("host2", 2)),
+      MemberAddress("host2", 1)) {
       // mocking the actual forward implementation
-      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT], headers: Metadata, incomingRequest: ReqT, destination: MemberAddress): RespT = {
+      override def forward[RespT, ReqT](method: MethodDescriptor[ReqT, RespT],
+                                        headers: Metadata,
+                                        incomingRequest: ReqT,
+                                        destination: MemberAddress): RespT = {
         throw new RuntimeException("An exception happened while trying to forward the request")
       }
     }
     verifyInteractions(router, isForwarded = false, isHandledLocally = false)
   }
 
-  def verifyInteractions(router: HandleOrForwardRouter, isForwarded: Boolean, isHandledLocally: Boolean): Unit = {
-    val serverCall = mock(classOf[ServerCall[Int, Int]])
+  def verifyInteractions(router: HandleOrForwardRouter,
+                         isForwarded: Boolean,
+                         isHandledLocally: Boolean): Unit = {
+    val serverCall       = mock(classOf[ServerCall[Int, Int]])
     val serverMethodDesc = TestMethodDescriptors.noopMethod[Int, Int]()
     when(serverCall.getMethodDescriptor).thenReturn(serverMethodDesc)
 
     val delegate = mock(classOf[Listener[Int]])
-    val next = mock(classOf[ServerCallHandler[Int, Int]])
-    when(next.startCall(any(classOf[ServerCall[Int, Int]]), any(classOf[Metadata]))).thenReturn(delegate)
+    val next     = mock(classOf[ServerCallHandler[Int, Int]])
+    when(next.startCall(any(classOf[ServerCall[Int, Int]]), any(classOf[Metadata])))
+      .thenReturn(delegate)
 
     val listener = router.interceptCall(serverCall, new Metadata(), next)
     listener.onReady()

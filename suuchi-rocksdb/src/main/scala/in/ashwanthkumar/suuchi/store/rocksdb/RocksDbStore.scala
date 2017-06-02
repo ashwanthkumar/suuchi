@@ -48,7 +48,8 @@ class RocksDBScanner(db: RocksDB) extends Scanner[KV] {
     rocksIterator.seek(prefix)
 
     new Iterator[KV] {
-      override def hasNext: Boolean = rocksIterator.isValid && ByteArrayUtils.hasPrefix(rocksIterator.key(), prefix)
+      override def hasNext: Boolean =
+        rocksIterator.isValid && ByteArrayUtils.hasPrefix(rocksIterator.key(), prefix)
 
       override def next(): KV = {
         val kv = KV(rocksIterator.key(), rocksIterator.value())

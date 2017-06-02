@@ -6,7 +6,7 @@ import scala.util.hashing.MurmurHash3
 
 trait Partitioner {
   def find(key: Array[Byte], replicaCount: Int): List[MemberAddress]
-  def find(key: Array[Byte]) : List[MemberAddress] = find(key, 1)
+  def find(key: Array[Byte]): List[MemberAddress] = find(key, 1)
 }
 
 class ConsistentHashPartitioner(hashRing: ConsistentHashRing) extends Partitioner {
@@ -15,7 +15,8 @@ class ConsistentHashPartitioner(hashRing: ConsistentHashRing) extends Partitione
   }
 }
 object ConsistentHashPartitioner {
-  def apply(nodes: List[MemberAddress], partitionsPerNode: Int) = new ConsistentHashPartitioner(ConsistentHashRing(nodes, partitionsPerNode))
+  def apply(nodes: List[MemberAddress], partitionsPerNode: Int) =
+    new ConsistentHashPartitioner(ConsistentHashRing(nodes, partitionsPerNode))
   def apply(ring: ConsistentHashRing) = new ConsistentHashPartitioner(ring)
 }
 

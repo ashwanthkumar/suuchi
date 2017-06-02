@@ -1,7 +1,7 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import com.google.protobuf.ByteString
-import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{GetRequest, GetResponse}
+import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC.{GetRequest, GetResponse}
 import in.ashwanthkumar.suuchi.store.InMemoryStore
 import io.grpc.stub.StreamObserver
 import org.mockito.ArgumentCaptor
@@ -10,7 +10,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers.{be, convertToAnyShouldWrapper}
 
 class SuuchiReadServiceTest extends FlatSpec {
-  val store = new InMemoryStore
+  val store   = new InMemoryStore
   val service = new SuuchiReadService(store)
 
   "SuuchiReadService" should "support get on a value that exists in the store" in {
@@ -29,7 +29,7 @@ class SuuchiReadServiceTest extends FlatSpec {
   }
 
   it should "return response with empty value with key does not exist in store" in {
-    val request = GetRequest.newBuilder().setKey(ByteString.copyFrom("2".getBytes)).build()
+    val request  = GetRequest.newBuilder().setKey(ByteString.copyFrom("2".getBytes)).build()
     val observer = mock(classOf[StreamObserver[GetResponse]])
     service.get(request, observer)
     verify(observer, times(1)).onCompleted()
