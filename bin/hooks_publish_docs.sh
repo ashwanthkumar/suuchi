@@ -8,6 +8,8 @@ git fetch gh-token && git fetch gh-token gh-pages:gh-pages;
 # Deploy Docs only for builds out of master and not PRs or tags.
 if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) &&
   [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-    sudo pip install mkdocs==0.15.3
+    virtualenv --system-site-packages ${HOME}/DENV
+    source ${HOME}/DENV/bin/activate
+    pip install mkdocs==0.15.3
     mkdocs gh-deploy -v --clean --remote-name gh-token;
 fi
