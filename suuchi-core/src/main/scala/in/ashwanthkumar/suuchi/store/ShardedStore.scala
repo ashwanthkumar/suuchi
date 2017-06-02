@@ -39,14 +39,19 @@ class ShardedStore(partitionsPerNode: Int, hashFn: Hash, createStore: (Int) => S
   override def remove(key: Array[Byte]): Boolean =
     logOnError(() => getStore(key).remove(key)).isSuccess
 
-  override def scan(): Iterator[KV] = {
+  override def scanner(): Scanner[KV] = new Scanner[KV] {
     initializeStoresIfNot()
-    map.values().iterator().flatMap(_.scan())
-  }
+    private[this] lazy val scanners = map.values().map(_.scanner())
 
-  override def scan(prefix: Array[Byte]): Iterator[KV] = {
-    initializeStoresIfNot()
-    map.values().iterator().flatMap(_.scan(prefix))
+    override def prepare(): Unit = {
+      scanners.foreach(_.prepare())
+    }
+
+    override def scan(prefix: Array[Byte]): Iterator[KV] = scanners.iterator.flatMap(_.scan(prefix))
+
+    override def scan(): Iterator[KV] = scanners.iterator.flatMap(_.scan())
+
+    override def close(): Unit = scanners.foreach(_.close())
   }
 
   protected def getStore(key: Array[Byte]): Store = {

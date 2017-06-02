@@ -122,17 +122,30 @@ class VersionedStore(store: Store,
     versions
   }
 
-  private def removeData(key: Array[Byte], version: Long) = store.remove(dkey(key, version))
-  private def removeVersion(key: Array[Byte])             = store.remove(vkey(key))
-
-  override def scan(): Iterator[KV] = store.scan().filter(kv => VersionedStore.isDataKey(kv.key))
-
-  override def scan(prefix: Array[Byte]): Iterator[KV] = store.scan(dkey(prefix))
-
   def toVRecord(kv: KV) = VRecord(kv.key, Versions.fromBytes(kv.value))
 
-  def scanVersions(): Iterator[VRecord] =
-    store.scan().filter(kv => VersionedStore.isVkeyKey(kv.key)).map(toVRecord)
-  def scanVersions(prefix: Array[Byte]): Iterator[VRecord] =
-    store.scan(vkey(prefix)).map(toVRecord)
+  override def scanner(): Scanner[KV] = new Scanner[KV] {
+
+    private val delegate = store.scanner()
+
+    override def prepare(): Unit                         = delegate.prepare()
+    override def scan(prefix: Array[Byte]): Iterator[KV] = delegate.scan(dkey(prefix))
+    override def scan(): Iterator[KV] =
+      delegate.scan().filter(kv => VersionedStore.isDataKey(kv.key))
+    override def close(): Unit = delegate.close()
+  }
+
+  def versionsScanner(): Scanner[VRecord] = new Scanner[VRecord] {
+    private val delegate = store.scanner()
+
+    override def prepare(): Unit = delegate.prepare()
+    override def scan(prefix: Array[Byte]): Iterator[VRecord] =
+      delegate.scan(vkey(prefix)).map(toVRecord)
+    override def scan(): Iterator[VRecord] =
+      delegate.scan().filter(kv => VersionedStore.isVkeyKey(kv.key)).map(toVRecord)
+    override def close(): Unit = delegate.close()
+  }
+
+  private def removeData(key: Array[Byte], version: Long) = store.remove(dkey(key, version))
+  private def removeVersion(key: Array[Byte])             = store.remove(vkey(key))
 }

@@ -63,8 +63,10 @@ class ShardedStoreSpec extends FlatSpec {
     when(store.get("1".getBytes)).thenReturn(None)
     when(store.put("1".getBytes, "2".getBytes)).thenReturn(true)
     when(store.remove("1".getBytes)).thenReturn(true)
-    when(store.scan()).thenReturn(Iterator.empty)
-    when(store.scan("1".getBytes)).thenReturn(Iterator.empty)
+    val scanner = mock(classOf[Scanner[KV]])
+    when(store.scanner()).thenReturn(scanner)
+    when(scanner.scan()).thenReturn(Iterator.empty)
+    when(scanner.scan("1".getBytes)).thenReturn(Iterator.empty)
 
     val createStore = mock(classOf[(Int) => Store])
     when(createStore.apply(0)).thenReturn(store)
@@ -73,14 +75,14 @@ class ShardedStoreSpec extends FlatSpec {
     shardedStore.get("1".getBytes) should be(None)
     shardedStore.put("1".getBytes, "2".getBytes) should be(true)
     shardedStore.remove("1".getBytes) should be(true)
-    shardedStore.scan().toList should be(List.empty)
-    shardedStore.scan("1".getBytes).toList should be(List.empty)
+    StoreUtils.scan(shardedStore.scanner()).toList should be(List.empty)
+    StoreUtils.scan("1".getBytes, shardedStore.scanner()).toList should be(List.empty)
 
     verify(store, times(1)).get("1".getBytes)
     verify(store, times(1)).put("1".getBytes, "2".getBytes)
     verify(store, times(1)).remove("1".getBytes)
-    verify(store, times(1)).scan()
-    verify(store, times(1)).scan("1".getBytes)
+    verify(scanner, times(1)).scan()
+    verify(scanner, times(1)).scan("1".getBytes)
   }
 
   it should "return None for store.get when underlying store throws an Exception" in {
@@ -127,12 +129,20 @@ class ShardedStoreSpec extends FlatSpec {
     val createStore = mock(classOf[(Int) => Store])
     val store       = mock(classOf[Store])
     when(createStore.apply(anyInt())).thenReturn(store)
+
+    val mockScanner = mock(classOf[Scanner[KV]])
+    when(mockScanner.scan()).thenReturn(Iterator.empty)
+    when(mockScanner.scan("prefix".getBytes)).thenReturn(Iterator.empty)
+    when(store.scanner()).thenReturn(mockScanner)
+
     val shardedStore = new ShardedStore(3, hash, createStore)
 
-    shardedStore.scan()
+    StoreUtils.scan(shardedStore.scanner()).toList
     verify(createStore, times(3)).apply(anyInt())
+    verify(mockScanner, times(3)).prepare()
+    verify(mockScanner, times(3)).close()
 
-    shardedStore.scan("prefix".getBytes)
+    StoreUtils.scan("prefix".getBytes, shardedStore.scanner()).toList
     verify(createStore, times(3)).apply(anyInt())
   }
 

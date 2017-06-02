@@ -87,7 +87,7 @@ class VersionedStoreSpec extends FlatSpec {
     val put = fn.tupled
     inputs.foreach(put)
 
-    val scannedResult = store.scan().toList
+    val scannedResult = StoreUtils.scan(store.scanner()).toList
 
     scannedResult should have size 5
     scannedResult.sortBy(kv => new String(kv.value)).zip(inputs).foreach {
@@ -112,7 +112,7 @@ class VersionedStoreSpec extends FlatSpec {
     inputs.foreach(put)
     val prefix = "prefix1".getBytes
 
-    val scannedResult = store.scan(prefix).toList
+    val scannedResult = StoreUtils.scan(prefix, store.scanner()).toList
 
     scannedResult should have size 3
     scannedResult.foreach { kv =>
@@ -129,7 +129,7 @@ class VersionedStoreSpec extends FlatSpec {
     store.put("prefix2/two".getBytes, "22".getBytes)
     store.put("prefix1/one".getBytes, "111".getBytes)
 
-    store.scanVersions().flatMap(_.versions) should have size 6
+    StoreUtils.scan(store.versionsScanner()).flatMap(_.versions) should have size 6
   }
 
   it should "support version scan based on prefix" in {
@@ -141,10 +141,10 @@ class VersionedStoreSpec extends FlatSpec {
     store.put("prefix2/two".getBytes, "22".getBytes)
     store.put("prefix1/one".getBytes, "111".getBytes)
 
-    store.scanVersions("prefix1".getBytes).flatMap(_.versions) should have size 3
-    store.scanVersions("prefix2".getBytes).flatMap(_.versions) should have size 2
-    store.scanVersions("prefix3".getBytes).flatMap(_.versions) should have size 1
-    store.scanVersions("prefix4".getBytes).flatMap(_.versions) should have size 0
+    StoreUtils.scan("prefix1".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 3
+    StoreUtils.scan("prefix2".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 2
+    StoreUtils.scan("prefix3".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 1
+    StoreUtils.scan("prefix4".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 0
   }
 
   private def prefixWithDkey(prefix: Array[Byte]) = new String(VersionedStore.dkey(prefix))

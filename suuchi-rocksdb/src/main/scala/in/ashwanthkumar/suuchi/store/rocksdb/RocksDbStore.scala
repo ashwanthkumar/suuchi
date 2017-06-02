@@ -1,8 +1,6 @@
 package in.ashwanthkumar.suuchi.store.rocksdb
 
-import java.util.{Arrays => JArrays}
-
-import in.ashwanthkumar.suuchi.store.{KV, Store}
+import in.ashwanthkumar.suuchi.store.{KV, Scanner, Store}
 import in.ashwanthkumar.suuchi.utils.{ByteArrayUtils, Logging}
 import org.rocksdb._
 
@@ -34,10 +32,19 @@ class RocksDbStore(config: RocksDbConfiguration) extends Store with Logging {
     logOnError(() => db.remove(key)) isSuccess
   }
 
-  def scan(): Iterator[KV] = scan(Array.ofDim[Byte](0))
+  override def scanner(): Scanner[KV] = new RocksDBScanner(db)
+}
 
-  def scan(prefix: Array[Byte]): Iterator[KV] = {
-    val rocksIterator: RocksIterator = db.newIterator()
+class RocksDBScanner(db: RocksDB) extends Scanner[KV] {
+
+  private[this] lazy val snapshot = db.getSnapshot
+  private[this] var rocksIterator: RocksIterator = _
+
+  override def prepare(): Unit = {
+    rocksIterator = db.newIterator()
+  }
+
+  override def scan(prefix: Array[Byte]): Iterator[KV] = {
     rocksIterator.seek(prefix)
 
     new Iterator[KV] {
@@ -50,6 +57,14 @@ class RocksDbStore(config: RocksDbConfiguration) extends Store with Logging {
         kv
       }
     }
+  }
+
+  override def scan(): Iterator[KV] = scan(Array.ofDim[Byte](0))
+
+  override def close(): Unit = {
+    rocksIterator.close()
+    db.releaseSnapshot(snapshot)
+    snapshot.close()
   }
 
 }
