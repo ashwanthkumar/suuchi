@@ -3,18 +3,8 @@ package in.ashwanthkumar.suuchi.client
 import java.util.concurrent.TimeUnit
 
 import com.google.protobuf.ByteString
-import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{
-  GetRequest,
-  PutRequest,
-  ReduceRequest,
-  ScanRequest
-}
-import in.ashwanthkumar.suuchi.rpc.generated.{
-  AggregatorGrpc,
-  SuuchiPutGrpc,
-  SuuchiReadGrpc,
-  SuuchiScanGrpc
-}
+import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC._
+import in.ashwanthkumar.suuchi.examples.rpc.generated._
 import io.grpc.netty.NettyChannelBuilder
 import org.slf4j.LoggerFactory
 
@@ -28,9 +18,9 @@ class SuuchiClient(host: String, port: Int) {
     .usePlaintext(true)
     .build()
 
-  private val writeStub = SuuchiPutGrpc.newBlockingStub(channel)
-  private val readStub  = SuuchiReadGrpc.newBlockingStub(channel)
-  private val scanStub  = SuuchiScanGrpc.newBlockingStub(channel)
+  private val writeStub = PutGrpc.newBlockingStub(channel)
+  private val readStub  = ReadGrpc.newBlockingStub(channel)
+  private val scanStub  = ScanGrpc.newBlockingStub(channel)
   private val aggStub   = AggregatorGrpc.newBlockingStub(channel)
 
   def shutdown() = {
@@ -68,7 +58,7 @@ class SuuchiClient(host: String, port: Int) {
   }
 
   def sumOfNumbers() = {
-    aggStub.reduce(ReduceRequest.newBuilder().build())
+    aggStub.aggregate(AggregateRequest.newBuilder().build())
   }
 }
 

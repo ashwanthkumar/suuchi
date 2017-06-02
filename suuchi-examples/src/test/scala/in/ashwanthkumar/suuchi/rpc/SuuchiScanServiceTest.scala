@@ -1,6 +1,6 @@
 package in.ashwanthkumar.suuchi.rpc
 
-import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{ScanRequest, ScanResponse}
+import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC.{ScanRequest, ScanResponse}
 import in.ashwanthkumar.suuchi.store.InMemoryStore
 import io.grpc.stub.ServerCallStreamObserver
 import org.mockito.ArgumentCaptor

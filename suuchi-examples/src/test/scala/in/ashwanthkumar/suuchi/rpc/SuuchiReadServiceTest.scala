@@ -1,7 +1,7 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import com.google.protobuf.ByteString
-import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{GetRequest, GetResponse}
+import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC.{GetRequest, GetResponse}
 import in.ashwanthkumar.suuchi.store.InMemoryStore
 import io.grpc.stub.StreamObserver
 import org.mockito.ArgumentCaptor

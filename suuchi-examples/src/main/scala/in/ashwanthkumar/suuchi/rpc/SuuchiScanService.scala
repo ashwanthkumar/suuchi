@@ -1,18 +1,15 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import com.google.protobuf.ByteString
+import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC.{ScanRequest, ScanResponse}
+import in.ashwanthkumar.suuchi.examples.rpc.generated.{ScanGrpc, SuuchiRPC}
 import in.ashwanthkumar.suuchi.partitioner.SuuchiHash
-import in.ashwanthkumar.suuchi.rpc.generated.SuuchiRPC.{ScanRequest, ScanResponse}
-import in.ashwanthkumar.suuchi.rpc.generated.{SuuchiRPC, SuuchiScanGrpc}
 import in.ashwanthkumar.suuchi.store.{KV, Store}
-import in.ashwanthkumar.suuchi.utils.{ByteArrayUtils, ConnectionUtils}
+import in.ashwanthkumar.suuchi.utils.ByteArrayUtils
 import io.grpc.stub.{ServerCallStreamObserver, StreamObserver, StreamObservers}
-
 import scala.collection.JavaConverters._
 
-class SuuchiScanService(store: Store)
-    extends SuuchiScanGrpc.SuuchiScanImplBase
-    with ConnectionUtils {
+class SuuchiScanService(store: Store) extends ScanGrpc.ScanImplBase {
 
   private def buildResponse(response: KV): ScanResponse = {
     SuuchiRPC.ScanResponse
