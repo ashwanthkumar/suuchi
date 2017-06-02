@@ -3,7 +3,7 @@ package in.ashwanthkumar.suuchi.cluster.scalecube
 import java.util.concurrent._
 
 import com.typesafe.config.ConfigFactory
-import in.ashwanthkumar.suuchi.cluster.{Cluster, InMemorySeedProvider, MemberAddress, MemberListener}
+import in.ashwanthkumar.suuchi.cluster._
 import org.scalatest.Matchers.{convertToAnyShouldWrapper, have}
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 
@@ -18,7 +18,7 @@ case class ExpectedMemberCount(joinLatch: Option[CountDownLatch] = None, removeL
   override def onLeave: (MemberAddress) => Unit = _ => removeLatch.foreach(_.countDown())
 }
 
-class ScaleCubeMembershipIT extends FlatSpec with BeforeAndAfter {
+class ScaleCubeClusterIT extends FlatSpec with BeforeAndAfter {
   val BASE_PORT = 20000
   var members: List[Cluster] = List()
   val latch = new CountDownLatch(4) // at least 4 members should have joined
@@ -37,7 +37,7 @@ class ScaleCubeMembershipIT extends FlatSpec with BeforeAndAfter {
 
     (2 to 5).foreach { i =>
       val bootstrapper = InMemorySeedProvider(List(seedNode.whoami))
-      val member = new ScaleCubeCluster(configWithPort(BASE_PORT + i), Nil)
+      val member = ClusterProvider.apply(MemberAddress("localhost", BASE_PORT + i), configWithPort(BASE_PORT + i), Nil)
       members = members ++ List(member.start(bootstrapper))
     }
     latch.await(10, TimeUnit.SECONDS) // wait until all nodes have contacted with the seed node
