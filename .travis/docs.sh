@@ -8,17 +8,8 @@ if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) &&
     git remote add gh-token "https://${GH_TOKEN}@github.com/ashwanthkumar/suuchi.git";
     git fetch gh-token && git fetch gh-token gh-pages:gh-pages;
 
-    VIRTUAL_ENV=${HOME}/DENV
-    mkdir -p $VIRTUAL_ENV
-
-    export PATH=${VIRTUAL_ENV}/python-deps/bin:$PATH
+    virtualenv --system-site-packages ${HOME}/DENV
     source ${HOME}/DENV/bin/activate
-    pip install --prefix=$VIRTUAL_ENV mkdocs==0.15.3
-
-    export PYTHONPATH=${VIRTUAL_ENV}/lib64/python2.7/site-packages:$PYTHONPATH
-    export PATH=${PYTHONPATH}/bin:${PATH}
-
-    ls -lah $VIRTUAL_ENV
-
+    pip install mkdocs==0.15.3
     mkdocs gh-deploy -v --clean --remote-name gh-token;
 fi
