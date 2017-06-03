@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ "$TRAVIS_COMMIT_MESSAGE" == "[Do Release]" ];
+if ([ "$TRAVIS_COMMIT_MESSAGE" == "[Do Release]" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]);
 then
     echo "Triggering a versioned release of the project"
     # Git configurations while doing the version upgrade and commit
@@ -15,6 +15,7 @@ then
     fi
     source .travis/gpg.sh
 
+    git checkout ${TRAVIS_BRANCH} # we always do a release out of the intended branch
     mvn release:clean release:prepare release:perform --settings .travis/settings.xml -DskipTests=true -DperformRelease --batch-mode --update-snapshots
     echo "Versioned release of the project is now complete"
 else
