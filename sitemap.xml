@@ -20,6 +20,12 @@
     
         
     <url>
+     <loc>None/internals/aggregation/</loc>
+     <lastmod>2017-06-03</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
      <loc>None/internals/partitioner/</loc>
      <lastmod>2017-06-03</lastmod>
      <changefreq>daily</changefreq>

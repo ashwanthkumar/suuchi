@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
 
-	<title>Distributed In Memory Database - Suuchi</title>
+	<title>Aggregation - Suuchi</title>
 
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -62,31 +62,31 @@
             
             
             
-                <li class="dropdown">
+                <li class="dropdown active">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Internals <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                     
                         
-<li >
-    <a href="../../internals/aggregation/">Aggregation</a>
+<li class="active">
+    <a href="./">Aggregation</a>
 </li>
 
                     
                         
 <li >
-    <a href="../../internals/partitioner/">Partitioner</a>
+    <a href="../partitioner/">Partitioner</a>
 </li>
 
                     
                         
 <li >
-    <a href="../../internals/replication/">Replication</a>
+    <a href="../replication/">Replication</a>
 </li>
 
                     
                         
 <li >
-    <a href="../../internals/router/">Router</a>
+    <a href="../router/">Router</a>
 </li>
 
                     
@@ -95,25 +95,25 @@
             
             
             
-                <li class="dropdown active">
+                <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Recipes <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                     
                         
-<li class="active">
-    <a href="./">Distributed In Memory Database</a>
+<li >
+    <a href="../../recipes/inmemorydb/">Distributed In Memory Database</a>
 </li>
 
                     
                         
 <li >
-    <a href="../rocksdb/">Distributed RocksDB Database</a>
+    <a href="../../recipes/rocksdb/">Distributed RocksDB Database</a>
 </li>
 
                     
                         
 <li >
-    <a href="../kvclient/">Distributed KVClient</a>
+    <a href="../../recipes/kvclient/">Distributed KVClient</a>
 </li>
 
                     
@@ -146,12 +146,12 @@
                     </a>
                 </li>
                 <li >
-                    <a rel="next" href="../../internals/router/">
+                    <a rel="next" href="../../quick-start/">
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
                 <li >
-                    <a rel="prev" href="../rocksdb/">
+                    <a rel="prev" href="../partitioner/">
                         Next <i class="fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -174,53 +174,56 @@
             <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="main active"><a href="#distributed-inmemory-database">Distributed InMemory Database</a></li>
+        <li class="main active"><a href="#aggregation">Aggregation</a></li>
+        
+            <li><a href="#implementation-details">Implementation Details</a></li>
+        
+            <li><a href="#distributed-sum-example">Distributed Sum Example</a></li>
         
     
     </ul>
 </div></div>
             <div class="col-md-9" role="main">
 
-<h1 id="distributed-inmemory-database">Distributed InMemory Database</h1>
-<p>Following code builds a consistent hashing based Get/Put requests backed by an ConcurrentHashMap in memory.</p>
-<pre><code class="scala">package in.ashwanthkumar.suuchi.example
-
-import java.nio.ByteBuffer
-
-import in.ashwanthkumar.suuchi.client.SuuchiClient
-import in.ashwanthkumar.suuchi.router.ConsistentHashingRouting
-import in.ashwanthkumar.suuchi.rpc.Server.whoami
-import in.ashwanthkumar.suuchi.rpc.{Server, SuuchiPutService, SuuchiReadService}
-import in.ashwanthkumar.suuchi.store.InMemoryStore
-import io.grpc.netty.NettyServerBuilder
-
-object DistributedKVServer extends App {
-  val port = args(0).toInt
-  val PARTITIONS_PER_NODE = 100
-  val REPLICATION_FACTOR = 2
-
-  val routingStrategy = ConsistentHashingRouting(REPLICATION_FACTOR, PARTITIONS_PER_NODE, whoami(5051), whoami(5052), whoami(5053))
-
-  val store = new InMemoryStore
-  val server = Server(NettyServerBuilder.forPort(port), whoami(port))
-    .routeUsing(new SuuchiReadService(store), routingStrategy)
-    .withParallelReplication(new SuuchiPutService(store), REPLICATION_FACTOR, routingStrategy)
-  server.start()
-
-  server.blockUntilShutdown()
+<h1 id="aggregation">Aggregation</h1>
+<p><em>Available since version 0.2.21 onwards</em></p>
+<p><code>Aggregation</code> is a special type of router used to perform aggregation type of operation across all the nodes in the cluster.
+It is used to fan-out requests to all the nodes in the cluster, collect the response and aggregate their the responses. </p>
+<p>Aggregations can be used with all functions that exhibit both associative and commutative property like Sum / Product / 
+TopK etc. It's conceptually similar to doing reduce individually on all the nodes and doing a global reduction on those
+reduced results.</p>
+<h2 id="implementation-details">Implementation Details</h2>
+<p>Aggregation in Suuchi makes use of Twitter <a href="https://github.com/twitter/algebird/blob/develop/algebird-core/src/main/scala/com/twitter/algebird/Aggregator.scala">Algebird's Aggregator</a>
+to represent how we can aggregate the results of all service calls. In short Aggregation is presented as a <code>PartialFunction[MethodDescriptor[ReqT, RespT], Aggregator[RespT, Any, RespT]]</code>.</p>
+<p>Example of an Aggregation that represent SumOfNumbers can be defined as follows</p>
+<pre><code class="scala">class SumOfNumbers extends Aggregation {
+  override def aggregator[ReqT, RespT] = {
+    case AggregatorGrpc.METHOD_AGGREGATE =&gt; new Aggregator[Response, Long, Response] {
+      override def prepare(input: Response): Long = input.getOutput
+      override def semigroup: Semigroup[Long] = LongRing
+      override def present(reduced: Long): Response = Response.newBuilder().setOutput(reduced).build()
+    }.asInstanceOf[Aggregator[RespT, Any, RespT]]
+  }
 }
 </code></pre>
 
-<p>Let's break down the above code step by step.</p>
-<ul>
-<li><code>ConsistentHashingRouting</code> is a <a href="../../internals/router/#routingstrategy"><em>Routing Strategy</em></a> that does routing between all the nodes using a ConsistentHashRing underneath with default vnode factor of 3.</li>
-<li><code>NettyServerBuilder.forPort(5051)</code> creates a NettyServer on <code>5051</code> port.</li>
-<li><code>server.routeUsing()</code> adds a new protobuf rpc using a custom routing strategy behind <a href="../../internals/router/"><em>HandleOrForward</em></a> router.</li>
-<li><code>server.withParallelReplication()</code> adds a new protobuf rpc using the ReplicationRouter. By default it wraps both <a href="../../internals/router/"><em>HandleOrForward</em></a> and <a href="../../internals/replication/"><em>Replicator</em></a> routers.</li>
-<li><code>server1.start()</code> starts the underlying gRPC server.</li>
-<li><code>server1.blockUntilShutdown()</code> waits until the server is stopped.</li>
-</ul>
-<p>To see this recipe in action, you might also want to look into the client which can talk to this service - <a href="../kvclient/">DistributedKVClient</a>.</p></div>
+<p>We compose this <code>Aggregation</code> with <code>Server</code> abstraction as follows</p>
+<pre><code class="scala">  Server(...)
+    .aggregate(allNodes, new SuuchiAggregatorService(new SumOfNumbers), new SumOfNumbers)
+    .start()
+</code></pre>
+
+<p><code>SuuchiAggregatorService</code> filters all even numbers from the store and does a local aggregation of the sum. These sums 
+are then globally summed again at the co-ordinator (node that recieves the request for aggregation) node and the result
+is sent back as a response back to the client.</p>
+<h2 id="distributed-sum-example">Distributed Sum Example</h2>
+<p>Let's consider an example where we would like to find a sum of all even numbers we have on each node. The entire flow
+of data on each node and the co-ordinator node is depicted below in the diagram.</p>
+<p><img alt="Distributed Sum Visualization" src="../../images/internals/aggregation_viz.png" /></p>
+<p>Assume we've 4 nodes Node A - D, and each of them contain a set of numbers with them. The cost of doing filter and sum 
+on each node if very efficient then returning all the numbers to a single node, filtering them and then computing the sum.
+This in traditional computer architectural terms is called as function shipping paradigm, very similar to stored procedures 
+in RDBMS.</p></div>
         </div>
 
         <footer class="col-md-12">

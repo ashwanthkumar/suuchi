@@ -67,6 +67,12 @@
                     <ul class="dropdown-menu">
                     
                         
+<li >
+    <a href="../aggregation/">Aggregation</a>
+</li>
+
+                    
+                        
 <li class="active">
     <a href="./">Partitioner</a>
 </li>
@@ -140,7 +146,7 @@
                     </a>
                 </li>
                 <li >
-                    <a rel="next" href="../../quick-start/">
+                    <a rel="next" href="../aggregation/">
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
@@ -176,7 +182,23 @@
             <div class="col-md-9" role="main">
 
 <h1 id="partitioner">Partitioner</h1>
-<p>TBD</p></div>
+<p>Partitioners are defined by the following</p>
+<pre><code class="scala">trait Partitioner {
+  def find(key: Array[Byte], replicaCount: Int): List[MemberAddress]
+}
+</code></pre>
+
+<p>An implementation of Partitioner is supposed to return the list of nodes where the given key should be placed if we need <code>replicaCount</code> number of replicas. </p>
+<p>Suuchi by default comes with a ConsistentHashPartitioner which uses ConsistentHashRing underneath to partition the data.</p>
+<p>Interesting readings on Consistent Hash Ring</p>
+<ul>
+<li><a href="http://blog.plasmaconduit.com/consistent-hashing/">http://blog.plasmaconduit.com/consistent-hashing/</a></li>
+<li><a href="http://www.paperplanes.de/2011/12/9/the-magic-of-consistent-hashing.html">http://www.paperplanes.de/2011/12/9/the-magic-of-consistent-hashing.html</a></li>
+</ul>
+<p>An example of CH Ring during assignment or replication.</p>
+<p><center>
+ <img src="/images/internals/ch_ring.png" width="500" alt="CH Ring" />
+</center></p></div>
         </div>
 
         <footer class="col-md-12">
