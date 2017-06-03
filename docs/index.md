@@ -40,6 +40,7 @@ Development snapshots are available in [Sonatypes's snapshot repository](https:/
 
 - Enable partitioning of data using [Consistent Hashing](https://en.wikipedia.org/wiki/Consistent_hashing)
 - Supports synchronous replication to desired number of nodes
+- Supports Reduce - Re-Reduce style [aggregation](internals/aggregation.md) for methods that can be expressed using a [`SemiGroup`](https://twitter.github.io/algebird/typeclasses/semigroup.html).
 - Enables above set of features for any gRPC based service definitions
 
 If you are a developer looking to use Suuchi, head over to [Quick Start](quick-start.md) guide to get started.
