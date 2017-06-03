@@ -21,16 +21,14 @@ addons:
 
 deploy:
   - provider: script
-    script: .travis/docs.sh
-    skip_cleanup: true
-    on:
-      repo: ashwanthkumar/suuchi
-      branch: master
-
-  - provider: script
     script: .travis/release.sh
-    skip_cleanup: true
     on:
       repo: ashwanthkumar/suuchi
       branch: master
       jdk: oraclejdk8
+
+  - provider: script
+    script: .travis/docs.sh
+    on:
+      repo: ashwanthkumar/suuchi
+      branch: master

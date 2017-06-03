@@ -15,7 +15,7 @@ then
     fi
     source .travis/gpg.sh
 
-    mvn release:perform --settings .travis/settings.xml -DskipTests=true -DperformRelease --batch-mode --update-snapshots
+    mvn release:clean release:prepare release:perform --settings .travis/settings.xml -DskipTests=true -DperformRelease --batch-mode --update-snapshots
     echo "Versioned release of the project is now complete"
 else
     echo "Triggering a SNAPSHOT release of the project"
