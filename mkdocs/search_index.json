@@ -154,6 +154,26 @@
             "location": "/recipes/kvclient/#distributed-kvclient", 
             "text": "In the either of  InMemory KV Store  or  RocksDB based KV Store  recipes we only started a server. We need some way to access the server. This recipe is about a simple gRPC client that does a PUT followed by a GET of the same key in the cluster and verify that they're the same.  package in.ashwanthkumar.suuchi\n\nimport java.nio.ByteBuffer\n\nimport in.ashwanthkumar.suuchi.client.SuuchiClient\n\nobject DistributedKVClient extends App {\n  val client = new SuuchiClient( localhost , 5051)\n  val putResponse = client.put(Array(65.toByte), Array(65.toByte)) // puts k=v as A=A (in bytes)\n  require(putResponse,  client should have responded successfully )\n\n  val getResponse = client.get(Array(65.toByte))\n  require(getResponse.isDefined,  server should return a valid response ) // gets k=A\n  require(ByteBuffer.wrap(getResponse.get) == ByteBuffer.wrap(Array(65.toByte)),  response seems invalid - it should be A )\n\n  println( Client has been validated )\n}  While running with this client you can find information about how the node in the point of contact with the client automatically\n- forwarded requests to the right node based on Input Key and ConsistentHash Ring\n- replicates the given message across multiple nodes again based on ConsistentHashing Ring.", 
             "title": "Distributed KVClient"
+        }, 
+        {
+            "location": "/developer/workflow/", 
+            "text": "Release Workflow\n\n\nIn Suuchi and it's related modules we use the following mechanism of doing releases to sonatype.\n\n\nSteps to make a release\n\n\n\n\nMake sure you've write access to the repository.\n\n\nRun the \nmake-release.sh\n from the root of the project. \n\n\nIt would create an empty commit with the message \n\"[Do Release]\"\n.\n\n\nThis commit message would trigger the release workflow using the build tool to build and publish the artifacts to sonatype, which later would get mirrored to maven central.\n\n\n\n\nRelease Process", 
+            "title": "Release Workflow"
+        }, 
+        {
+            "location": "/developer/workflow/#release-workflow", 
+            "text": "In Suuchi and it's related modules we use the following mechanism of doing releases to sonatype.", 
+            "title": "Release Workflow"
+        }, 
+        {
+            "location": "/developer/workflow/#steps-to-make-a-release", 
+            "text": "Make sure you've write access to the repository.  Run the  make-release.sh  from the root of the project.   It would create an empty commit with the message  \"[Do Release]\" .  This commit message would trigger the release workflow using the build tool to build and publish the artifacts to sonatype, which later would get mirrored to maven central.", 
+            "title": "Steps to make a release"
+        }, 
+        {
+            "location": "/developer/workflow/#release-process", 
+            "text": "", 
+            "title": "Release Process"
         }
     ]
 }
