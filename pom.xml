@@ -194,7 +194,6 @@
                     <!-- turn off the site deploy. There's a maven bug that makes it break -->
                     <goals>deploy</goals>
                     <pushChanges>true</pushChanges>
-                    <localCheckout>true</localCheckout>
                     <!--
                       During release:perform, enable the "release" profile
                     -->
