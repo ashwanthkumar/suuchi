@@ -176,35 +176,44 @@
     
         <li class="main active"><a href="#quick-start">Quick Start</a></li>
         
+            <li><a href="#see-the-replication-in-action">See the Replication in Action</a></li>
+        
     
     </ul>
 </div></div>
             <div class="col-md-9" role="main">
 
 <h1 id="quick-start">Quick Start</h1>
-<p>Suuchi internally uses <a href="http://www.grpc.io/">gRPC</a> for it's internode communication. If you're new to gRPC, we recommend to follow the tutorial available on <a href="http://www.grpc.io/docs/tutorials/basic/java.html">grpc.io</a> to get started on a basic service.</p>
-<p>In the rest of this page we're going to assume you've the following setup</p>
 <ol>
 <li>
-<p><a href="..#maven">Maven</a> or <a href="..#sbt">SBT</a> based project setup and suuchi dependencies configured already.</p>
+<p>Clone the repository <a href="https://github.com/ashwanthkumar/suuchi-getting-started">https://github.com/ashwanthkumar/suuchi-getting-started</a> on your local machine.</p>
 </li>
 <li>
-<p>A ProtoBuf based service defined, and gRPC required classes generated.</p>
+<p>Run <code>mvn clean compile</code> to generate the proto stubs for the project.</p>
 </li>
 <li>
-<p>You've also implemented at least one of Services defined in the proto.</p>
+<p>Import the project into your favorite IDE.</p>
 </li>
 <li>
-<p>Create a package <code>in.ashwanthkumar.suuchi.getting_started</code></p>
+<p>Create 3 Run configurations for <code>DistributedKVServer</code> main method with different arguments as 5051, 5052 and 5053 and start them all.</p>
 </li>
 <li>
-<p>Create a class inside the above package as <code>DistributedKV.scala</code>, and copy-paste the code-snippet from the <a href="../recipes/inmemorydb/">Distributed Inmemory DB Recipe</a>.</p>
-</li>
-<li>
-<p>Run the <code>DistribuedKV</code> object. Once it has started, run the <code>DistributedKVClient</code> object. This would make RPC calls to the server and get back a response and verify that it's valid.</p>
+<p>Open <code>SuuchiClient.scala</code> and run it to see them in action.</p>
 </li>
 <li>
 <p>That's it! - you've now built a distributed, partitioned and replicated memory backed KVStore.</p>
+</li>
+</ol>
+<h2 id="see-the-replication-in-action">See the Replication in Action</h2>
+<ol>
+<li>
+<p>Change the port from <code>5051</code> to <code>5052</code> and stop the 5051 <code>DistributedKVServer</code> instance.</p>
+</li>
+<li>
+<p>Remove the <code>client.put(...)</code> from the <code>SuuchiClient</code> to avoid writes into the cluster.</p>
+</li>
+<li>
+<p>Now start the client's main method again, this time the reads should go through fine.</p>
 </li>
 </ol></div>
         </div>
