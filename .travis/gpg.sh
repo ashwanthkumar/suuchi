@@ -35,10 +35,8 @@ gpg --batch --gen-key gen-key-script
 # ssb   4096R/55B7CAA2 2016-09-08
 export GPG_KEYNAME=$(gpg -K | grep ^sec | cut -d/  -f2 | cut -d\  -f1 | head -n1)
 
-gpg -K
-
 # cleanup local configuration
-shred gen-key-script
+shred --remove gen-key-script
 
 # publish the gpg key
 # (use keyserver.ubuntu.com as travis request keys from this server,
