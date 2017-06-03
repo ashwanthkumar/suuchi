@@ -14,8 +14,8 @@ cat >gen-key-script <<EOF
     Key-Length: 4096
     Subkey-Type: 1
     Subkey-Length: 4096
-    Name-Real: Opensource Idealo
-    Name-Email: opensource-logback-redis@idealo.de
+    Name-Real: Ashwanth Kumar
+    Name-Email: ashwanthkumar@googlemail.com
     Expire-Date: 2y
     Passphrase: ${GPG_PASSPHRASE}
     %commit
@@ -34,6 +34,8 @@ gpg --batch --gen-key gen-key-script
 # ssb   4096R/CC1613B2 2016-09-08
 # ssb   4096R/55B7CAA2 2016-09-08
 export GPG_KEYNAME=$(gpg -K | grep ^sec | cut -d/  -f2 | cut -d\  -f1 | head -n1)
+
+gpg -K
 
 # cleanup local configuration
 shred gen-key-script
