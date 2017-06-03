@@ -61,6 +61,7 @@ Following presentations / videos explain motivation behind Suuchi
 
 - [Suuchi - Distributed Data Systems Toolkit](https://speakerdeck.com/ashwanthkumar/suuchi-distributed-data-systems-toolkit/)
 - [Suuchi - Application Layer Sharding](https://speakerdeck.com/ashwanthkumar/suuchi-application-layer-sharding)
+- [Suuchi - Distributed Systems Primitives](https://speakerdeck.com/ashwanthkumar/suuchi-distributed-system-primitives)
 
 ## License
 [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
