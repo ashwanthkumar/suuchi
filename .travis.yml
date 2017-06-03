@@ -16,18 +16,16 @@ after_success:
 
 deploy:
   - provider: script
+    script: .travis/docs.sh
+    skip_cleanup: true
+    on:
+      repo: ashwanthkumar/suuchi
+      branch: master
+
+  - provider: script
     script: .travis/release.sh
     skip_cleanup: true
     on:
       repo: ashwanthkumar/suuchi
       branch: master
       jdk: oraclejdk8
-
-  - provider: script
-    script: .travis/docs.sh
-    skip_cleanup: true
-    on:
-      repo: ashwanthkumar/suuchi
-      branch: master
-      virtualenv:
-        system_site_packages: true
