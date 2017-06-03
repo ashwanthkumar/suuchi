@@ -131,7 +131,7 @@ class VersionedStore(store: Store,
     override def prepare(): Unit                         = delegate.prepare()
     override def scan(prefix: Array[Byte]): Iterator[KV] = delegate.scan(dkey(prefix))
     override def scan(): Iterator[KV] =
-      delegate.scan().filter(kv => VersionedStore.isDataKey(kv.key))
+      delegate.scan(DATA_PREFIX)
     override def close(): Unit = delegate.close()
   }
 
@@ -142,7 +142,7 @@ class VersionedStore(store: Store,
     override def scan(prefix: Array[Byte]): Iterator[VRecord] =
       delegate.scan(vkey(prefix)).map(toVRecord)
     override def scan(): Iterator[VRecord] =
-      delegate.scan().filter(kv => VersionedStore.isVkeyKey(kv.key)).map(toVRecord)
+      delegate.scan(VERSION_PREFIX).map(toVRecord)
     override def close(): Unit = delegate.close()
   }
 
