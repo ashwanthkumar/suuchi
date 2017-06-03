@@ -1,19 +1,21 @@
 # Quick Start
 
-Suuchi internally uses [gRPC](http://www.grpc.io/) for it's internode communication. If you're new to gRPC, we recommend to follow the tutorial available on [grpc.io](http://www.grpc.io/docs/tutorials/basic/java.html) to get started on a basic service.
+1. Clone the repository [https://github.com/ashwanthkumar/suuchi-getting-started](https://github.com/ashwanthkumar/suuchi-getting-started) on your local machine.
 
-In the rest of this page we're going to assume you've the following setup
+2. Run `mvn clean compile` to generate the proto stubs for the project.
 
-1. [Maven](index.md#maven) or [SBT](index.md#sbt) based project setup and suuchi dependencies configured already.
+3. Import the project into your favorite IDE.
 
-2. A ProtoBuf based service defined, and gRPC required classes generated.
+4. Create 3 Run configurations for `DistributedKVServer` main method with different arguments as 5051, 5052 and 5053 and start them all.
 
-3. You've also implemented at least one of Services defined in the proto.
+5. Open `SuuchiClient.scala` and run it to see them in action.
 
-4. Create a package `in.ashwanthkumar.suuchi.getting_started`
+6. That's it! - you've now built a distributed, partitioned and replicated memory backed KVStore.
 
-5. Create a class inside the above package as `DistributedKV.scala`, and copy-paste the code-snippet from the [Distributed Inmemory DB Recipe](recipes/inmemorydb.md).
+## See the Replication in Action
 
-6. Run the `DistribuedKV` object. Once it has started, run the `DistributedKVClient` object. This would make RPC calls to the server and get back a response and verify that it's valid.
+1. Change the port from `5051` to `5052` and stop the 5051 `DistributedKVServer` instance.
 
-7. That's it! - you've now built a distributed, partitioned and replicated memory backed KVStore.
+2. Remove the `client.put(...)` from the `SuuchiClient` to avoid writes into the cluster.
+
+3. Now start the client's main method again, this time the reads should go through fine.
