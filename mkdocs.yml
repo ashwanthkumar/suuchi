@@ -7,6 +7,7 @@ pages:
 - 'Introduction': 'index.md'
 - 'Quick Start': 'quick-start.md'
 - Internals:
+    - 'Aggregation': 'internals/aggregation.md'
     - 'Partitioner': 'internals/partitioner.md'
     - 'Replication': 'internals/replication.md'
     - 'Router': 'internals/router.md'
