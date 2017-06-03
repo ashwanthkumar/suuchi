@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>in.ashwanthkumar</groupId>
     <artifactId>suuchi</artifactId>
-    <version>0.2.20</version>
+    <version>0.2.21-SNAPSHOT</version>
     <name>Suuchi</name>
     <description>Toolkit to build distributed Data Systems</description>
     <packaging>pom</packaging>
@@ -25,7 +25,7 @@
     <scm>
         <url>https://github.com/ashwanthkumar/suuchi</url>
         <connection>scm:git:https://${env.GH_TOKEN}@github.com/ashwanthkumar/suuchi.git</connection>
-        <tag>suuchi-0.2.20</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <developers>
