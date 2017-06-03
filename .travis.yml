@@ -29,4 +29,5 @@ deploy:
     on:
       repo: ashwanthkumar/suuchi
       branch: master
-      jdk: oraclejdk8
+      virtualenv:
+        system_site_packages: true
