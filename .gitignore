@@ -8,3 +8,5 @@ site/
 # mvn versions:set
 pom.xml.versionsBackup
 
+# Mac specific
+.DS_Store

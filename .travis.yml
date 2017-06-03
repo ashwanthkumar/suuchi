@@ -12,6 +12,21 @@ cache:
   - $HOME/.m2
   - $HOME/DENV
 after_success:
-- bash bin/hooks_publish_docs.sh
 - bash <(curl -s https://codecov.io/bash)
-- mvn deploy --settings travis-settings.xml -DskipTests=true -B
+
+deploy:
+  - provider: script
+    script: .travis/release.sh
+    skip_cleanup: true
+    on:
+      repo: ashwanthkumar/suuchi
+      branch: master
+      jdk: oraclejdk8
+
+  - provider: script
+    script: .travis/docs.sh
+    skip_cleanup: true
+    on:
+      repo: ashwanthkumar/suuchi
+      branch: master
+      jdk: oraclejdk8
