@@ -223,8 +223,8 @@
 <p>Development snapshots are available in <a href="https://oss.sonatype.org/content/repositories/snapshots/">Sonatypes's snapshot repository</a>.</p>
 <h2 id="features">Features</h2>
 <ul>
-<li>Enable partitioning of data using <a href="https://en.wikipedia.org/wiki/Consistent_hashing">Consistent Hashing</a></li>
-<li>Supports synchronous replication to desired number of nodes</li>
+<li>Enable <a href="internals/partitioner/">partitioning</a> of data using <a href="https://en.wikipedia.org/wiki/Consistent_hashing">Consistent Hashing</a></li>
+<li>Supports synchronous <a href="internals/replication/">replication</a> to desired number of nodes</li>
 <li>Supports Reduce - Re-Reduce style <a href="internals/aggregation/">aggregation</a> for methods that can be expressed using a <a href="https://twitter.github.io/algebird/typeclasses/semigroup.html"><code>SemiGroup</code></a>.</li>
 <li>Enables above set of features for any gRPC based service definitions</li>
 </ul>
@@ -238,6 +238,7 @@
 <h2 id="internals">Internals</h2>
 <p>We try to document the internal workings of some core pieces of Suuchi for developers interested in contributing or understanding their systems better.</p>
 <ul>
+<li><a href="internals/aggregation/">Aggregation</a></li>
 <li><a href="internals/partitioner/">Partitioner</a></li>
 <li><a href="internals/replication/">Replication</a></li>
 <li><a href="internals/router/">Router</a></li>
