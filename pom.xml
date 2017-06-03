@@ -25,7 +25,7 @@
     </licenses>
     <scm>
         <url>https://github.com/ashwanthkumar/suuchi</url>
-        <connection>scm:git:git@github.com:ashwanthkumar/suuchi.git</connection>
+        <connection>scm:git:https://${env.GH_TOKEN}@github.com/ashwanthkumar/suuchi.git</connection>
         <tag>HEAD</tag>
     </scm>
 
