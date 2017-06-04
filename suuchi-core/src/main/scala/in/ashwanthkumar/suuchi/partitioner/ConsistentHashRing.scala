@@ -43,6 +43,10 @@ object RingState {
   def contains(key: Array[Byte], start: Int, end: Int, hashFn: Hash): Boolean = {
     ByteArrayUtils.isHashKeyWithinRange(start, end, key, hashFn)
   }
+
+  def find(key: Array[Byte], ringState: RingState, hashFn: Hash): Option[TokenRange] = {
+    ringState.ranges.find(r => contains(key, r, hashFn))
+  }
 }
 
 case class RingState(private[partitioner] val lastKnown: Int, ranges: List[TokenRange]) {
