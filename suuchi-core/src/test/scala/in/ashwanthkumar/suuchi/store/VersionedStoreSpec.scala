@@ -145,7 +145,7 @@ class VersionedStoreSpec extends FlatSpec {
     StoreUtils.scan("prefix2".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 2
     StoreUtils.scan("prefix3".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 1
     StoreUtils.scan("prefix4".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 0
-    StoreUtils.scan("prefix3".getBytes, store.versionsScanner()).next() should be(VRecord("prefix3/three", List(3l)))
+    StoreUtils.scan("prefix3".getBytes, store.versionsScanner()).next() should be(VRecord("prefix3/three".getBytes, List(3l)))
   }
 
   private def prefixWithDkey(prefix: Array[Byte]) = new String(VersionedStore.dkey(prefix))
