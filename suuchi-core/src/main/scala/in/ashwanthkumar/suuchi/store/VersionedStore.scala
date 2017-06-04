@@ -44,7 +44,14 @@ object VersionedStore {
     DATA_PREFIX ++ key ++ PrimitivesSerDeUtils.longToBytes(version)
 }
 
-case class VRecord(key: Array[Byte], versions: List[Long])
+case class VRecord(key: Array[Byte], versions: List[Long]) {
+  override def equals(obj: scala.Any): Boolean = obj match {
+    case v: VRecord =>
+      util.Arrays.equals(v.key, key) && versions.equals(v.versions)
+    case _ => false
+  }
+  override def toString = s"VRecord(${util.Arrays.toString(key)},${versions.toString})"
+}
 
 class VersionedStore(store: Store,
                      versionedBy: VersionedBy,
@@ -122,7 +129,7 @@ class VersionedStore(store: Store,
     versions
   }
 
-  def toVRecord(kv: KV) = VRecord(kv.key, Versions.fromBytes(kv.value))
+  def toVRecord(kv: KV) = VRecord(kv.key.drop(VERSION_PREFIX.length), Versions.fromBytes(kv.value))
 
   override def scanner(): Scanner[KV] = new Scanner[KV] {
 

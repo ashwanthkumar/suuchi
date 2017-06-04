@@ -16,7 +16,7 @@ trait MockDateUtils extends DateUtils {
 }
 class ByWriteTimestampMocked extends ByWriteTimestamp with MockDateUtils
 class KeyAsVersion extends VersionedBy {
-  override val versionOrdering: Ordering[Long]                     = Ordering.Long.reverse
+  override val versionOrdering: Ordering[Long] = Ordering.Long.reverse
   override def version(key: Array[Byte], value: Array[Byte]): Long = bytesToLong(key)
 }
 
@@ -58,7 +58,7 @@ class VersionedStoreSpec extends FlatSpec {
 
   it should "delete old versions of data for a key when we exceed numVersions" in {
     val inMemoryStore = new InMemoryStore
-    val store         = new VersionedStore(inMemoryStore, new ByWriteTimestampMocked, 3)
+    val store = new VersionedStore(inMemoryStore, new ByWriteTimestampMocked, 3)
     store.getVersions(Array(1.toByte)).size should be(0)
 
     store.put(Array(1.toByte), Array(100.toByte))
@@ -83,7 +83,7 @@ class VersionedStoreSpec extends FlatSpec {
       ("four".getBytes, "4".getBytes),
       ("five".getBytes, "5".getBytes)
     )
-    val fn  = store.put _
+    val fn = store.put _
     val put = fn.tupled
     inputs.foreach(put)
 
@@ -107,7 +107,7 @@ class VersionedStoreSpec extends FlatSpec {
       ("prefix2/two".getBytes, "2".getBytes),
       ("prefix2/three".getBytes, "3".getBytes)
     )
-    val fn  = store.put _
+    val fn = store.put _
     val put = fn.tupled
     inputs.foreach(put)
     val prefix = "prefix1".getBytes
@@ -145,6 +145,7 @@ class VersionedStoreSpec extends FlatSpec {
     StoreUtils.scan("prefix2".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 2
     StoreUtils.scan("prefix3".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 1
     StoreUtils.scan("prefix4".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 0
+    StoreUtils.scan("prefix3".getBytes, store.versionsScanner()).next() should be(VRecord("prefix3/three", List(3l)))
   }
 
   private def prefixWithDkey(prefix: Array[Byte]) = new String(VersionedStore.dkey(prefix))
