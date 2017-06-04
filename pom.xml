@@ -194,6 +194,8 @@
                     <!-- turn off the site deploy. There's a maven bug that makes it break -->
                     <goals>deploy</goals>
                     <pushChanges>true</pushChanges>
+                    <!-- Avoid TravisCI from building the changes we push as part of a release process -->
+                    <scmCommentPrefix>[ci skip] </scmCommentPrefix>
                     <!--
                       During release:perform, enable the "release" profile
                     -->
