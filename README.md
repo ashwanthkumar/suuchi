@@ -24,7 +24,7 @@ Following presentations / videos explain motivation behind Suuchi
 If you're getting `ClassNotFound` exception, please run `mvn clean compile` once to generate from the java classes from protoc files. Also, if you're using IntelliJ it helps to close the project when running the above command. It seems to auto-detect sources in `target/` at startup but not afterwards. 
 
 ## Release workflow
-Suuchi and it's modules follow a git commit message based release workflow. Use the script `make-release.sh` to push an empty commit to the repository which would trigger a release workflow on travis-ci.
+Suuchi and it's modules follow a git commit message based release workflow. Use the script `make-release.sh` to push an empty commit to the repository which would trigger a release workflow on travis-ci. More information can be found at [docs](https://ashwanthkumar.github.io/suuchi/developer/workflow/).
 
 ## License
 https://www.apache.org/licenses/LICENSE-2.0
