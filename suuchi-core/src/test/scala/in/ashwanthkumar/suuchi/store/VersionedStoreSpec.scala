@@ -22,53 +22,53 @@ class KeyAsVersion extends VersionedBy {
 
 class VersionedStoreSpec extends FlatSpec {
   "VersionedStore" should "return no version info for a key for the first time" in {
-    val store = new VersionedStore(new InMemoryStore, new ByWriteTimestampMocked, 3)
+    val store = new VersionedStore(new InMemoryStore, new ByWriteTimestampMocked, 3) with MockDateUtils
     store.getVersions(Array(1.toByte)).size should be(0)
   }
 
   it should "return version info appropriately after every insert" in {
-    val store = new VersionedStore(new InMemoryStore, new ByWriteTimestampMocked, 3)
+    val store = new VersionedStore(new InMemoryStore, new ByWriteTimestampMocked, 3) with MockDateUtils
     store.getVersions(Array(1.toByte)).size should be(0)
 
     store.put(Array(1.toByte), Array(100.toByte))
-    store.getVersions(Array(1.toByte)) should be(List(1))
+    store.getVersions(Array(1.toByte)) should be(List(Version(1, 1)))
 
     store.put(Array(1.toByte), Array(101.toByte))
-    store.getVersions(Array(1.toByte)) should be(List(2, 1))
+    store.getVersions(Array(1.toByte)) should be(List(Version(2, 2), Version(1, 1)))
 
     store.put(Array(1.toByte), Array(102.toByte))
-    store.getVersions(Array(1.toByte)) should be(List(3, 2, 1))
+    store.getVersions(Array(1.toByte)) should be(List(Version(3, 3), Version(2, 2), Version(1, 1)))
 
     store.put(Array(1.toByte), Array(103.toByte))
-    store.getVersions(Array(1.toByte)) should be(List(4, 3, 2))
+    store.getVersions(Array(1.toByte)) should be(List(Version(4, 4), Version(3, 3), Version(2, 2)))
   }
 
   it should "write data for value with an earlier version" in {
-    val store = new VersionedStore(new InMemoryStore, new KeyAsVersion, 3)
+    val store = new VersionedStore(new InMemoryStore, new KeyAsVersion, 3) with MockDateUtils
     store.put(longToBytes(456), longToBytes(456))
-    store.getVersions(longToBytes(456)) should be(List(456))
+    store.getVersions(longToBytes(456)) should be(List(Version(456, 1)))
     store.get(longToBytes(456)).map(ByteBuffer.wrap) should be(
       Some(ByteBuffer.wrap(longToBytes(456))))
 
     store.put(longToBytes(123), longToBytes(123))
-    store.getVersions(longToBytes(123)) should be(List(123))
+    store.getVersions(longToBytes(123)) should be(List(Version(123, 2)))
     store.get(longToBytes(123)).map(ByteBuffer.wrap) should be(
       Some(ByteBuffer.wrap(longToBytes(123))))
   }
 
   it should "delete old versions of data for a key when we exceed numVersions" in {
     val inMemoryStore = new InMemoryStore
-    val store = new VersionedStore(inMemoryStore, new ByWriteTimestampMocked, 3)
+    val store = new VersionedStore(inMemoryStore, new ByWriteTimestampMocked, 3) with MockDateUtils
     store.getVersions(Array(1.toByte)).size should be(0)
 
     store.put(Array(1.toByte), Array(100.toByte))
-    store.getVersions(Array(1.toByte)) should be(List(1))
+    store.getVersions(Array(1.toByte)) should be(List(Version(1, 1)))
 
     store.put(Array(1.toByte), Array(101.toByte))
-    store.getVersions(Array(1.toByte)) should be(List(2, 1))
+    store.getVersions(Array(1.toByte)) should be(List(Version(2, 2), Version(1, 1)))
 
     store.put(Array(1.toByte), Array(102.toByte))
-    store.getVersions(Array(1.toByte)) should be(List(3, 2, 1))
+    store.getVersions(Array(1.toByte)) should be(List(Version(3, 3), Version(2, 2), Version(1, 1)))
 
     store.put(Array(1.toByte), Array(103.toByte))
     inMemoryStore.get(VersionedStore.dkey(Array(1.toByte), 1)) should be(None)
@@ -133,7 +133,7 @@ class VersionedStoreSpec extends FlatSpec {
   }
 
   it should "support version scan based on prefix" in {
-    val store = new VersionedStore(new InMemoryStore, new ByWriteTimestampMocked, 3)
+    val store = new VersionedStore(new InMemoryStore, new ByWriteTimestampMocked, 3) with MockDateUtils
     store.put("prefix1/one".getBytes, "1".getBytes)
     store.put("prefix2/two".getBytes, "2".getBytes)
     store.put("prefix3/three".getBytes, "3".getBytes)
@@ -145,7 +145,7 @@ class VersionedStoreSpec extends FlatSpec {
     StoreUtils.scan("prefix2".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 2
     StoreUtils.scan("prefix3".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 1
     StoreUtils.scan("prefix4".getBytes, store.versionsScanner()).flatMap(_.versions) should have size 0
-    StoreUtils.scan("prefix3".getBytes, store.versionsScanner()).next() should be(VRecord("prefix3/three".getBytes, List(3l)))
+    StoreUtils.scan("prefix3".getBytes, store.versionsScanner()).next() should be(VRecord("prefix3/three".getBytes, List(Version(3l, 3l))))
   }
 
   private def prefixWithDkey(prefix: Array[Byte]) = new String(VersionedStore.dkey(prefix))

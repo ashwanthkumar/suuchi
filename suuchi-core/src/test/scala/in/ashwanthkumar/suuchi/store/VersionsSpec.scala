@@ -7,10 +7,10 @@ import scala.util.Random
 
 class VersionsSpec extends FlatSpec {
   "Versions" should "do List[Long] SerDe properly" in {
-    val a = Random.nextLong()
-    val b = Random.nextLong()
+    val versionTs = Random.nextLong()
+    val writtenTs = Random.nextLong()
 
-    val serialised = Versions.toBytes(List(a, b))
-    Versions.fromBytes(serialised) should be(List(a, b))
+    val serialised = Versions.toBytes(List(Version(versionTs, writtenTs)))
+    Versions.fromBytes(serialised) should be(List(Version(versionTs, writtenTs)))
   }
 }

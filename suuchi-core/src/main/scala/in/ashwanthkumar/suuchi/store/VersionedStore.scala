@@ -2,6 +2,7 @@ package in.ashwanthkumar.suuchi.store
 
 import java.util
 
+import com.google.common.io.ByteStreams
 import in.ashwanthkumar.suuchi.utils.DateUtils
 
 import scala.util.hashing.MurmurHash3
@@ -18,15 +19,24 @@ object Versions {
    * Since, we know each version is a long, we just read 8 bytes to construct a long and move forward.
    * */
 
-  def fromBytes(bytes: Array[Byte]): List[Long] = {
-    val numVersions = bytes(0).toInt
-    bytes.drop(1).sliding(8, 8).map(PrimitivesSerDeUtils.bytesToLong) toList
+  def fromBytes(bytes: Array[Byte]): List[Version] = {
+    val reader = ByteStreams.newDataInput(bytes)
+    val numVersions = reader.readInt()
+    (1 to numVersions).map {_ =>
+      val versionTs = reader.readLong()
+      val writtenTs = reader.readLong()
+      Version(versionTs, writtenTs)
+    }.toList
   }
 
-  def toBytes(versions: List[Long]): Array[Byte] = {
-    val numVersions = versions.size.toByte
-    val bytes       = versions.flatMap(PrimitivesSerDeUtils.longToBytes)
-    numVersions :: bytes toArray
+  def toBytes(versions: List[Version]): Array[Byte] = {
+    val writer = ByteStreams.newDataOutput()
+    writer.writeInt(versions.size)
+    versions.foreach {version =>
+      writer.writeLong(version.versionTs)
+      writer.writeLong(version.writtenTs)
+    }
+    writer.toByteArray
   }
 }
 
@@ -44,7 +54,8 @@ object VersionedStore {
     DATA_PREFIX ++ key ++ PrimitivesSerDeUtils.longToBytes(version)
 }
 
-case class VRecord(key: Array[Byte], versions: List[Long]) {
+case class Version(versionTs: Long, writtenTs: Long)
+case class VRecord(key: Array[Byte], versions: List[Version]) {
   override def equals(obj: scala.Any): Boolean = obj match {
     case v: VRecord =>
       util.Arrays.equals(v.key, key) && versions.equals(v.versions)
@@ -70,7 +81,7 @@ class VersionedStore(store: Store,
     if (vRecord.isEmpty) None
     else {
       val versions = Versions.fromBytes(vRecord.get)
-      get(key, versions.max(versionedBy.versionOrdering))
+      get(key, versions.map(_.versionTs).max(versionedBy.versionOrdering))
     }
   }
 
@@ -79,7 +90,7 @@ class VersionedStore(store: Store,
   }
 
   override def put(key: Array[Byte], value: Array[Byte]): Boolean = {
-    val currentVersion: Long = putAndPurgeVersions(key, value)
+    val currentVersion: Version = putAndPurgeVersions(key, value)
     putData(key, value, currentVersion)
   }
 
@@ -89,41 +100,42 @@ class VersionedStore(store: Store,
     versions.forall(v => removeData(key, v))
   }
 
-  def getVersions(key: Array[Byte]): List[Long] = {
+  def getVersions(key: Array[Byte]): List[Version] = {
     val vRecord = store.get(vkey(key))
     vRecord
       .map(vr => Versions.fromBytes(vr))
-      .getOrElse(List.empty[Long])
+      .getOrElse(List.empty[Version])
   }
 
-  def putAndPurgeVersions(key: Array[Byte], value: Array[Byte]): Long = {
-    val currentVersion = versionedBy.version(key, value)
+  def putAndPurgeVersions(key: Array[Byte], value: Array[Byte], writtenTs: Long = now): Version = {
+    val currentVersionTs = versionedBy.version(key, value)
+    val currentVersion = Version(currentVersionTs, writtenTs)
     // atomically update version metadata
     val versions = atomicUpdate(key, currentVersion)
     // remove oldest version, if we've exceeded max # of versions per record
-    if (versions.size > numVersions) removeData(key, versions.min)
+    if (versions.size > numVersions) removeData(key, versions.minBy(_.versionTs))
 
     currentVersion
   }
 
-  def putData(key: Array[Byte], value: Array[Byte], currentVersion: Long): Boolean = {
+  def putData(key: Array[Byte], value: Array[Byte], currentVersion: Version): Boolean = {
     // Write out the actual data record
-    store.put(dkey(key, currentVersion), value)
+    store.put(dkey(key, currentVersion.versionTs), value)
   }
 
-  private def atomicUpdate(key: Array[Byte], version: Long) = {
+  private def atomicUpdate(key: Array[Byte], currentVersion: Version) = {
     val versionKey = vkey(key)
     val absHash    = math.abs(MurmurHash3.arrayHash(versionKey))
     // Synchronizing the version metadata update part alone
     val monitor = SYNC_SLOTS(absHash % SYNC_SLOTS.length)
     val versions = monitor.synchronized {
       val vRecord = store.get(versionKey)
-      val updatedVersions = version :: vRecord
+      val updatedVersions = currentVersion :: vRecord
         .map(bytes => Versions.fromBytes(bytes))
-        .getOrElse(List.empty[Long])
+        .getOrElse(List.empty[Version])
       store.put(
         versionKey,
-        Versions.toBytes(updatedVersions.sorted(versionedBy.versionOrdering).take(numVersions)))
+        Versions.toBytes(updatedVersions.sortBy(_.versionTs)(versionedBy.versionOrdering).take(numVersions)))
       updatedVersions
     }
     versions
@@ -153,6 +165,6 @@ class VersionedStore(store: Store,
     override def close(): Unit = delegate.close()
   }
 
-  private def removeData(key: Array[Byte], version: Long) = store.remove(dkey(key, version))
+  private def removeData(key: Array[Byte], version: Version) = store.remove(dkey(key, version.versionTs))
   private def removeVersion(key: Array[Byte])             = store.remove(vkey(key))
 }
