@@ -81,7 +81,7 @@ class VersionedStore(store: Store,
     if (vRecord.isEmpty) None
     else {
       val versions = Versions.fromBytes(vRecord.get)
-      get(key, versions.map(_.versionTs).max(versionedBy.versionOrdering))
+      get(key, versions.map(versionedBy.sortOn).max(versionedBy.versionOrdering))
     }
   }
 
@@ -113,7 +113,7 @@ class VersionedStore(store: Store,
     // atomically update version metadata
     val versions = atomicUpdate(key, currentVersion)
     // remove oldest version, if we've exceeded max # of versions per record
-    if (versions.size > numVersions) removeData(key, versions.minBy(_.versionTs))
+    if (versions.size > numVersions) removeData(key, versions.minBy(versionedBy.sortOn))
 
     currentVersion
   }
@@ -135,7 +135,7 @@ class VersionedStore(store: Store,
         .getOrElse(List.empty[Version])
       store.put(
         versionKey,
-        Versions.toBytes(updatedVersions.sortBy(_.versionTs)(versionedBy.versionOrdering).take(numVersions)))
+        Versions.toBytes(updatedVersions.sortBy(versionedBy.sortOn)(versionedBy.versionOrdering).take(numVersions)))
       updatedVersions
     }
     versions
