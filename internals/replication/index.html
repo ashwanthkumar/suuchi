@@ -178,6 +178,8 @@
         
             <li><a href="#types">Types</a></li>
         
+            <li><a href="#working-with-methods-that-handle-replication">Working with Methods that handle Replication</a></li>
+        
     
     </ul>
 </div></div>
@@ -191,7 +193,17 @@
 <li>Synchronous SequentialReplication (default available)</li>
 <li>Synchronous ParallelReplication - (default available)</li>
 <li>Synchronous ChainedReplication - (<a href="https://github.com/ashwanthkumar/suuchi/issues/31">#31</a>)</li>
-</ul></div>
+</ul>
+<h2 id="working-with-methods-that-handle-replication">Working with Methods that handle Replication</h2>
+<p>When implementing a service sometimes as a developer we would like to know if a particular invocation is a replication invocation or not. May be you might want to send a metric for every write and don't want to send the same metric multiple times. Sometimes you would also want to do a specific operation only at the primary shard and not others. You can use the following snippet</p>
+<pre><code class="scala">class WriteService extends ... { 
+  def write(...) = {
+    if(Headers.PRIMARY_NODE_REQUEST_CTX.get()) {
+        // do something if this is a primary replica
+    }
+  }
+}
+</code></pre></div>
         </div>
 
         <footer class="col-md-12">

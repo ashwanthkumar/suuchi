@@ -102,7 +102,7 @@
         }, 
         {
             "location": "/internals/replication/", 
-            "text": "Replication Internals\n\n\nSuuchi out of the box comes with \nSynchronous Sequential Replication\n during writes. It's fairly easy to build custom replicators.\n\n\nRefer \n#27\n and \n#23\n on how Replication is implemented.\n\n\nTypes\n\n\n\n\nSynchronous SequentialReplication (default available)\n\n\nSynchronous ParallelReplication - (default available)\n\n\nSynchronous ChainedReplication - (\n#31\n)", 
+            "text": "Replication Internals\n\n\nSuuchi out of the box comes with \nSynchronous Sequential Replication\n during writes. It's fairly easy to build custom replicators.\n\n\nRefer \n#27\n and \n#23\n on how Replication is implemented.\n\n\nTypes\n\n\n\n\nSynchronous SequentialReplication (default available)\n\n\nSynchronous ParallelReplication - (default available)\n\n\nSynchronous ChainedReplication - (\n#31\n)\n\n\n\n\nWorking with Methods that handle Replication\n\n\nWhen implementing a service sometimes as a developer we would like to know if a particular invocation is a replication invocation or not. May be you might want to send a metric for every write and don't want to send the same metric multiple times. Sometimes you would also want to do a specific operation only at the primary shard and not others. You can use the following snippet\n\n\nclass WriteService extends ... { \n  def write(...) = {\n    if(Headers.PRIMARY_NODE_REQUEST_CTX.get()) {\n        // do something if this is a primary replica\n    }\n  }\n}", 
             "title": "Replication"
         }, 
         {
@@ -114,6 +114,11 @@
             "location": "/internals/replication/#types", 
             "text": "Synchronous SequentialReplication (default available)  Synchronous ParallelReplication - (default available)  Synchronous ChainedReplication - ( #31 )", 
             "title": "Types"
+        }, 
+        {
+            "location": "/internals/replication/#working-with-methods-that-handle-replication", 
+            "text": "When implementing a service sometimes as a developer we would like to know if a particular invocation is a replication invocation or not. May be you might want to send a metric for every write and don't want to send the same metric multiple times. Sometimes you would also want to do a specific operation only at the primary shard and not others. You can use the following snippet  class WriteService extends ... { \n  def write(...) = {\n    if(Headers.PRIMARY_NODE_REQUEST_CTX.get()) {\n        // do something if this is a primary replica\n    }\n  }\n}", 
+            "title": "Working with Methods that handle Replication"
         }, 
         {
             "location": "/internals/router/", 
