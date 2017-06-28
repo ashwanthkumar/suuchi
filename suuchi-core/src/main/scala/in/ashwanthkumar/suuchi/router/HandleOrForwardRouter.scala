@@ -39,6 +39,9 @@ class HandleOrForwardRouter(routingStrategy: RoutingStrategy, self: MemberAddres
           // Always set ELIGIBLE_NODES header to the list of nodes eligible in the current
           // operation - as defined by the RoutingStrategy
           headers.put(Headers.ELIGIBLE_NODES_KEY, eligibleNodes)
+          // Always choose the first node as the PRIMARY_NODE
+          eligibleNodes.headOption.foreach(primaryNode =>
+            headers.put(Headers.PRIMARY_NODE_KEY, primaryNode))
 
           eligibleNodes match {
             case nodes if nodes.nonEmpty && !nodes.exists(_.equals(self)) =>

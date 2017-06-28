@@ -30,54 +30,65 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
       var forwarded = false
       val delegate  = next.startCall(serverCall, headers)
 
-      override def onReady(): Unit = delegate.onReady()
+      override def onReady(): Unit =
+        wrapWithContextValue(Headers.PRIMARY_NODE_REQUEST_CTX, isPrimaryNode(headers)) {
+          delegate.onReady()
+        }
+
       override def onMessage(incomingRequest: ReqT): Unit = {
         log.trace("onMessage in replicator")
-        if (isReplicationRequest(headers)) {
-          log.debug("Received replication request for {}, processing it", incomingRequest)
-          wrapWithContextValue(Headers.REPLICATION_REQUEST_CTX, true) {
+        wrapWithContextValue(Headers.PRIMARY_NODE_REQUEST_CTX, isPrimaryNode(headers)) {
+          if (isReplicationRequest(headers)) {
+            log.debug("Received replication request for {}, processing it", incomingRequest)
             delegate.onMessage(incomingRequest)
+          } else if (headers.containsKey(Headers.ELIGIBLE_NODES_KEY)) {
+            // since this isn't a replication request - replicate the request to list of nodes as defined in ELIGIBLE_NODES header
+            val nodes = headers.get(Headers.ELIGIBLE_NODES_KEY)
+            // if the nodes to replicate contain self disable forwarded in all other cases forwarded is true
+            // we need this since the default ServerHandler under which the actual delegate is wrapped under
+            // invokes the method only in onHalfClose and not in onMessage (for non-streaming requests)
+            forwarded = !nodes.contains(self)
+            log.trace("Going to replicate the request to {}", nodes)
+            replicator.replicate(nodes, serverCall, headers, incomingRequest, delegate)
+            log.trace("Replication complete for {}", incomingRequest)
+          } else {
+            log.warn("Ignoring the request since I don't know what to do")
           }
-        } else if (headers.containsKey(Headers.ELIGIBLE_NODES_KEY)) {
-          // since this isn't a replication request - replicate the request to list of nodes as defined in ELIGIBLE_NODES header
-          val nodes = headers.get(Headers.ELIGIBLE_NODES_KEY)
-          // if the nodes to replicate contain self disable forwarded in all other cases forwarded is true
-          // we need this since the default ServerHandler under which the actual delegate is wrapped under
-          // invokes the method only in onHalfClose and not in onMessage (for non-streaming requests)
-          forwarded = !nodes.contains(self)
-          log.trace("Going to replicate the request to {}", nodes)
-          replicator.replicate(nodes, serverCall, headers, incomingRequest, delegate)
-          log.trace("Replication complete for {}", incomingRequest)
-        } else {
-          log.warn("Ignoring the request since I don't know what to do")
         }
       }
 
       override def onHalfClose(): Unit = {
-        // apparently default ServerCall listener seems to hold some state from OnMessage which fails
-        // here and client fails with an exception message -- Half-closed without a request
-        if (forwarded) {
-          serverCall.close(Status.OK, headers)
-        } else {
-          if (isReplicationRequest(headers)) {
-            wrapWithContextValue(Headers.REPLICATION_REQUEST_CTX, true) {
-              delegate.onHalfClose()
-            }
-          }
+        wrapWithContextValue(Headers.PRIMARY_NODE_REQUEST_CTX, isPrimaryNode(headers)) {
+          // apparently default ServerCall listener seems to hold some state from OnMessage which fails
+          // here and client fails with an exception message -- Half-closed without a request
+          if (forwarded) serverCall.close(Status.OK, headers) else delegate.onHalfClose()
         }
       }
-      override def onCancel(): Unit   = delegate.onCancel()
-      override def onComplete(): Unit = delegate.onComplete()
+
+      override def onCancel(): Unit =
+        wrapWithContextValue(Headers.PRIMARY_NODE_REQUEST_CTX, isPrimaryNode(headers)) {
+          delegate.onCancel()
+        }
+
+      override def onComplete(): Unit =
+        wrapWithContextValue(Headers.PRIMARY_NODE_REQUEST_CTX, isPrimaryNode(headers)) {
+          delegate.onComplete()
+        }
     }
   }
 
+  private def isPrimaryNode[RespT, ReqT](headers: Metadata) = {
+    headers.containsKey(Headers.PRIMARY_NODE_KEY) && headers
+      .get(Headers.PRIMARY_NODE_KEY)
+      .equals(self)
+  }
+
   private def wrapWithContextValue[T](ctxKey: Context.Key[T], value: T)(block: => Unit) = {
-    val previous = Context.current()
-    val ctx      = previous.withValue(ctxKey, value).attach()
+    val previous      = Context.current().withValue(ctxKey, value).attach()
     try {
       block
     } finally {
-      ctx.detach(previous)
+      Context.current().detach(previous)
     }
   }
 

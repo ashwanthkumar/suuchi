@@ -4,7 +4,7 @@ import in.ashwanthkumar.suuchi.cluster.MemberAddress
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers.{be, contain, convertToAnyShouldWrapper, have}
 
-class ListOfNodesMarshallerSpec extends FlatSpec {
+class ListOfMemberAddressMarshallerSpec extends FlatSpec {
   "ListOfNodesMarshaller" should "convert list of members to ascii string" in {
     val members = List(
       MemberAddress("localhost", 5051),
@@ -12,13 +12,13 @@ class ListOfNodesMarshallerSpec extends FlatSpec {
       MemberAddress("localhost", 5053)
     )
 
-    MemberAddressMarshaller.toAsciiString(members) should be(
+    ListOfMemberAddressMarshaller.toAsciiString(members) should be(
       "localhost:5051|localhost:5052|localhost:5053")
   }
 
   it should "convert the ascii string to actual node objects" in {
     val members =
-      MemberAddressMarshaller.parseAsciiString("localhost:5051|localhost:5052|localhost:5053")
+      ListOfMemberAddressMarshaller.parseAsciiString("localhost:5051|localhost:5052|localhost:5053")
     members should have size 3
 
     members should contain(MemberAddress("localhost", 5051))
