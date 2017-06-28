@@ -33,11 +33,11 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
       override def onReady(): Unit = delegate.onReady()
       override def onMessage(incomingRequest: ReqT): Unit = {
         log.trace("onMessage in replicator")
-        if (headers.containsKey(Headers.REPLICATION_REQUEST_KEY) && headers
-              .get(Headers.REPLICATION_REQUEST_KEY)
-              .equals(self.toString)) {
+        if (isReplicationRequest(headers)) {
           log.debug("Received replication request for {}, processing it", incomingRequest)
-          delegate.onMessage(incomingRequest)
+          wrapWithContextValue(Headers.REPLICATION_REQUEST_CTX, true) {
+            delegate.onMessage(incomingRequest)
+          }
         } else if (headers.containsKey(Headers.ELIGIBLE_NODES_KEY)) {
           // since this isn't a replication request - replicate the request to list of nodes as defined in ELIGIBLE_NODES header
           val nodes = headers.get(Headers.ELIGIBLE_NODES_KEY)
@@ -49,18 +49,42 @@ abstract class ReplicationRouter(nrReplicas: Int, self: MemberAddress) extends S
           replicator.replicate(nodes, serverCall, headers, incomingRequest, delegate)
           log.trace("Replication complete for {}", incomingRequest)
         } else {
-          log.trace("Ignoring the request since I don't know what to do")
+          log.warn("Ignoring the request since I don't know what to do")
         }
       }
 
       override def onHalfClose(): Unit = {
         // apparently default ServerCall listener seems to hold some state from OnMessage which fails
         // here and client fails with an exception message -- Half-closed without a request
-        if (forwarded) serverCall.close(Status.OK, headers) else delegate.onHalfClose()
+        if (forwarded) {
+          serverCall.close(Status.OK, headers)
+        } else {
+          if (isReplicationRequest(headers)) {
+            wrapWithContextValue(Headers.REPLICATION_REQUEST_CTX, true) {
+              delegate.onHalfClose()
+            }
+          }
+        }
       }
       override def onCancel(): Unit   = delegate.onCancel()
       override def onComplete(): Unit = delegate.onComplete()
     }
+  }
+
+  private def wrapWithContextValue[T](ctxKey: Context.Key[T], value: T)(block: => Unit) = {
+    val previous = Context.current()
+    val ctx      = previous.withValue(ctxKey, value).attach()
+    try {
+      block
+    } finally {
+      ctx.detach(previous)
+    }
+  }
+
+  private def isReplicationRequest[RespT, ReqT](headers: Metadata) = {
+    headers.containsKey(Headers.REPLICATION_REQUEST_KEY) && headers
+      .get(Headers.REPLICATION_REQUEST_KEY)
+      .equals(self.toString)
   }
 
   def forward[RespT, ReqT](methodDescriptor: MethodDescriptor[ReqT, RespT],
