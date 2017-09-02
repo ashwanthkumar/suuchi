@@ -16,9 +16,10 @@ Suuchi in sanskrit means an Index<sup>[1](http://spokensanskrit.de/index.php?tin
 ## Presentations
 Following presentations / videos explain motivation behind Suuchi
 
-- [Suuchi - Distributed Data Systems Toolkit](https://speakerdeck.com/ashwanthkumar/suuchi-distributed-data-systems-toolkit/)
-- [Suuchi - Application Layer Sharding](https://speakerdeck.com/ashwanthkumar/suuchi-application-layer-sharding)
+- Video by [@brewkode](https://twitter.com/brewkode) on [Suuchi](https://www.youtube.com/watch?v=GK0-ICFvIGw) at Fifth Elephant, 2017.
 - [Suuchi - Distributed Systems Primitives](https://speakerdeck.com/ashwanthkumar/suuchi-distributed-system-primitives)
+- [Suuchi - Application Layer Sharding](https://speakerdeck.com/ashwanthkumar/suuchi-application-layer-sharding)
+- [Suuchi - Distributed Data Systems Toolkit](https://speakerdeck.com/ashwanthkumar/suuchi-distributed-data-systems-toolkit/)
 
 ## Notes
 If you're getting `ClassNotFound` exception, please run `mvn clean compile` once to generate from the java classes from protoc files. Also, if you're using IntelliJ it helps to close the project when running the above command. It seems to auto-detect sources in `target/` at startup but not afterwards. 
