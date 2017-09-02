@@ -61,7 +61,7 @@ We try to document the internal workings of some core pieces of Suuchi for devel
 ## Presentations
 Following presentations / videos explain motivation behind Suuchi
 
-- Video by [@brewkode](https://twitter.com/brewkode) on [Suuchi](https://www.youtube.com/watch?v=GK0-ICFvIGw) at Fifth Elephant, 2017.
+- Video by [@brewkode](https://twitter.com/brewkode) on [Suuchi - Toolkit to build distributed systems](https://www.youtube.com/watch?v=GK0-ICFvIGw) at Fifth Elephant, 2017.
 - [Suuchi - Distributed Systems Primitives](https://speakerdeck.com/ashwanthkumar/suuchi-distributed-system-primitives)
 - [Suuchi - Application Layer Sharding](https://speakerdeck.com/ashwanthkumar/suuchi-application-layer-sharding)
 - [Suuchi - Distributed Data Systems Toolkit](https://speakerdeck.com/ashwanthkumar/suuchi-distributed-data-systems-toolkit/)
