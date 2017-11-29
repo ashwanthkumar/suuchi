@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  val scalaTest = "org.scalatest" %% "scalatest"   % "2.2.5"   % Test
+  val scalaTest = "org.scalatest" %% "scalatest"   % "3.0.0"   % Test
   val mockito   = "org.mockito"   % "mockito-core" % "1.10.19" % Test
 
   val algebird = "com.twitter" %% "algebird-core" % "0.13.0"
@@ -23,7 +23,8 @@ object Dependencies {
   val grpcCore    = "io.grpc" % "grpc-core" % grpcVersion
   val grpcProtobuf    = "io.grpc" % "grpc-protobuf" % grpcVersion
   val grpcServices    = "io.grpc" % "grpc-services" % grpcVersion
-  val grpc = Seq(grpcNetty, grpcStub, grpcCore, grpcProtobuf, grpcServices)
+  val grpcTesting    = "io.grpc" % "grpc-testing" % grpcVersion % Test
+  val grpc = Seq(grpcNetty, grpcStub, grpcCore, grpcProtobuf, grpcServices, grpcTesting)
 
   val nettyVersion = "4.1.8.Final"
   val nettyCodec = "io.netty" % "netty-codec" % nettyVersion
@@ -34,11 +35,12 @@ object Dependencies {
 
   val sbProtoRuntime = "com.trueaccord.scalapb" %% "scalapb-runtime"      % com.trueaccord.scalapb.compiler.Version.scalapbVersion
   val sbGrpcRuntime  = "com.trueaccord.scalapb" %% "scalapb-runtime-grpc" % com.trueaccord.scalapb.compiler.Version.scalapbVersion
+  val scalaPB = Seq(sbProtoRuntime, sbGrpcRuntime)
 
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.12"
 
   val testDeps = Seq(scalaTest, mockito)
 
-  val coreDependencies = Seq(joda, slf4j, hocon, commonsIO, algebird) ++ grpc ++ netty ++ testDeps
+  val coreDependencies = Seq(joda, slf4j, hocon, commonsIO, algebird) ++ grpc ++ netty ++ scalaPB ++ testDeps
 
 }

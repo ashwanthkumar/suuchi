@@ -14,18 +14,26 @@ ivyScala := ivyScala.value map {
   _.copy(overrideScalaVersion = true)
 }
 
-val scalaV = "2.11.8"
+val scalaV = "2.11.11"
 val gitRevision = Try(Process("git rev-parse HEAD").!!.stripLineEnd).getOrElse("?").trim.take(6)
 val buildVersion          = sys.env.getOrElse("GO_PIPELINE_LABEL", "1.0.0-SNAPSHOT-" + gitRevision)
 
 lazy val suuchiCore = (project in file("suuchi-core"))
   .settings(
     name := "suuchi-core",
-    libraryDependencies ++= coreDependencies
+    libraryDependencies ++= coreDependencies,
+    // Reset the managedSourceDirectories list with just protobuf so we don't have the parent main directory
+    // in the classpath which causes issues in IDEA everytime we refresh the project
+    managedSourceDirectories in Compile := Seq((sourceManaged in Compile).value / "protobuf-generated"),
+    PB.targets in Compile := Seq(
+      scalapb.gen(flatPackage = true) -> (sourceManaged in Compile).value / "protobuf-generated"
+    ),
+    inConfig(Test)(sbtprotoc.ProtocPlugin.protobufConfigSettings)
   )
   .settings(projectSettings: _*)
   .settings(publishSettings: _*)
-  .enablePlugins(BuildInfoPlugin)
+//  .settings(buildInfoSettings: _*)
+//  .enablePlugins(BuildInfoPlugin)
 
 lazy val buildInfoSettings = Seq(
   buildInfoPackage := "in.ashwanthkumar.suuchi.version",
@@ -40,7 +48,7 @@ lazy val buildInfoSettings = Seq(
 
 lazy val projectSettings = net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
   version := buildVersion,
-  organization := "finder",
+  organization := "in.ashwanthkumar",
   scalaVersion := scalaV,
   resolvers += Resolver.mavenLocal,
   excludeDependencies ++= Seq(
