@@ -1,19 +1,19 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import com.google.protobuf.ByteString
-import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC.{ScanRequest, ScanResponse}
-import in.ashwanthkumar.suuchi.examples.rpc.generated.{ScanGrpc, SuuchiRPC}
+import in.ashwanthkumar.suuchi.examples.rpc.generated.{KV, ScanGrpc, ScanRequest, ScanResponse}
 import in.ashwanthkumar.suuchi.partitioner.SuuchiHash
-import in.ashwanthkumar.suuchi.store.{KV, Store}
+import in.ashwanthkumar.suuchi.store.Store
+import in.ashwanthkumar.suuchi.store.{KV => StoreKV}
 import in.ashwanthkumar.suuchi.utils.ByteArrayUtils
 import io.grpc.stub.{ServerCallStreamObserver, StreamObserver}
 
-class SuuchiScanService(store: Store) extends ScanGrpc.ScanImplBase {
+class SuuchiScanService(store: Store) extends ScanGrpc.Scan {
 
   override def scan(request: ScanRequest, responseObserver: StreamObserver[ScanResponse]): Unit = {
     val observer = responseObserver.asInstanceOf[ServerCallStreamObserver[ScanResponse]]
-    val start    = request.getStart
-    val end      = request.getEnd
+    val start    = request.start
+    val end      = request.end
 
     val scanner = store.scanner()
     scanner.prepare()
@@ -41,18 +41,11 @@ class SuuchiScanService(store: Store) extends ScanGrpc.ScanImplBase {
     })
   }
 
-  private def buildKV(kv: KV) = {
-    SuuchiRPC.KV
-      .newBuilder()
-      .setKey(ByteString.copyFrom(kv.key))
-      .setValue(ByteString.copyFrom(kv.value))
-      .build()
+  private def buildKV(kv: StoreKV) = {
+    KV(key = ByteString.copyFrom(kv.key), value = ByteString.copyFrom(kv.value))
   }
 
-  private def buildResponse(response: KV): ScanResponse = {
-    SuuchiRPC.ScanResponse
-      .newBuilder()
-      .setKv(buildKV(response))
-      .build()
+  private def buildResponse(response: StoreKV): ScanResponse = {
+    ScanResponse(kv = Option(buildKV(response)))
   }
 }

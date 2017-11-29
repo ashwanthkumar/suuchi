@@ -1,6 +1,6 @@
 package in.ashwanthkumar.suuchi.rpc
 
-import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC.{ScanRequest, ScanResponse}
+import in.ashwanthkumar.suuchi.examples.rpc.generated.{ScanRequest, ScanResponse}
 import in.ashwanthkumar.suuchi.store.InMemoryStore
 import io.grpc.stub.ServerCallStreamObserver
 import org.mockito.ArgumentCaptor
@@ -16,11 +16,7 @@ class SuuchiScanServiceTest extends FlatSpec {
 
     val service = new SuuchiScanService(getPopulatedStore(10))
 
-    val request = ScanRequest
-      .newBuilder()
-      .setStart(Integer.MIN_VALUE)
-      .setEnd(Integer.MAX_VALUE)
-      .build()
+    val request = ScanRequest(start = Integer.MIN_VALUE, end = Integer.MAX_VALUE)
 
     val observer = mock(classOf[ServerCallStreamObserver[ScanResponse]])
     val runnable = ArgumentCaptor.forClass(classOf[Runnable])
@@ -40,11 +36,7 @@ class SuuchiScanServiceTest extends FlatSpec {
 
   it should "not include key which are out of the given token range" in {
     val service = new SuuchiScanService(getPopulatedStore(10))
-    val request = ScanRequest
-      .newBuilder()
-      .setStart(1)
-      .setEnd(10)
-      .build()
+    val request = ScanRequest(start = 1, end = 10)
 
     val observer = mock(classOf[ServerCallStreamObserver[ScanResponse]])
     val runnable = ArgumentCaptor.forClass(classOf[Runnable])
@@ -69,5 +61,5 @@ class SuuchiScanServiceTest extends FlatSpec {
   }
 
   private def extractKey(response: ScanResponse) =
-    new String(response.getKv.getKey.toByteArray).toInt
+    new String(response.getKv.key.toByteArray).toInt
 }
