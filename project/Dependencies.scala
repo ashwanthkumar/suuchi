@@ -41,6 +41,6 @@ object Dependencies {
 
   val testDeps = Seq(scalaTest, mockito)
 
-  val coreDependencies = Seq(joda, slf4j, hocon, commonsIO, algebird) ++ grpc ++ netty ++ scalaPB ++ testDeps
+  lazy val coreDependencies = Seq(joda, slf4j, hocon, commonsIO, algebird) ++ scalaPB ++ grpc ++ netty  ++ testDeps
 
 }

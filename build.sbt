@@ -24,16 +24,16 @@ lazy val suuchiCore = (project in file("suuchi-core"))
     libraryDependencies ++= coreDependencies,
     // Reset the managedSourceDirectories list with just protobuf so we don't have the parent main directory
     // in the classpath which causes issues in IDEA everytime we refresh the project
-    managedSourceDirectories in Compile := Seq((sourceManaged in Compile).value / "protobuf-generated"),
+    managedSourceDirectories in Compile ++= Seq((target in Compile).value / "protobuf-generated"),
     PB.targets in Compile := Seq(
-      scalapb.gen(flatPackage = true) -> (sourceManaged in Compile).value / "protobuf-generated"
+      scalapb.gen(flatPackage = true) -> (target in Compile).value / "protobuf-generated"
     ),
     inConfig(Test)(sbtprotoc.ProtocPlugin.protobufConfigSettings)
   )
   .settings(projectSettings: _*)
   .settings(publishSettings: _*)
-//  .settings(buildInfoSettings: _*)
-//  .enablePlugins(BuildInfoPlugin)
+  .settings(buildInfoSettings: _*)
+  .enablePlugins(BuildInfoPlugin)
 
 lazy val buildInfoSettings = Seq(
   buildInfoPackage := "in.ashwanthkumar.suuchi.version",
