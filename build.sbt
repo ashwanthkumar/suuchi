@@ -48,6 +48,15 @@ lazy val examples = (project in file("suuchi-examples"))
   .settings(publishSettings: _*)
   .dependsOn(core, rocksStore)
 
+lazy val clusterAtomix = (project in file("suuchi-cluster-atomix"))
+  .settings(
+    name := "suuchi-cluster-atomix",
+    libraryDependencies ++= atomixDependencies
+  )
+  .settings(projectSettings: _*)
+  .settings(publishSettings: _*)
+  .dependsOn(core)
+
 lazy val buildInfoSettings = Seq(
   buildInfoPackage := "in.ashwanthkumar.suuchi.version",
   buildInfoObject := "SuuchiBuildInfo",
