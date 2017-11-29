@@ -13,7 +13,7 @@
     </parent>
 
     <properties>
-        <rocksdb.version>4.9.0</rocksdb.version>
+        <rocksdb.version>5.8.6</rocksdb.version>
     </properties>
 
     <dependencies>
