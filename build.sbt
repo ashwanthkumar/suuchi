@@ -57,6 +57,15 @@ lazy val clusterAtomix = (project in file("suuchi-cluster-atomix"))
   .settings(publishSettings: _*)
   .dependsOn(core)
 
+lazy val clusterScalecube = (project in file("suuchi-cluster-scalecube"))
+  .settings(
+    name := "suuchi-cluster-scalecube",
+    libraryDependencies ++= scalecubeDependencies
+  )
+  .settings(projectSettings: _*)
+  .settings(publishSettings: _*)
+  .dependsOn(core)
+
 lazy val buildInfoSettings = Seq(
   buildInfoPackage := "in.ashwanthkumar.suuchi.version",
   buildInfoObject := "SuuchiBuildInfo",

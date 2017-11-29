@@ -41,13 +41,16 @@ object Dependencies {
 
   val rocksDBjni = "org.rocksdb" % "rocksdbjni" % "5.8.6"
 
-  val atomixVersion = "1.0.6"
-  val catalystVersion = "1.2.0"
-  val atomixCore = "io.atomix" % "atomix" % atomixVersion
-  val atomixResource = "io.atomix" % "atomix-resource" % atomixVersion
+  val atomixVersion     = "1.0.6"
+  val catalystVersion   = "1.2.0"
+  val atomixCore        = "io.atomix" % "atomix" % atomixVersion
+  val atomixResource    = "io.atomix" % "atomix-resource" % atomixVersion
   val catalystTransport = "io.atomix.catalyst" % "catalyst-transport" % catalystVersion
-  val catalystNetty = "io.atomix.catalyst" % "catalyst-netty" % catalystVersion
-  val atomix = Seq(atomixCore, atomixResource, catalystTransport, catalystNetty)
+  val catalystNetty     = "io.atomix.catalyst" % "catalyst-netty" % catalystVersion
+  val atomix            = Seq(atomixCore, atomixResource, catalystTransport, catalystNetty)
+
+  val scalecube = "io.scalecube" % "scalecube-cluster" % "0.9.0"
+  val rxScala   = "io.reactivex" %% "rxscala"          % "0.26.2"
 
   val testDeps = Seq(scalaTest, mockito)
 
@@ -58,5 +61,7 @@ object Dependencies {
   lazy val examplesDependencies = Seq(slf4j) ++ log4j ++ testDeps
 
   lazy val atomixDependencies = atomix ++ testDeps
+
+  lazy val scalecubeDependencies = Seq(scalecube, rxScala) ++ testDeps
 
 }
