@@ -16,7 +16,6 @@ ivyScala := ivyScala.value map {
 
 val scalaV = "2.11.11"
 val gitRevision = Try(Process("git rev-parse HEAD").!!.stripLineEnd).getOrElse("?").trim.take(6)
-val buildVersion = sys.env.getOrElse("GO_PIPELINE_LABEL", "1.0.0-SNAPSHOT-" + gitRevision)
 
 lazy val core = (project in file("suuchi-core"))
   .settings(
@@ -72,13 +71,12 @@ lazy val buildInfoSettings = Seq(
   buildInfoUsePackageAsPath := true,
   buildInfoKeys := Seq[BuildInfoKey](
     BuildInfoKey.action("buildDate")(new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date())),
-    BuildInfoKey.action("buildVersion")(buildVersion),
+    BuildInfoKey.action("buildVersion")((version in ThisBuild).value),
     BuildInfoKey.action("buildSha")(gitRevision)
   )
 )
 
 lazy val projectSettings = net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
-  version := buildVersion,
   organization := "in.ashwanthkumar",
   scalaVersion := scalaV,
   resolvers += Resolver.mavenLocal,
@@ -96,6 +94,15 @@ lazy val projectSettings = net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq
 
 lazy val publishSettings = Seq(
   publishArtifact := true,
+
+  /* START - sonatype publish related settings */
+  releaseVersionBump := sbtrelease.Version.Bump.Next,
+  pgpSecretRing := file("local.secring.gpg"),
+  pgpPublicRing := file("local.pubring.gpg"),
+  pgpPassphrase := Some(sys.env.getOrElse("GPG_PASSPHRASE", "").toCharArray),
+  useGpg := true,
+  /* END - sonatype publish related settings */
+
   packageOptions := Seq(
     ManifestAttributes(
       ("Built-By", InetAddress.getLocalHost.getHostName)
