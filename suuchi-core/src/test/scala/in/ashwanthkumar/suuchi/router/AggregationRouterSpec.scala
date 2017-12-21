@@ -1,28 +1,28 @@
 package in.ashwanthkumar.suuchi.router
 
-import com.twitter.algebird.{Aggregator, MonoidAggregator}
+import java.util.{List => JList}
+
+import com.twitter.algebird.Aggregator
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
-import in.ashwanthkumar.suuchi.core.tests.SuuchiTestRPC.{FooRequest, FooResponse}
-import in.ashwanthkumar.suuchi.core.tests.{RandomGrpc, SuuchiTestRPC}
+import in.ashwanthkumar.suuchi.core.tests.{FooRequest, FooResponse, RandomGrpc}
+import in.ashwanthkumar.suuchi.rpc.CachedChannelPool
 import io.grpc.ServerCall.Listener
 import io.grpc._
 import io.grpc.testing.TestMethodDescriptors
+import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.{any, eq => mockEq}
 import org.mockito.Mockito.{mock, times, verify, when}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers.{be, convertToAnyShouldWrapper}
-import java.util.{List => JList}
 
 import scala.collection.JavaConverters._
-import in.ashwanthkumar.suuchi.rpc.CachedChannelPool
-import org.mockito.ArgumentCaptor
 
 class AggregationRouterSpec extends FlatSpec {
   class RandomAggregation extends Aggregation {
     override def aggregator[A, B]
       : PartialFunction[MethodDescriptor[A, B], Aggregator[B, Any, B]] = {
       case RandomGrpc.METHOD_FOO =>
-        Aggregator.const(FooResponse.getDefaultInstance).asInstanceOf[Aggregator[B, Any, B]]
+        Aggregator.const(FooResponse.defaultInstance).asInstanceOf[Aggregator[B, Any, B]]
     }
   }
 
@@ -67,7 +67,7 @@ class AggregationRouterSpec extends FlatSpec {
 
     val listener = router.interceptCall(serverCall, headers, next)
     listener.onReady()
-    listener.onMessage(FooRequest.newBuilder().build())
+    listener.onMessage(FooRequest())
     listener.onHalfClose()
     listener.onComplete()
     listener.onCancel()
@@ -80,7 +80,7 @@ class AggregationRouterSpec extends FlatSpec {
       new AggregationRouter(List(MemberAddress("host:1")),
                                        new RandomAggregation) {
         override protected def scatter[ReqT, RespT](nodes: List[MemberAddress], channelPool: CachedChannelPool, methodDescriptor: MethodDescriptor[ReqT, RespT], headers: Metadata, input: ReqT) = {
-          List(FooResponse.getDefaultInstance.asInstanceOf[RespT]).asJava
+          List(FooResponse.defaultInstance.asInstanceOf[RespT]).asJava
         }
       }
 
@@ -96,11 +96,11 @@ class AggregationRouterSpec extends FlatSpec {
 
     val listener = router.interceptCall(serverCall, headers, next)
     listener.onReady()
-    listener.onMessage(FooRequest.newBuilder().build())
+    listener.onMessage(FooRequest())
     listener.onHalfClose()
     // during onHalfClose
     verify(serverCall, times(1)).sendHeaders(mockEq(headers))
-    verify(serverCall, times(1)).sendMessage(mockEq(FooResponse.getDefaultInstance))
+    verify(serverCall, times(1)).sendMessage(mockEq(FooResponse.defaultInstance))
     verify(serverCall, times(1)).close(mockEq(Status.OK), mockEq(headers))
 
     listener.onComplete()
@@ -140,7 +140,7 @@ class AggregationRouterSpec extends FlatSpec {
 
     val listener = router.interceptCall(serverCall, headers, next)
     listener.onReady()
-    listener.onMessage(FooRequest.newBuilder().build())
+    listener.onMessage(FooRequest())
     listener.onHalfClose()
     // during onHalfClose
     val statusCaptor = ArgumentCaptor.forClass(classOf[Status])

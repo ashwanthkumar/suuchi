@@ -1,40 +1,22 @@
 package in.ashwanthkumar.suuchi.rpc
 
 import in.ashwanthkumar.suuchi.cluster.MemberAddress
-import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC.{
-  Node,
-  Shard,
-  ShardInfoRequest,
-  ShardInfoResponse
-}
-import in.ashwanthkumar.suuchi.examples.rpc.generated.{ShardsGrpc, SuuchiRPC}
+import in.ashwanthkumar.suuchi.examples.rpc.generated._
 import in.ashwanthkumar.suuchi.partitioner.ConsistentHashRing
-import io.grpc.stub.StreamObserver
 
-import scala.collection.JavaConverters._
+import scala.concurrent.Future
 
 class SuuchiShardService(ring: ConsistentHashRing, replicationFactor: Int)
-    extends ShardsGrpc.ShardsImplBase {
-  override def info(request: ShardInfoRequest,
-                    responseObserver: StreamObserver[ShardInfoResponse]): Unit = {
-    val infoBuilder = ShardInfoResponse.newBuilder()
-    ring.ringState.withReplication(replicationFactor).foreach {
-      case (token, replica) =>
-        val shard = Shard
-          .newBuilder()
-          .setStart(token.start)
-          .setEnd(token.end)
-          .addAllNodes(replica.map(m => toNode(m)).asJava)
-          .build()
-
-        infoBuilder.addShard(shard)
-    }
-
-    responseObserver.onNext(infoBuilder.build())
-    responseObserver.onCompleted()
+  extends ShardsGrpc.Shards {
+  private[rpc] def toNode(m: MemberAddress): Node = {
+    Node(host = m.host, port = m.port)
   }
 
-  private[rpc] def toNode(m: MemberAddress): SuuchiRPC.Node = {
-    Node.newBuilder().setHost(m.host).setPort(m.port).build()
+  override def info(request: ShardInfoRequest) = Future.successful {
+    val shards = ring.ringState.withReplication(replicationFactor).map {
+      case (token, replica) =>
+        Shard(start = token.start, end = token.end, nodes = replica.map(m => toNode(m)))
+    }.toSeq
+    ShardInfoResponse(shards)
   }
 }

@@ -1,12 +1,9 @@
 package in.ashwanthkumar.suuchi.rpc
 
-import in.ashwanthkumar.suuchi.examples.rpc.generated.PingServiceGrpc
-import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC.{PingRequest, PingResponse}
-import io.grpc.stub.StreamObserver
+import in.ashwanthkumar.suuchi.examples.rpc.generated.{PingRequest, PingResponse, PingServiceGrpc}
 
-class PingService extends PingServiceGrpc.PingServiceImplBase {
-  override def ping(request: PingRequest, responseObserver: StreamObserver[PingResponse]): Unit = {
-    responseObserver.onNext(PingResponse.newBuilder().setStatus(true).build())
-    responseObserver.onCompleted()
-  }
+import scala.concurrent.Future
+
+class PingService extends PingServiceGrpc.PingService {
+  override def ping(request: PingRequest) = Future.successful(PingResponse(status = true))
 }

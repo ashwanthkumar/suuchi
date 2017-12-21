@@ -8,6 +8,8 @@ import org.apache.commons.io.FileUtils
 import org.scalatest.Matchers.{be, convertToAnyShouldWrapper, have, startWith}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FlatSpec}
 
+import scala.language.postfixOps
+
 class RocksDbStoreSpec extends FlatSpec with BeforeAndAfter with BeforeAndAfterAll {
 
   val dir = Files.createTempDirectory("suuchi-rocks-test").toFile

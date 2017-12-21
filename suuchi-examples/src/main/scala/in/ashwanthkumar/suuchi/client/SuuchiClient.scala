@@ -3,12 +3,9 @@ package in.ashwanthkumar.suuchi.client
 import java.util.concurrent.TimeUnit
 
 import com.google.protobuf.ByteString
-import in.ashwanthkumar.suuchi.examples.rpc.generated.SuuchiRPC._
 import in.ashwanthkumar.suuchi.examples.rpc.generated._
 import io.grpc.netty.NettyChannelBuilder
 import org.slf4j.LoggerFactory
-
-import scala.collection.JavaConversions._
 
 class SuuchiClient(host: String, port: Int) {
   private val log = LoggerFactory.getLogger(getClass)
@@ -18,10 +15,10 @@ class SuuchiClient(host: String, port: Int) {
     .usePlaintext(true)
     .build()
 
-  private val writeStub = PutGrpc.newBlockingStub(channel)
-  private val readStub  = ReadGrpc.newBlockingStub(channel)
-  private val scanStub  = ScanGrpc.newBlockingStub(channel)
-  private val aggStub   = AggregatorGrpc.newBlockingStub(channel)
+  private val writeStub = PutGrpc.blockingStub(channel)
+  private val readStub  = ReadGrpc.blockingStub(channel)
+  private val scanStub  = ScanGrpc.blockingStub(channel)
+  private val aggStub   = AggregatorGrpc.blockingStub(channel)
 
   def shutdown() = {
     channel.awaitTermination(5, TimeUnit.SECONDS)
@@ -29,36 +26,28 @@ class SuuchiClient(host: String, port: Int) {
 
   def put(key: Array[Byte], value: Array[Byte]): Boolean = {
     log.info(s"Doing Put with key=${new String(key)} value=${new String(value)}")
-    val request = PutRequest
-      .newBuilder()
-      .setKey(ByteString.copyFrom(key))
-      .setValue(ByteString.copyFrom(value))
-      .build()
-
-    writeStub.put(request).getStatus
+    val request = PutRequest(key = ByteString.copyFrom(key), value = ByteString.copyFrom(value))
+    writeStub.put(request).status
   }
 
   def get(key: Array[Byte]): Option[Array[Byte]] = {
     log.info("Doing Get with key={}", new String(key))
-    val request = GetRequest
-      .newBuilder()
-      .setKey(ByteString.copyFrom(key))
-      .build()
+    val request = GetRequest(key = ByteString.copyFrom(key))
 
     val response = readStub.get(request)
-    if (response.getValue.isEmpty) {
+    if (response.value.isEmpty) {
       None
     } else {
-      Some(response.getValue.toByteArray)
+      Some(response.value.toByteArray)
     }
   }
 
   def scan() = {
-    scanStub.scan(ScanRequest.newBuilder().setStart(Int.MinValue).setEnd(Int.MaxValue).build())
+    scanStub.scan(ScanRequest(start = Int.MinValue, end = Int.MaxValue))
   }
 
   def sumOfNumbers() = {
-    aggStub.aggregate(AggregateRequest.newBuilder().build())
+    aggStub.aggregate(AggregateRequest())
   }
 }
 
@@ -83,7 +72,7 @@ object SuuchiClient extends App {
   val iterator = client.scan()
 
   iterator.foreach { response =>
-    println(new String(response.getKv.getKey.toByteArray))
+    println(new String(response.getKv.key.toByteArray))
   }
 
   println(client.sumOfNumbers)
