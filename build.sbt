@@ -100,7 +100,7 @@ lazy val publishSettings = Seq(
   pgpSecretRing := file("local.secring.gpg"),
   pgpPublicRing := file("local.pubring.gpg"),
   pgpPassphrase := Some(sys.env.getOrElse("GPG_PASSPHRASE", "").toCharArray),
-  useGpg := true,
+  useGpg := false,
   /* END - sonatype publish related settings */
 
   packageOptions := Seq(
