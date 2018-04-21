@@ -16,6 +16,7 @@ Suuchi in sanskrit means an Index<sup>[1](http://spokensanskrit.de/index.php?tin
 ## Presentations
 Following presentations / videos explain motivation behind Suuchi
 
+- [Why we built a distributed system](https://speakerdeck.com/ashwanthkumar/why-we-built-a-distributed-system-dsconf-2018) at DSConf 2018.
 - Video by [@brewkode](https://twitter.com/brewkode) on [Suuchi - Toolkit to build distributed systems](https://www.youtube.com/watch?v=GK0-ICFvIGw) at Fifth Elephant, 2017.
 - [Suuchi - Distributed Systems Primitives](https://speakerdeck.com/ashwanthkumar/suuchi-distributed-system-primitives)
 - [Suuchi - Application Layer Sharding](https://speakerdeck.com/ashwanthkumar/suuchi-application-layer-sharding)
