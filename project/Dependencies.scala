@@ -11,7 +11,7 @@ object Dependencies {
   val hocon     = "com.typesafe" % "config"     % "1.2.1"
   val commonsIO = "commons-io"   % "commons-io" % "2.5"
 
-  val grpcVersion  = "1.2.0"
+  val grpcVersion  = "1.23.0"
   val grpcNetty    = "io.grpc" % "grpc-netty" % grpcVersion
   val grpcStub     = "io.grpc" % "grpc-stub" % grpcVersion
   val grpcCore     = "io.grpc" % "grpc-core" % grpcVersion
@@ -20,15 +20,15 @@ object Dependencies {
   val grpcTesting  = "io.grpc" % "grpc-testing" % grpcVersion % Test
   val grpc         = Seq(grpcNetty, grpcStub, grpcCore, grpcProtobuf, grpcServices, grpcTesting)
 
-  val nettyVersion   = "4.1.8.Final"
+  val nettyVersion   = "4.1.38.Final"
   val nettyCodec     = "io.netty" % "netty-codec" % nettyVersion
   val nettyCommon    = "io.netty" % "netty-common" % nettyVersion
   val nettyTransport = "io.netty" % "netty-transport" % nettyVersion
   val nettyHandler   = "io.netty" % "netty-handler" % nettyVersion
   val netty          = Seq(nettyCodec, nettyCommon, nettyTransport, nettyHandler)
 
-  val sbProtoRuntime = "com.trueaccord.scalapb" %% "scalapb-runtime" % com.trueaccord.scalapb.compiler.Version.scalapbVersion
-  val sbGrpcRuntime  = "com.trueaccord.scalapb" %% "scalapb-runtime-grpc" % com.trueaccord.scalapb.compiler.Version.scalapbVersion
+  val sbProtoRuntime = "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion
+  val sbGrpcRuntime  = "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
   val scalaPB        = Seq(sbProtoRuntime, sbGrpcRuntime)
 
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.12"

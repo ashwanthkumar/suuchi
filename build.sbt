@@ -7,14 +7,8 @@ import java.util.Date
 import Dependencies._
 import sbt.Keys._
 import sbt.Package.ManifestAttributes
-import sbt.SbtExclusionRule
 
-
-ivyScala := ivyScala.value map {
-  _.copy(overrideScalaVersion = true)
-}
-
-val scalaV = "2.11.11"
+val scalaV = "2.11.12"
 val gitRevision = Try(Process("git rev-parse HEAD").!!.stripLineEnd).getOrElse("?").trim.take(6)
 
 lazy val core = (project in file("suuchi-core"))
@@ -76,14 +70,14 @@ lazy val buildInfoSettings = Seq(
   )
 )
 
-lazy val projectSettings = net.virtualvoid.sbt.graph.Plugin.graphSettings ++ Seq(
+lazy val projectSettings = Seq(
   organization := "in.ashwanthkumar",
   scalaVersion := scalaV,
   resolvers += Resolver.mavenLocal,
   excludeDependencies ++= Seq(
-    SbtExclusionRule("cglib", "cglib-nodep"),
-    SbtExclusionRule("commons-beanutils", "commons-beanutils"),
-    SbtExclusionRule("commons-beanutils", "commons-beanutils-core")
+    ExclusionRule("cglib", "cglib-nodep"),
+    ExclusionRule("commons-beanutils", "commons-beanutils"),
+    ExclusionRule("commons-beanutils", "commons-beanutils-core")
   ),
   parallelExecution in ThisBuild := false,
   scalacOptions ++= Seq("-unchecked",
