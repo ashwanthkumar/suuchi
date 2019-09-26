@@ -10,6 +10,6 @@ if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) &&
 
     virtualenv --system-site-packages ${HOME}/DENV
     source ${HOME}/DENV/bin/activate
-    pip install -r docs-requirements.txt
+    pip install -r .travis/docs-requirements.txt
     mkdocs gh-deploy -v --clean --remote-name gh-token;
 fi
