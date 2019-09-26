@@ -31,7 +31,7 @@ deploy:
     on:
       repo: ashwanthkumar/suuchi
       branch: master
-      jdk: oraclejdk8
+      jdk: openjdk8
 
   - provider: script
     script: .travis/docs.sh
