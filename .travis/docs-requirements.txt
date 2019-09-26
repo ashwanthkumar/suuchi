@@ -1,0 +1,13 @@
+Jinja2==2.10
+Markdown==2.6.10
+MarkupSafe==1.0
+backports==abc-0.5
+backports.ssl-match-hostname==3.5.0.1
+certifi==2017.11.5
+click==6.7
+livereload==2.5.1
+mkdocs==0.15.3
+mkdocs-bootstrap==0.1.1
+mkdocs-bootswatch==0.4.0
+singledispatch==3.4.0.3
+tornado==4.5.2
